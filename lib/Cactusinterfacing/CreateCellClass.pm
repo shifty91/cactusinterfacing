@@ -2,14 +2,7 @@
 ##
 ## CreateCellClass.pm
 ##
-## Utility functions for creating a cell class for LibGeoDecomp
-## from a specified thorn.
-##  - gatheres information from ccl files
-##  - generates a cell class, including
-##     - interface variables
-##     - parameters variables
-##     - adjusted evolution function
-##     - rotating timelevels
+## This module builds a cell class for LibGeoDecomp.
 ##
 
 package Cactusinterfacing::CreateCellClass;
@@ -33,7 +26,7 @@ use Cactusinterfacing::CreateStaticDataClass qw(generateStaticDataClass);
 our @EXPORT_OK = qw(createCellClass);
 
 #
-# Searches through interface dimensions to get highest.
+# Searches through GFs dimensions to get highest.
 #
 # param:
 #  - inf_ref: ref to interface data
@@ -52,6 +45,7 @@ sub getDimension
 	# look for dimensions and find maximum
 	foreach my $key (keys %$inf_ref) {
 		next if ($inf_ref->{$key}{"gtype"} =~ /^SCALAR$/i);
+		next if ($inf_ref->{$key}{"gtype"} =~ /^ARRAY$/i);
 
 		if ($inf_ref->{$key}{"dim"} > $dim) {
 			$dim = $inf_ref->{$key}{"dim"};
