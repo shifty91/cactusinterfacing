@@ -154,7 +154,7 @@ sub buildInfVarMacros
 	$dim = $val_ref->{"dim"};
 
 	# go
-	foreach my $group (keys %$inf_ref) {
+	foreach my $group (keys %{$inf_ref}) {
 		my ($gtype, $timelevels);
 
 		# init
@@ -170,14 +170,20 @@ sub buildInfVarMacros
 
 			# for the first timelevel hoodNew is used
 			push(@$def_ref  , "#define $name (&hoodNew.var_$name())\n");
-			push(@$undef_ref,  "#undef $name\n");
+			push(@$undef_ref, "#undef $name\n");
 
 			# for all other timelevels hoodOld
 			for ($i = 1; $i < $timelevels; ++$i) {
-				push(@$def_ref, "#define $name" . ("_p" x $i) . " (&hoodOld[" .
-					 getFixedCoordZero($dim) . "].var_$name" .
-					 ("_p" x ($i - 1)) . "())\n");
-				push(@$undef_ref, "#undef $name" . ("_p" x $i) . "\n");
+				my ($past_name, $var_name, $fixed_coord);
+
+				$past_name   = "$name" . ("_p" x $i);
+				$var_name    = "var_" . $name . ("_p" x ($i - 1));
+				$fixed_coord = getFixedCoordZero($dim);
+
+				push(@$def_ref, "#define $past_name (&hoodOld[".
+						 $fixed_coord . "].".
+						 $var_name . "())\n");
+				push(@$undef_ref, "#undef $past_name\n");
 			}
 		}
 	}
@@ -251,7 +257,7 @@ sub addRotateTimelevels
 	# start for loop
 	push(@outdata, "for (int $index = 0; $index < (indexEnd - *indexOld); ++$index) {");
 
-	foreach my $group (keys %$inf_ref) {
+	foreach my $group (keys %{$inf_ref}) {
 		my ($gtype, $timelevels);
 
 		# init
@@ -323,7 +329,7 @@ sub adjustUpdateLine
 	#  - for (int i = x; i < gridSize(); i++) => for (int i = 0; i < 1; ++i)
 	#  - the last will be: for (int x = 0; x < indexEnd - *indexOld; ++x)
 	@blocks = $codestr =~ /((?:for\s*\([\w\s()+\-*\/=<>;,\[\]]*\)\s*\{\s*){$dim})/g;
-	if (!@blocks) {
+	unless (@blocks) {
 		warning("Could not adjust loop indices.\n  -> You propably want to adjust the".
 				" code on your own.", __FILE__, __LINE__);
 		goto out;
