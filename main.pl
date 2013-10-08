@@ -35,7 +35,7 @@ my (@configs, $configdir);
 my (@thorns);
 my (%config);
 # options
-my ($help, $verbose, $config, $evol_thorn, $init_thorn, $cctk_home);
+my ($help, $verbose, $config, $evol_thorn, $init_thorn, $cctk_home, $outputdir);
 
 #
 # Prints usage and exits with success.
@@ -56,6 +56,7 @@ sub print_usage
 	print STDERR "--evolthorn, -e\t\tEvolution thorn\n";
 	print STDERR "--initthorn, -i\t\tInit thorn\n";
 	print STDERR "--cactushome\t\tDirectory to Cactus home\n";
+	print STDERR "--outputdir, -o\t\tOutput directory\n";
 
 	exit 0;
 }
@@ -80,7 +81,8 @@ sub get_args
 			   "config=s"     => \$config,
 			   "evolthorn=s"  => \$evol_thorn,
 			   "initthorn=s"  => \$init_thorn,
-			   "cactushome=s" => \$cctk_home) || print_usage();
+			   "cactushome=s" => \$cctk_home,
+			   "outputdir=s"  => \$outputdir) || print_usage();
 
 	return;
 }
@@ -177,6 +179,12 @@ unless (defined $init_thorn) {
 	$init_thorn = util_choose("Choose Init Thorn", \@thorns);
 }
 
+# get output directory
+unless (defined $outputdir) {
+	# using current directory as default
+	$outputdir = ".";
+}
+
 # build config hash
 # this hash includes all necassary information about
 # paths and thorns
@@ -184,6 +192,7 @@ $config{"cctk_home"}      = $cctk_home;
 $config{"config"}         = $config;
 $config{"config_dir"}     = $configdir;
 $config{"arr_dir"}        = $cctk_home."/arrangements";
+$config{"outputdir"}      = $outputdir;
 $config{"evol_thorn_arr"} = $evol_thorn;
 $config{"init_thorn_arr"} = $init_thorn;
 ($config{"evol_arr"}, $config{"evol_thorn"})

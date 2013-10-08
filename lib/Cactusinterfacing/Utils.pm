@@ -31,6 +31,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use File::Copy;
+use File::Path qw(mkpath);
 use Cactusinterfacing::Config qw($debug $verbose $tab);
 
 # export
@@ -191,20 +192,21 @@ sub util_input
 }
 
 #
-# error checked mkdir
+# Creates a directory given by parameter dir.
+# It works recursively like `mkdir -p`.
 #
 # param:
 #  - dir: directory to be created
 #
 # return:
-#  - none
+#  - none, exits on error
 #
 sub util_mkdir
 {
 	my ($dir) = @_;
 
-	mkdir($dir) ||
-		err("Cannot create directory $dir: $!.", __FILE__, __LINE__);
+	eval { mkpath($dir) };
+	err("Cannot create directory $dir: $@", __FILE__, __LINE__) if ($@);
 
 	return;
 }

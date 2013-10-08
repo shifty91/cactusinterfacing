@@ -215,7 +215,7 @@ sub setupIncludeDir
 	$outputdir      .= "/include";
 
 	# mkdir include
-	util_mkdir($outputdir) if (! -d "$outputdir");
+	util_mkdir($outputdir) unless (-d $outputdir);
 
 	# generate header
 	push(@cell, "#ifndef _CCTK_\U$cell_ref->{\"class_name\"}\E_H\n");
@@ -300,11 +300,11 @@ sub createLibgeodecompApp
 	my (%cell, %init, @main, @make, @paramh);
 
 	# init
-	$outputdir = "./".$config_ref->{"config"};
+	$outputdir = $config_ref->{"outputdir"}."/".$config_ref->{"config"};
 	parseThornList($config_ref, \%thorninfo, \%option);
 
 	# mkdir output directory
-	util_mkdir($outputdir) if (! -d $outputdir);
+	util_mkdir($outputdir) unless (-d $outputdir);
 
 	# gen Makefile and write
 	createLibgeodecompMakefile($config_ref, \%option, \@make);
