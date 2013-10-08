@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # Automatic build test for Cactus WaveToyC demo.
@@ -7,12 +7,15 @@
 
 set -e
 
-# where to find WaveDemo files
-WAVEDEMO="WaveDemo"
+# where to find cactus etc.
+CONFIG="WaveDemo"
+EVOLTHORN="CactusWave/WaveToyC"
+INITTHORN="CactusWave/IDScalarWaveC"
 # get number of cores for compilation process, assuming a linux system
 NUMCPUS=`awk '/^processor/ { N++ } END { print N }' /proc/cpuinfo`
 # set make options
-MAKEOPTS="-j$NUMCPUS -C $WAVEDEMO"
+MAKEOPTS="-j$NUMCPUS -C $CONFIG"
+MAINOPTS="--evolthorn $EVOLTHORN --initthorn $INITTHORN --config $CONFIG"
 
 function print_usage()
 {
@@ -28,11 +31,21 @@ OPTIONS:
 "
 }
 
+function get_cctk_home
+{
+	if [ -z "$CCTK_HOME" ] ; then
+		echo -n "Enter the Cactus home directory: "
+		read CCTK_HOME
+		if ! [ -d "$CCTK_HOME" ] ; then
+			echo "This is not a valid directory!"
+			exit -1
+		fi
+	fi
+}
+
 function execute_main()
 {
-	./main.pl > /dev/null <<EOF
-2
-0
+	./main.pl $MAINOPTS > /dev/null <<EOF
 0
 EOF
 }
@@ -48,17 +61,19 @@ function cmd_build()
 function cmd_run()
 {
 	# parameter file can be specified by an optional argument
-	$WAVEDEMO/cactus_WaveDemo ${2:-"$HOME/git/Cactus/wavetoyc_none.par"}
+	"$CONFIG/cactus_$CONFIG" ${2:-"$HOME/git/Cactus/wavetoyc_none.par"}
 }
 
 function cmd_main()
 {
-	./main.pl <<EOF
-2
-0
+	./main.pl $MAINOPTS <<EOF
 0
 EOF
 }
+
+# first check cctk_home
+get_cctk_home
+MAINOPTS="$MAINOPTS --cactushome $CCTK_HOME"
 
 # go
 case "$1" in
