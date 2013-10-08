@@ -28,14 +28,13 @@ use Getopt::Long;
 use Cactusinterfacing::CreateLibgeodecompApp qw(createLibgeodecompApp);
 use Cactusinterfacing::Utils qw(util_readDir util_readFile util_choose
 								util_input err vprint);
-use Cactusinterfacing::Config qw($verbose);
 
 # vars
 my (@configs, $configdir);
 my (@thorns);
 my (%config);
 # options
-my ($help, $verbose, $config, $evol_thorn, $init_thorn, $cctk_home, $outputdir);
+my ($help, $config, $evol_thorn, $init_thorn, $cctk_home, $outputdir);
 
 #
 # Prints usage and exits with success.
@@ -51,7 +50,6 @@ sub print_usage
 	print STDERR "usage: main.pl [options]\n";
 	print STDERR "Options:\n";
 	print STDERR "--help, -h\t\tShow this help\n";
-	print STDERR "--verbose, -v\t\tVerbose output\n";
 	print STDERR "--config\t\tCactus-Configuration to build for\n";
 	print STDERR "--evolthorn, -e\t\tEvolution thorn\n";
 	print STDERR "--initthorn, -i\t\tInit thorn\n";
@@ -77,7 +75,6 @@ sub get_args
 	$cctk_home = $ENV{"CCTK_HOME"};
 
 	GetOptions("help"         => \$help,
-			   "verbose"      => \$verbose,
 			   "config=s"     => \$config,
 			   "evolthorn=s"  => \$evol_thorn,
 			   "initthorn=s"  => \$init_thorn,
