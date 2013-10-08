@@ -21,7 +21,8 @@
 
 use strict;
 use warnings;
-use lib "./lib";
+use FindBin;
+use lib "$FindBin::RealBin/lib";
 use Data::Dumper;
 use Getopt::Long;
 use Cactusinterfacing::CreateLibgeodecompApp qw(createLibgeodecompApp);

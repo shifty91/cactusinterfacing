@@ -11,6 +11,7 @@ package Cactusinterfacing::CreateLibgeodecompApp;
 use strict;
 use warnings;
 use Exporter 'import';
+use FindBin qw($RealBin);
 use Data::Dumper;
 use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir);
@@ -334,11 +335,11 @@ sub createLibgeodecompApp
 	setupIncludeDir(\%init, \%cell, $config_ref, $outputdir);
 
 	# copy cctk_*, parser files
-	util_cp("src/include/*.h", $outputdir."/include");
-	util_cp("src/parparser/parparser.h",   $outputdir);
-	util_cp("src/parparser/parparser.cpp", $outputdir);
-	util_cp("src/types/cactusgrid.h",      $outputdir);
-	util_cp("src/types/cactusgrid.cpp",    $outputdir);
+	util_cp("$RealBin/src/include/*.h", $outputdir."/include");
+	util_cp("$RealBin/src/parparser/parparser.h",   $outputdir);
+	util_cp("$RealBin/src/parparser/parparser.cpp", $outputdir);
+	util_cp("$RealBin/src/types/cactusgrid.h",      $outputdir);
+	util_cp("$RealBin/src/types/cactusgrid.cpp",    $outputdir);
 
 	return;
 }
