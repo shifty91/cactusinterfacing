@@ -27,7 +27,7 @@ use Data::Dumper;
 use Getopt::Long;
 use Cactusinterfacing::CreateLibgeodecompApp qw(createLibgeodecompApp);
 use Cactusinterfacing::Utils qw(util_readDir util_readFile util_choose
-								util_input err vprint);
+								util_input _err vprint);
 
 # vars
 my (@configs, $configdir);
@@ -118,12 +118,12 @@ sub get_thorns
 			next if ($line =~ /^CactusDoc/);
 			push(@$thorns_ref, $1);
 		} else {
-			err("Syntax error in $configdir/ThornList", __FILE__, __LINE__);
+			_err("Syntax error in $configdir/ThornList", __FILE__, __LINE__);
 		}
 	}
 
 	# consistency check
-	err("No Thorns found. Check your ThornList.", __FILE__, __LINE__)
+	_err("No Thorns found. Check your ThornList.", __FILE__, __LINE__)
 		if (@$thorns_ref == 0);
 
 	return;
@@ -142,7 +142,7 @@ $cctk_home = util_input("Specify the Cactus Home directory (CCTK_HOME)")
 	unless (defined $cctk_home);
 
 # test it
-err("Your specified Cactus Home directory does not exist!", __FILE__, __LINE__)
+_err("Your specified Cactus Home directory does not exist!", __FILE__, __LINE__)
 	unless (-d $cctk_home);
 
 # get configs
@@ -154,7 +154,7 @@ unless (defined $config) {
 	if (@configs > 1) {
 		$config = util_choose("Choose config to Libgeodecomp App for", \@configs);
 	} elsif (@configs == 0) {
-		err("You have to build a configuration first.\n".
+		_err("You have to build a configuration first.\n".
 			"Therefore run `gmake <configname>-config` in your Cactus directory!",
 			__FILE__, __LINE__);
 	} else {

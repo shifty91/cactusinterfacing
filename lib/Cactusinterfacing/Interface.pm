@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Data::Dumper;
-use Cactusinterfacing::Utils qw(read_file util_indent warning err);
+use Cactusinterfacing::Utils qw(read_file util_indent _warn _err);
 use Cactusinterfacing::InterfaceParser qw(parse_interface_ccl);
 
 # exports
@@ -174,18 +174,18 @@ sub prepareValues
 		$nsize = 1;
 
 		# size given?
-		err("Size of ARRAYs must be defined.", __FILE__, __LINE__)
+		_err("Size of ARRAYs must be defined.", __FILE__, __LINE__)
 			unless ($size);
 
 		# size is comma seperated list of grid points in each direction
 		@token = split(',', $size);
 		# check for right format
-		err("Invalid value in ARRAY size: \"$size\".", __FILE__, __LINE__)
+		_err("Invalid value in ARRAY size: \"$size\".", __FILE__, __LINE__)
 			unless (@token == $dim);
 		# just calculate the size
 		foreach my $number (@token) {
 			# check for numbers
-			err("ARRAY Size has to be numeric value.", __FILE__, __LINE__)
+			_err("ARRAY Size has to be numeric value.", __FILE__, __LINE__)
 				unless ($number =~ /\d+/);
 			$nsize *= $number;
 		}
@@ -261,7 +261,7 @@ sub buildInterfaceStrings
 	}
 
 	# perform checks whether there are member variables
-	warning("No member variables found!", __FILE__, __LINE__)
+	_warn("No member variables found!", __FILE__, __LINE__)
 		if (@inf_vars_pub == 0 && @inf_vars_prot == 0 && @inf_vars_priv == 0);
 
 	# indent

@@ -20,8 +20,8 @@
 ##  - made a perl module
 ##  - added use strict, warnings
 ##  - coding style
-##  - rewrite of CST_error to use my err function
-##  - added util_*, info, dbg, warning, err subroutines
+##  - rewrite of CST_error to use my _err function
+##  - added util_*, info, dbg, _warn, _err subroutines
 ##  - removed some subroutines
 ##
 
@@ -35,8 +35,8 @@ use File::Path qw(mkpath);
 use Cactusinterfacing::Config qw($debug $verbose $tab);
 
 # export
-our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings err
-                    warning dbg info vprint util_writeFile util_mkdir util_trim
+our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings _err
+                    _warn dbg info vprint util_writeFile util_mkdir util_trim
                     util_cp util_arrayToHash util_readFile util_input
 					util_indent util_getFunction util_choose util_readDir);
 
@@ -163,7 +163,7 @@ sub util_choose
 	$answer = <STDIN>;
 	chomp $answer;
 
-	err("\"$answer\" is not a valid choice!", __FILE__, __LINE__)
+	_err("\"$answer\" is not a valid choice!", __FILE__, __LINE__)
 		if ($answer !~ /\d+/ || $answer >= $i);
 
 	return $arr_ref->[$answer];
@@ -206,7 +206,7 @@ sub util_mkdir
 	my ($dir) = @_;
 
 	eval { mkpath($dir) };
-	err("Cannot create directory $dir: $@", __FILE__, __LINE__) if ($@);
+	_err("Cannot create directory $dir: $@", __FILE__, __LINE__) if ($@);
 
 	return;
 }
@@ -233,7 +233,7 @@ sub util_cp
 
 	foreach my $src (@sources) {
 		copy($src, $dest) ||
-			err("Cannot copy $src to $dest: $!.", __FILE__, __LINE__);
+			_err("Cannot copy $src to $dest: $!.", __FILE__, __LINE__);
 	}
 
 	return;
@@ -278,7 +278,7 @@ sub util_readFile
 	my ($fh, $line);
 
 	open($fh, "<" ,"$file") ||
-		err("Cannot open file $file: $!", __FILE__, __LINE__);
+		_err("Cannot open file $file: $!", __FILE__, __LINE__);
 
 	push(@$out_ref, <$fh>);
 
@@ -303,7 +303,7 @@ sub util_writeFile
 	my ($fh);
 
 	open($fh, ">", "$file") ||
-		err("Cannot open $file for writing: $!", __FILE__, __LINE__);
+		_err("Cannot open $file for writing: $!", __FILE__, __LINE__);
 
 	print $fh $_ for (@$arr_ref);
 
@@ -329,7 +329,7 @@ sub util_readDir
 	my ($dh, $file);
 
 	opendir($dh, $dir) ||
-		err("Cannot open directory $dir: $!", __FILE__, __LINE__);
+		_err("Cannot open directory $dir: $!", __FILE__, __LINE__);
 
 	while ($file = readdir $dh) {
 		# skip dotfiles
@@ -426,7 +426,7 @@ sub dbg
 # return:
 #  - none
 #
-sub err
+sub _err
 {
 	my ($msg, $file, $line) = @_;
 	print STDERR "[ERROR $file:$line]: $msg\n";
@@ -445,7 +445,7 @@ sub err
 # return:
 #  - none
 #
-sub warning
+sub _warn
 {
 	my ($msg, $file, $line) = @_;
 	print STDERR "[WARNING $file:$line]: $msg\n";
@@ -467,7 +467,7 @@ sub warning
 sub CST_error {
 	my ($level, $mess, $help, $line, $file) = @_;
 
-	err($mess."\nSuggested help: ".$help, $line, $file);
+	_err($mess."\nSuggested help: ".$help, $line, $file);
 
 	return;
 }

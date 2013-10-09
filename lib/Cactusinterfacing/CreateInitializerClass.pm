@@ -16,7 +16,7 @@ use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
 use Cactusinterfacing::Schedule qw(getInitFunction);
 use Cactusinterfacing::Interface qw(getInterfaceVars);
-use Cactusinterfacing::Utils qw(util_indent err);
+use Cactusinterfacing::Utils qw(util_indent _err);
 use Cactusinterfacing::Libgeodecomp qw(getCoord getGFIndex);
 use Cactusinterfacing::ThornList qw(isInherit isFriend);
 
@@ -441,7 +441,7 @@ sub preCheck
 	# else a initializer can't init the cells variables
 	unless (isInherit($thorninfo_ref, $init_ar, $cell_ar) ||
 		isFriend($thorninfo_ref, $init_ar, $cell_ar)) {
-		err("Init Thorn and Evol Thorn do not share same variables!",
+		_err("Init Thorn and Evol Thorn do not share same variables!",
 			__FILE__, __LINE__);
 	}
 

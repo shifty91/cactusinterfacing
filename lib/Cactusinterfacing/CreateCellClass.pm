@@ -12,7 +12,7 @@ use warnings;
 use Exporter 'import';
 use Data::Dumper;
 use Cactusinterfacing::Config qw($tab);
-use Cactusinterfacing::Utils qw(util_indent util_input err warning);
+use Cactusinterfacing::Utils qw(util_indent util_input _err _warn);
 use Cactusinterfacing::Schedule qw(getEvolFunction);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
@@ -56,11 +56,11 @@ sub getDimension
 	if ($dim == -1) {
 		$dim = util_input("Could not determine the dimension of Cactus Thorn. ".
 						  "Please specify");
-		err("That is not a valid dimension!", __FILE__, __LINE__)
+		_err("That is not a valid dimension!", __FILE__, __LINE__)
 			if ($dim !~ /\d/ || $dim <= 0);
 	}
 	if ($dim > 4) {
-		err("The Dimension of $dim is too big for LibGeoDecomp!",
+		_err("The Dimension of $dim is too big for LibGeoDecomp!",
 			__FILE__, __LINE__);
 	}
 
@@ -121,7 +121,7 @@ sub buildSpecialMacros
 		push(@$undef_ref, "#undef CCTK_VECTGFINDEX4D\n");
 	} else {
 		# This should never happen, since dim is checked by getDimension().
-		err("Dimension does not fit!", __FILE__, __LINE__);
+		_err("Dimension does not fit!", __FILE__, __LINE__);
 	}
 
 	return;
@@ -330,7 +330,7 @@ sub adjustUpdateLine
 	#  - the last will be: for (int x = 0; x < indexEnd - *indexOld; ++x)
 	@blocks = $codestr =~ /((?:for\s*\([\w\s()+\-*\/=<>;,\[\]]*\)\s*\{\s*){$dim})/g;
 	unless (@blocks) {
-		warning("Could not adjust loop indices.\n  -> You propably want to adjust the".
+		_warn("Could not adjust loop indices.\n  -> You propably want to adjust the".
 				" code on your own.", __FILE__, __LINE__);
 		goto out;
 	}

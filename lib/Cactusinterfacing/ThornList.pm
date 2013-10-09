@@ -12,7 +12,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Exporter 'import';
-use Cactusinterfacing::Utils qw(util_readFile err warning);
+use Cactusinterfacing::Utils qw(util_readFile _err _warn);
 
 # export
 our @EXPORT_OK = qw(parseThornList getInherits getFriends isInherit isFriend);
@@ -191,7 +191,7 @@ sub getThorns
 			s/\s//g for @options;
 			$info_ref->{$1} = \@options;
 		} else {
-			err("Syntax error in $configdir/ThornList", __FILE__, __LINE__);
+			_err("Syntax error in $configdir/ThornList", __FILE__, __LINE__);
 		}
 	}
 
@@ -236,7 +236,7 @@ sub getOptions
 
 	# perform some checks
 	if ($option_ref->{"io_iso"}) {
-		#warning("IsoSurfacer IO Method is not supported: using BOVWriter instead!",
+		#_warn("IsoSurfacer IO Method is not supported: using BOVWriter instead!",
 		#		__FILE__, __LINE__);
 		$option_ref->{"io_hdf5"} = 1;
 	}

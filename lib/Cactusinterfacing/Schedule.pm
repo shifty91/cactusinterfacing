@@ -12,7 +12,7 @@ use warnings;
 use Exporter 'import';
 use Data::Dumper;
 use Cactusinterfacing::Utils qw(read_file util_arrayToHash util_getFunction
-								util_indent warning util_choose);
+								util_indent _warn util_choose);
 use Cactusinterfacing::Make qw(getSources);
 use Cactusinterfacing::ScheduleParser qw(parse_schedule_ccl);
 
@@ -141,7 +141,7 @@ sub getFunctionAt
 
 	# check if we found an appropriate function
 	if ($nfuncs <= 0) {
-		warning("No function found at \U$timestep\E Timestep.", __FILE__,
+		_warn("No function found at \U$timestep\E Timestep.", __FILE__,
 				__LINE__);
 		push(@func, "/** No function found at \U$timestep\E **/");
 		goto out;
@@ -160,7 +160,7 @@ sub getFunctionAt
 
 	# check if some sources where found
 	if (@sources == 0) {
-		warning("Could not find any source files. Check your make.code.defn.",
+		_warn("Could not find any source files. Check your make.code.defn.",
 			__FILE__, __LINE__);
 		push(@func, "/** No sources found! **/");
 		goto out;
@@ -175,7 +175,7 @@ sub getFunctionAt
 
 	# at this point the scheduled function could not be found in
 	# any source file
-	warning("The scheduled function could not be found. Check your make.code.defn.",
+	_warn("The scheduled function could not be found. Check your make.code.defn.",
 			__FILE__, __LINE__);
 	push(@func, "/** No function found at \U$timestep\E **/");
 

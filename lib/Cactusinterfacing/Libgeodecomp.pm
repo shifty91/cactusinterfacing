@@ -13,7 +13,7 @@ use warnings;
 use Exporter 'import';
 use Data::Dumper;
 use Cactusinterfacing::Config qw($debug);
-use Cactusinterfacing::Utils qw(warning);
+use Cactusinterfacing::Utils qw(_warn);
 
 # exports
 our @EXPORT_OK = qw(generateSoAMacro getCoord getGFIndex getCoordZero
@@ -133,14 +133,14 @@ sub getCoord
 
 	# test dimension
 	if ($dim <= 0) {
-		warning("Dimension ($dim) in getCoord() is not valid",
+		_warn("Dimension ($dim) in getCoord() is not valid",
 				__FILE__, __LINE__);
 		goto out;
 	}
 
 	# test length of arr
 	if (@$arr_ref != $dim) {
-		warning("Dimension does not fit to number of arguments in getCoord()",
+		_warn("Dimension does not fit to number of arguments in getCoord()",
 				__FILE__, __LINE__);
 		goto out;
 	}
@@ -155,7 +155,7 @@ sub getCoord
 		$ret .= join(",", @$arr_ref);
 		$ret .= ">()";
 	} else {
-		warning("No valid coordinate type given in getCoord()",
+		_warn("No valid coordinate type given in getCoord()",
 				__FILE__, __LINE__);
 		goto out;
 	}
@@ -230,14 +230,14 @@ sub getGFIndex
 
 	# test dimension
 	if ($dim <= 0) {
-		warning("Dimension ($dim) in getCoord() is not valid",
+		_warn("Dimension ($dim) in getCoord() is not valid",
 				__FILE__, __LINE__);
 		goto out;
 	}
 
 	# test length of arr
 	if (@$arr_ref != $dim) {
-		warning("Dimension does not fit to number of arguments in getCoord()",
+		_warn("Dimension does not fit to number of arguments in getCoord()",
 				__FILE__, __LINE__);
 		goto out;
 	}

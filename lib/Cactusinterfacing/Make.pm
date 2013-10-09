@@ -13,7 +13,7 @@ use warnings;
 use Exporter 'import';
 use Data::Dumper;
 use Cactusinterfacing::Config;
-use Cactusinterfacing::Utils qw(util_readFile warning);
+use Cactusinterfacing::Utils qw(util_readFile _warn);
 
 # exports
 our @EXPORT_OK = qw(createLibgeodecompMakefile getSources);
@@ -48,7 +48,7 @@ sub getSources
 		$_ = $dir."/".$_ for (@tmp);
 		push(@$sources_ref, @tmp);
 	} else {
-		warning("No source files found in $dir/make.code.defn", __FILE__,
+		_warn("No source files found in $dir/make.code.defn", __FILE__,
 				__LINE__);
 	}
 
