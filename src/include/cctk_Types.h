@@ -2,7 +2,7 @@
 #define _CCTK_TYPES_H_
 
 #include <complex>
-#include <cstring>
+#include <string>
 #include <stdint.h>
 
 /*

@@ -2,7 +2,7 @@
 #define _CACTUSGRID_H_
 
 #include <iostream>
-#include <cstring>
+#include <string>
 #include "cctk_Types.h"
 
 class CactusGrid
