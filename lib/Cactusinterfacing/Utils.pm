@@ -73,8 +73,14 @@ sub util_getFunction
 		chomp $line;
 
 		# search for start
+		if (!$found && $line =~ /$name\s*\([\w, :&\*]*\)\s*\{/s) {
+			$found = 1;
+			$level++;
+			next;
+		}
 		if (!$found && $line =~ /$name\s*\([\w, :&\*]*\)/s) {
 			$found = 1;
+			next;
 		}
 
 		# increase/decrease level
@@ -83,7 +89,7 @@ sub util_getFunction
 		}
 		if ($found && $line =~ /\}/) {
 			$level--;
-			if ($level <= 0) {
+			if (!$level) {
 				last;
 			}
 		}
