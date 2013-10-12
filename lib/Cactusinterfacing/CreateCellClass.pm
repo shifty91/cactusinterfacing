@@ -387,6 +387,7 @@ sub buildCellHeader
 	push(@$out_ref, "#define _CELL_H_\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "#include <libgeodecomp.h>\n");
+	push(@$out_ref, "#include <cmath>\n");
 	push(@$out_ref, "#include \"cctk.h\"\n");
 	push(@$out_ref, "#include \"cctk_$val_ref->{\"class_name\"}.h\"\n");
 	push(@$out_ref, "\n");

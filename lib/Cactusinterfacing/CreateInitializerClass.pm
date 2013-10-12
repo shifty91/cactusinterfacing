@@ -333,6 +333,7 @@ sub buildInitHeader
 	push(@$out_ref, "#define _INIT_H_\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "#include <libgeodecomp.h>\n");
+	push(@$out_ref, "#include <cmath>\n");
 	push(@$out_ref, "#include \"cctk.h\"\n");
 	push(@$out_ref, "#include \"cell.h\"\n");
 	push(@$out_ref, "\n");
