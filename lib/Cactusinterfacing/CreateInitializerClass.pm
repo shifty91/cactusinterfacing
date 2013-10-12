@@ -47,6 +47,10 @@ sub buildWriteMember
 		$vtype      = $inf_ref->{$group}{"vtype"};
 		$timelevels = $inf_ref->{$group}{"timelevels"};
 
+		# skip arrays and scalars
+		next if ($gtype =~ /^ARRAY$/i);
+		next if ($gtype =~ /^SCALAR$/i);
+
 		for ($i = 0; $i < ($timelevels - 1); ++$i) {
 			foreach my $name (@{$inf_ref->{$group}{"names"}}) {
 				my $var_name = "var_".$name.("_p" x $i);
@@ -88,6 +92,10 @@ sub buildObjectsDecl
 		$gtype      = $inf_ref->{$group}{"gtype"};
 		$vtype      = $inf_ref->{$group}{"vtype"};
 		$timelevels = $inf_ref->{$group}{"timelevels"};
+
+		# skip arrays and scalars
+		next if ($gtype =~ /^ARRAY$/i);
+		next if ($gtype =~ /^SCALAR$/i);
 
 		for ($i = 0; $i < ($timelevels - 1); ++$i) {
 			foreach my $name (@{$inf_ref->{$group}{"names"}}) {

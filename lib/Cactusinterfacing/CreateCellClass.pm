@@ -381,8 +381,6 @@ sub buildCellHeader
 
 	# init
 	$ncellvars = $val_ref->{"cell_params"} eq "" ? 0 : 1;
-	$nprot     = $val_ref->{"inf_vars_prot"} eq "" ? 0 : 1;
-	$npriv     = $val_ref->{"inf_vars_priv"} eq "" ? 0 : 1;
 
 	# all template related code goes into the header
 	push(@$out_ref, "#ifndef _CELL_H_\n");
@@ -418,23 +416,11 @@ sub buildCellHeader
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"update_line\"}");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "$val_ref->{\"inf_vars_pub\"}\n");
+	push(@$out_ref, "$val_ref->{\"inf_vars\"}\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."// cactus grid hierachy\n");
 	push(@$out_ref, $tab."static CactusGrid *cctkGH;\n");
 	push(@$out_ref, "$val_ref->{\"param_def\"}\n");
-	if ($nprot) {
-		push(@$out_ref, "\n");
-		push(@$out_ref, "protected:\n");
-		push(@$out_ref, "$val_ref->{\"inf_vars_prot\"}\n");
-		push(@$out_ref, "\n");
-	}
-	if ($npriv) {
-		push(@$out_ref, "\n");
-		push(@$out_ref, "private:\n");
-		push(@$out_ref, "$val_ref->{\"inf_vars_priv\"}\n");
-		push(@$out_ref, "\n");
-	}
 	push(@$out_ref, "};\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"soa_macro\"}\n");
@@ -492,9 +478,7 @@ sub initValueHash
 	$val_ref->{"cctk_evol_arr"}        = ();
 	$val_ref->{"cctk_evol"}            = "";
 	$val_ref->{"update_line"}          = "";
-	$val_ref->{"inf_vars_pub"}         = "";
-	$val_ref->{"inf_vars_prot"}        = "";
-	$val_ref->{"inf_vars_priv"}        = "";
+	$val_ref->{"inf_vars"}             = "";
 	$val_ref->{"cell_params"}          = "";
 	$val_ref->{"cell_init_params"}     = "";
 	$val_ref->{"soa_macro"}            = "";
@@ -528,9 +512,7 @@ sub initValueHash
 #    - cctk_evol_arr   : array of evol_func
 #    - cctk_evol       : string of evol function
 #    - update_line     : string of update line function
-#    - inf_vars_pub    : public interface variables
-#    - inf_vars_prot   : protected interface variables
-#    - inf_vars_priv   : private interface variables
+#    - inf_vars        : all interface variables definitions
 #    - cell_params     : parameters for constructor
 #    - cell_init_params: init constructor variables
 #    - soa_macro       : string of LibGeoDecomp Struct of Array macro

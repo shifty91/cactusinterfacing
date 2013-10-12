@@ -199,7 +199,8 @@ sub prepareValues
 #
 # Builds interface variables strings, including:
 #  - grid scalars as static vars
-#  - grid functions as member vars in appriorate timelevels
+#  - grid arrays as static arrays
+#  - grid functions as member vars in appropriate timelevels
 #  - constructor definitions
 #
 # param:
@@ -208,71 +209,76 @@ sub prepareValues
 #
 # return:
 #  - none, strings stored into value hash, keys: "cell_params",
-#    "cell_init_params", "inf_vars_pub", "inf_vars_prot",
-#    "inf_vars_priv"
+#    "cell_init_params", "inf_vars"
 #
 sub buildInterfaceStrings
 {
 	my ($inf_ref, $val_ref) = @_;
-	my (@c_vars, @c_init_vars);
-	my (@inf_vars_pub, @inf_vars_prot, @inf_vars_priv);
+	my (@c_vars, @c_init_vars, @inf_vars);
+	my ($gfs_cnt);
+
+	# init
+	$gfs_cnt = 0;
 
 	# build interface variables strings
 	foreach my $group (keys %{$inf_ref}) {
-		my ($i, $ref, $access, $gtype, $vtype, $timelevels, $desc);
+		my ($i, $gtype, $vtype, $timelevels, $desc, $size);
 
 		# init
-		$access     = $inf_ref->{$group}{"access"};
 		$gtype      = $inf_ref->{$group}{"gtype"};
 		$vtype      = $inf_ref->{$group}{"vtype"};
 		$timelevels = $inf_ref->{$group}{"timelevels"};
 		$desc       = $inf_ref->{$group}{"description"};
-
-		# get access
-		$ref = \@inf_vars_pub  if ($access eq "public");
-		$ref = \@inf_vars_prot if ($access eq "protected");
-		$ref = \@inf_vars_priv if ($access eq "private");
+		$size       = $inf_ref->{$group}{"size"};
 
 		# comment which contains the groups description
-		push(@$ref, "// $desc");
+		push(@inf_vars, "// $desc");
 
 		foreach my $name (@{$inf_ref->{$group}{"names"}}) {
 			# scalars become static cell members
 			if ($gtype =~ /^SCALAR$/i) {
 				# cactus SCALARs cannot have timelevels
 				# see cactus reference
-				push(@$ref, "static $vtype var_$name;");
+				push(@inf_vars, "static $vtype var_$name;");
 				next;
 			}
 
-			# grid functions|arrays become normal cell members
-			for ($i = 0; $i < ($timelevels - 1); $i++) {
+			# array become static cell members, too
+			if ($gtype =~ /^ARRAY$/i) {
+				for ($i = 0; $i < $timelevels; ++$i) {
+					my ($past_name);
+
+					$past_name = $name . ("_p" x $i);
+
+					push(@inf_vars, "static $vtype $past_name"."[$size];");
+				}
+				next;
+			}
+
+			# grid functions become normal cell members
+			for ($i = 0; $i < ($timelevels - 1); ++$i) {
 				my ($past_name);
 
 				# build past_name with appending _p and prepend var_
 				$past_name = "var_" . $name . ("_p" x $i);
 
-				push(@$ref, "$vtype $past_name;");
+				push(@inf_vars, "$vtype $past_name;");
 				# for cell member and constructor declaration
 				push(@c_vars, "const $vtype& _$past_name = 0");
 				push(@c_init_vars, "$past_name(_$past_name)");
+				++$gfs_cnt;
 			}
 		}
 	}
 
 	# perform checks whether there are member variables
-	_warn("No member variables found!", __FILE__, __LINE__)
-		if (@inf_vars_pub == 0 && @inf_vars_prot == 0 && @inf_vars_priv == 0);
+	_warn("No member variables found!", __FILE__, __LINE__) unless ($gfs_cnt);
 
 	# indent
-	util_indent(\@inf_vars_pub,  1);
-	util_indent(\@inf_vars_prot, 1);
-	util_indent(\@inf_vars_priv, 1);
+	util_indent(\@inf_vars,  1);
 
 	# final variable declarations/initializiations
-	$val_ref->{"inf_vars_pub"}     = join("\n", @inf_vars_pub);
-	$val_ref->{"inf_vars_prot"}    = join("\n", @inf_vars_prot);
-	$val_ref->{"inf_vars_priv"}    = join("\n", @inf_vars_priv);
+	$val_ref->{"inf_vars"}         = join("\n", @inf_vars);
 	$val_ref->{"cell_params"}      = join(", ", @c_vars);
 	$val_ref->{"cell_init_params"} = join(", ", @c_init_vars);
 
