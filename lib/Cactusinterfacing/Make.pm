@@ -87,11 +87,11 @@ sub createLibgeodecompMakefile
 
 	push(@$out_ref, "RM       = rm\n");
 	push(@$out_ref, "CXX      = $cxx\n");
-	# - ignore some unused variables warnings,
+	# - ignore some unused variables/parameters warnings,
 	# they're caused by some adjustments to the code
 	# - and ignore variadic macros warning, only in c++11 its standard
 	# - at this stage always compile with DEBUG
-	push(@$out_ref, "CXXFLAGS = -pedantic -Wall -Wextra -Wno-unused-variable -Wno-unused-but-set-variable -Wno-variadic-macros -O2 -I./include -DDEBUG\n");
+	push(@$out_ref, "CXXFLAGS = -pedantic -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-variadic-macros -O2 -I./include -DDEBUG\n");
 	# link against libgeodecomp which requires an installation of that library
 	# (to do that build libgeodecomp and run `sudo make install`)
 	# some boost libraries are required, too
