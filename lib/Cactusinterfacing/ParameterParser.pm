@@ -23,6 +23,7 @@
 ##  - added use strict, warnings
 ##  - changed form of eval in EvalExpression
 ##  - removed unused variables $data and $message in parse_param_ccl
+##  - removing leading and trailing " in REAL ranges
 ##
 
 package Cactusinterfacing::ParameterParser;
@@ -683,6 +684,9 @@ sub CheckParameterDefault
 		$nranges = $parameter_db{"\U$thorn $variable\E ranges"};
 		for ($i = 1 ; $i <= $nranges ; $i++) {
 			$range = $parameter_db{"\U$thorn $variable\E range $i range"};
+			# strip leading and trailing "
+			$range =~ s/^\s*"//g;
+			$range =~ s/\s*"$//g;
 			$range =~ /^([\(]?)([\s\*0-9\.eE+-]*):([\s\*0-9\.eE+-]*)([\)]?)/;
 			$lower_bounds_excluded = $1 eq '(';
 			$min                   = $2;
