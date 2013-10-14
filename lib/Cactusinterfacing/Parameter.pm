@@ -171,8 +171,14 @@ sub buildParameterStrings
 sub generateParameterMacro
 {
 	my ($par_ref, $thorn, $impl, $class, $out_ref) = @_;
+	my ($macro_name);
 
-	push(@$out_ref, "#define SETUP\U$class\EPARAMETERS \\\n");
+	# build name of macro
+	$macro_name = $class;
+	$macro_name =~ s/_//g;
+	$macro_name = "_SETUP_\U$macro_name\E_PARAMETERS";
+
+	push(@$out_ref, "#define $macro_name \\\n");
 	push(@$out_ref, $tab."do { \\\n");
 
 	foreach my $name (keys %{$par_ref}) {
