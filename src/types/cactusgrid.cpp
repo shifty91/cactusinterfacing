@@ -89,6 +89,8 @@ CactusGrid& CactusGrid::operator= (const CactusGrid& rhs)
 
 #ifdef DEBUG
 
+#include <iostream>
+
 #define PRINTPAR(name)										\
 	do {													\
 		std::cout << #name "=" << m_ ## name << std::endl;	\

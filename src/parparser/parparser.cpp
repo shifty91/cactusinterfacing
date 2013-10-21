@@ -1,5 +1,13 @@
 #include "parparser.h"
 
+#include <fstream>
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
+#include <cmath>
+#include "cell.h"
+#include "init.h"
+#include "parameter.h"			// contains parsed parameter descriptions
+
 /**
  * Checks whether an parameter is given and
  * sets it into variable toSet in correct type.

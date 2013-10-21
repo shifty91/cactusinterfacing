@@ -1,19 +1,12 @@
 #ifndef _PARPARSER_H_
 #define _PARPARSER_H_
 
-#include <iostream>
-#include <fstream>
+#include <stdexcept>
 #include <sstream>
 #include <string>
-#include <stdexcept>
 #include <map>
-#include <cmath>
-#include <boost/regex.hpp>
-#include <boost/algorithm/string.hpp>
-#include "cell.h"
-#include "init.h"
+#include "cctk_Types.h"			// cactus data types like CCTK_REAL
 #include "cactusgrid.h"			// cactusgrid to setup
-#include "parameter.h"			// contains parsed parameter descriptions
 
 class ParParser
 {

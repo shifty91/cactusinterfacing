@@ -1,7 +1,6 @@
 #ifndef _CACTUSGRID_H_
 #define _CACTUSGRID_H_
 
-#include <iostream>
 #include <string>
 #include "cctk_Types.h"
 
