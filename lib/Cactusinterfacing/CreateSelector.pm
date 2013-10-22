@@ -128,7 +128,7 @@ sub createSelectors
 	push(@$out_ref, "#ifndef _\U$class\E_H_\n");
 	push(@$out_ref, "#define _\U$class\E_H_\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "#include <cstring>\n");
+	push(@$out_ref, "#include <string>\n");
 	push(@$out_ref, "#include \"cell.h\"\n");
 	push(@$out_ref, "#include \"cctk_Types.h\"\n");
 	push(@$out_ref, "\n");
