@@ -38,7 +38,7 @@ our @EXPORT_OK = qw(createLibgeodecompApp);
 #
 sub createMain
 {
-	my ($opt_ref, $init_class, $cell_class, $out_ref) = @_;
+	my ($opt_ref, $sel_ref, $init_class, $cell_class, $out_ref) = @_;
 	my ($mpi);
 
 	# init
@@ -47,6 +47,8 @@ sub createMain
 	# build main.cpp
 	push(@$out_ref, "#include <iostream>\n");
 	push(@$out_ref, "#include <libgeodecomp.h>\n");
+	push(@$out_ref, "#include <libgeodecomp/io/bovwriter.h>\n");
+	push(@$out_ref, "#include <libgeodecomp/io/serialbovwriter.h>\n");
 	push(@$out_ref, "#include \"cell.h\"\n");
 	push(@$out_ref, "#include \"init.h\"\n");
 	push(@$out_ref, "#include \"parparser.h\"\n");
@@ -75,7 +77,7 @@ sub createMain
 	push(@$out_ref, $tab."return;\n");
 	push(@$out_ref, "}\n");
 	push(@$out_ref, "\n");
-	createRunSimulation($opt_ref, $init_class, $cell_class, $out_ref);
+	createRunSimulation($opt_ref, $sel_ref, $init_class, $cell_class, $out_ref);
 	push(@$out_ref, "\n");
 	push(@$out_ref, "int main(int argc, char** argv)\n");
 	push(@$out_ref, "{\n");
@@ -114,7 +116,7 @@ sub createMain
 #
 sub createRunSimulation
 {
-	my ($opt_ref, $init_class, $cell_class, $out_ref) = @_;
+	my ($opt_ref, $sel_ref, $init_class, $cell_class, $out_ref) = @_;
 	my ($mpi);
 
 	# init
@@ -127,12 +129,31 @@ sub createRunSimulation
 	push(@$out_ref, $tab."$init_class *init = new $init_class();\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."SerialSimulator<$cell_class> sim(init);\n");
+
+	# first add a tracing writer for every simulation
 	if (!$mpi) {
 		push(@$out_ref, $tab."sim.addWriter(new TracingWriter<$cell_class>(outputFrequency, init->maxSteps()));\n");
 	} else {
 		push(@$out_ref, $tab."if (MPILayer().rank() == 0) {\n");
 		push(@$out_ref, $tab.$tab."sim.addWriter(new TracingWriter<$cell_class>(outputFrequency, init->maxSteps()));\n");
 		push(@$out_ref, $tab."}\n");
+	}
+	# as a standard add a bov writer for each variable group
+	for my $bovwriter (keys %{$sel_ref->{"bovwriter"}}) {
+		my ($writer, $group, $class);
+
+		# init
+		$group  = $sel_ref->{"bovwriter"}{$bovwriter}{"group"};
+		$class  = $bovwriter;
+
+		# for mpi using a bov writer else a serial bov writer
+		if ($mpi) {
+			$writer = $tab."sim.addWriter(new BOVWriter<$cell_class, $class>(\"output/$group\", outputFrequency));";
+		} else {
+			$writer = $tab."sim.addWriter(new SerialBOVWriter<$cell_class, $class>(\"output/$group\", outputFrequency));";
+		}
+
+		push(@$out_ref, $writer."\n");
 	}
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."sim.run();\n");
@@ -226,7 +247,7 @@ sub setupIncludeDir
 	$init_name       = "cctk_".$init_ref->{"class_name"}.".h";
 	$outputdir      .= "/include";
 
-	# mkdir include
+	# create directory for cctk_ header files
 	util_mkdir($outputdir) unless (-d $outputdir);
 
 	# generate header
@@ -315,8 +336,10 @@ sub createLibgeodecompApp
 	$outputdir = $config_ref->{"outputdir"}."/".$config_ref->{"config"};
 	parseThornList($config_ref, \%thorninfo, \%option);
 
-	# mkdir output directory
+	# create directory where to store code
 	util_mkdir($outputdir) unless (-d $outputdir);
+	# create directory for LibGeoDecomp's writers
+	util_mkdir($outputdir."/output") unless (-d $outputdir."/output");
 
 	# gen Makefile and write
 	createLibgeodecompMakefile($config_ref, \%option, \@make);
@@ -332,7 +355,7 @@ sub createLibgeodecompApp
 	$cell_class = $cell{"class_name"};
 
 	# build main() and parameter header
-	createMain(\%option, $init_class, $cell_class, \@main);
+	createMain(\%option, \%selector, ,$init_class, $cell_class, \@main);
 	createParameterHeader("parameter", \%init, \%cell, \@paramh);
 
 	# write main, cell, init, parameter, selectors
