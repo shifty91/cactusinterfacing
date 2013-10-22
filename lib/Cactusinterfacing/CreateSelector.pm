@@ -133,11 +133,14 @@ sub createSelectors
 	push(@$out_ref, "#include \"cctk_Types.h\"\n");
 	push(@$out_ref, "\n");
 
-	for my $group (keys %$inf_ref) {
+	for my $group (keys %{$inf_ref}) {
 		my (@names, $gtype, $vtype);
+
+		# init
 		@names = @{$inf_ref->{$group}{"names"}};
 		$gtype = $inf_ref->{$group}{"gtype"};
 		$vtype = $inf_ref->{$group}{"vtype"};
+
 		# create selectors only for gridfunctions
 		next if ($gtype =~ /^SCALAR$/i);
 		next if ($gtype =~ /^ARRAY$/i);

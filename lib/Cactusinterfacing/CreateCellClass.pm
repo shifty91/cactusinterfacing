@@ -43,7 +43,7 @@ sub getDimension
 	$dim = -1;
 
 	# look for dimensions and find maximum
-	foreach my $key (keys %$inf_ref) {
+	foreach my $key (keys %{$inf_ref}) {
 		next if ($inf_ref->{$key}{"gtype"} =~ /^SCALAR$/i);
 		next if ($inf_ref->{$key}{"gtype"} =~ /^ARRAY$/i);
 
