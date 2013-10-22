@@ -19,7 +19,6 @@ use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 use Cactusinterfacing::Interface qw(getInterfaceVars buildInterfaceStrings);
 use Cactusinterfacing::Libgeodecomp qw(getCoordZero generateSoAMacro
 									   getGFIndexFirst getFixedCoordZero);
-use Cactusinterfacing::CreateSelector qw(createSelectors);
 use Cactusinterfacing::CreateStaticDataClass qw(generateStaticDataClass);
 
 # exports
@@ -522,7 +521,7 @@ sub createCellClass
 {
 	my ($config_ref, $thorninfo_ref, $out_ref) = @_;
 	my ($thorndir, $thorn, $arrangement, $impl, $class);
-	my (@cellh, @cellcpp, @selectors);
+	my (@cellh, @cellcpp);
 	my (@param_macro, @inf_macros, @inf_macros_undef, @special_macros, @special_macros_undef);
 	my (%inf_data, %param_data, %values);
 
@@ -565,14 +564,10 @@ sub createCellClass
 	buildCellHeader(\%values, \@cellh);
 	buildCellCpp(\%values, \@cellcpp);
 
-	# build selectors for LibGeoDecomp writer
-	createSelectors(\%inf_data, $class, \@selectors);
-
 	# prepare hash
 	$out_ref->{"cellh"}                 = \@cellh;
 	$out_ref->{"cellcpp"}               = \@cellcpp;
 	$out_ref->{"param_macro"}           = \@param_macro;
-	$out_ref->{"selectors"}             = \@selectors;
 	$out_ref->{"inf_macros"}            = \@inf_macros;
 	$out_ref->{"inf_macros_undef"}      = \@inf_macros_undef;
 	$out_ref->{"special_macros"}        = \@special_macros;

@@ -2,8 +2,8 @@
 ##
 ## CreateSelector.pm
 ##
-## Contains routines to create selector classes
-## for LibGeoDecomp Writers.
+## Contains routines to create selector classes for LibGeoDecomp Writers.
+## Currently ASCII and BOV writer selectors are supported.
 ##
 
 package Cactusinterfacing::CreateSelector;
@@ -17,55 +17,68 @@ use Cactusinterfacing::Config qw($tab);
 our @EXPORT_OK = qw(createSelectors);
 
 #
-# Add a Ascii Selector class for one variable of
+# Builds a ASCII Selector class for one variable of
 # grid functions.
 #
 # param:
 #  - names   : name of the variable
 #  - type    : type of variable
 #  - cellname: name of cell class
-#  - out_ref : ref to array where ascii class will be stored
+#  - out_ref : ref to asciiwriter hash
 #
 # return:
-#  - none, resulting class will be stored in out_ref
+#  - none, resulting class and the name of the variable will be stored in out_ref
+#    key is the name of the class (e.g. like AsciiPHISelector)
 #
-sub addAsciiSelector
+sub buildAsciiSelector
 {
 	my ($name, $type, $cellname, $out_ref) = @_;
+	my ($class, @outdata);
 
-	push(@$out_ref, "class Ascii\U$name\ESelector\n");
-	push(@$out_ref, "{\n");
-	push(@$out_ref, "public:\n");
-	push(@$out_ref, $tab."$type operator()(const $cellname& cell) const\n");
-	push(@$out_ref, $tab."{\n");
-	push(@$out_ref, $tab.$tab."return cell.var_$name;\n");
-	push(@$out_ref, $tab."}\n");
-	push(@$out_ref, "};\n");
+	# init
+	$class = "Ascii\U$name\ESelector";
+
+	# build ascii selector class
+	push(@outdata, "class $class\n");
+	push(@outdata, "{\n");
+	push(@outdata, "public:\n");
+	push(@outdata, $tab."$type operator()(const $cellname& cell) const\n");
+	push(@outdata, $tab."{\n");
+	push(@outdata, $tab.$tab."return cell.var_$name;\n");
+	push(@outdata, $tab."}\n");
+	push(@outdata, "};\n");
+
+	# save back data and name of the variable
+	$out_ref->{$class}{"data"}     = \@outdata;
+	$out_ref->{$class}{"var_name"} = $name;
 
 	return;
 }
 
 #
-# Add a Bov Selector class for one group of
-# grid functions.
+# Builds a BOV Selector class for one group of
+# grid functions by combining them.
 #
 # param:
 #  - names_ref: ref to names array
+#  - group    : name of the variable group
 #  - type     : type of group
 #  - cellname : name of cell class
-#  - out_ref  : ref to array where bov class will be stored
+#  - out_ref  : ref to bovwriter hash
 #
 # return:
-#  - none, resulting class will be stored in out_ref
+#  - none, resulting class and name of the group  will be stored in out_ref,
+#    key is the name of class (e.g. like BovPHISelector)
 #
-sub addBovSelector
+sub buildBovSelector
 {
-	my ($names_ref, $type, $cellname, $out_ref) = @_;
-	my ($namestr, $namescnt, $i, $datatype);
+	my ($names_ref, $group, $type, $cellname, $out_ref) = @_;
+	my ($namescnt, $i, $datatype);
+	my ($class, @outdata);
 
 	# init
-	$namestr  = join("", @$names_ref);
-	$namescnt = scalar @$names_ref;
+	$namescnt = scalar @{$names_ref};
+	$class    = "Bov\U$group\ESelector";
 	if ($type eq "CCTK_REAL") {
 		$datatype = "DOUBLE";
 	} elsif ($type eq "CCTK_INT") {
@@ -76,31 +89,79 @@ sub addBovSelector
 		$datatype = "DOUBLE";
 	}
 
-	push(@$out_ref, "class Bov\U$namestr\ESelector\n");
-	push(@$out_ref, "{\n");
-	push(@$out_ref, "public:\n");
-	push(@$out_ref, $tab."typedef $type VariableType;\n");
-	push(@$out_ref, $tab."static std::string varName()\n");
-	push(@$out_ref, $tab."{\n");
-	push(@$out_ref, $tab.$tab."return \"$namestr\";\n");
-	push(@$out_ref, $tab."}\n");
-	push(@$out_ref, $tab."static std::string dataFormat()\n");
-	push(@$out_ref, $tab."{\n");
-	push(@$out_ref, $tab.$tab."return \"$datatype\";\n");
-	push(@$out_ref, $tab."}\n");
-	push(@$out_ref, $tab."static int dataComponents()\n");
-	push(@$out_ref, $tab."{\n");
-	push(@$out_ref, $tab.$tab."return $namescnt;\n");
-	push(@$out_ref, $tab."}\n");
-	push(@$out_ref, $tab."void operator()(const $cellname& cell, $type *storage) const\n");
-	push(@$out_ref, $tab."{\n");
+	push(@outdata, "class $class\n");
+	push(@outdata, "{\n");
+	push(@outdata, "public:\n");
+	push(@outdata, $tab."typedef $type VariableType;\n");
+	push(@outdata, $tab."static std::string varName()\n");
+	push(@outdata, $tab."{\n");
+	push(@outdata, $tab.$tab."return \"$group\";\n");
+	push(@outdata, $tab."}\n");
+	push(@outdata, $tab."static std::string dataFormat()\n");
+	push(@outdata, $tab."{\n");
+	push(@outdata, $tab.$tab."return \"$datatype\";\n");
+	push(@outdata, $tab."}\n");
+	push(@outdata, $tab."static int dataComponents()\n");
+	push(@outdata, $tab."{\n");
+	push(@outdata, $tab.$tab."return $namescnt;\n");
+	push(@outdata, $tab."}\n");
+	push(@outdata, $tab."void operator()(const $cellname& cell, $type *storage) const\n");
+	push(@outdata, $tab."{\n");
 	for ($i = 0; $i < $namescnt; $i++) {
 		my ($name);
 		$name = "var_".$names_ref->[$i];
-		push(@$out_ref, $tab.$tab."storage[$i] = cell.$name;\n");
+		push(@outdata, $tab.$tab."storage[$i] = cell.$name;\n");
 	}
-	push(@$out_ref, $tab."}\n");
-	push(@$out_ref, "};\n");
+	push(@outdata, $tab."}\n");
+	push(@outdata, "};\n");
+
+	# save back, data and name of group
+	$out_ref->{$class}{"data"}  = \@outdata;
+	$out_ref->{$class}{"group"} = $group;
+
+	return;
+}
+
+#
+# Builds selectors.h header file which contains all selector classes
+# for LibGeoDecomp's writers.
+#
+# param:
+#  - bov_ref  : ref to bovwriters hash
+#  - ascii_ref: ref to asciiwriters hash
+#  - out_ref  : ref to array where to store the lines of selectors.h
+#
+# return:
+#  - none, selectors.h will be stored in out_ref
+#
+sub buildHeader
+{
+	my ($bov_ref, $ascii_ref, $out_ref) = @_;
+	my ($name);
+
+	# init
+	$name = "selectors";
+
+	# build selectors.h containing all created selector classes for writers
+	push(@$out_ref, "#ifndef _\U$name\E_H_\n");
+	push(@$out_ref, "#define _\U$name\E_H_\n");
+	push(@$out_ref, "\n");
+	push(@$out_ref, "#include <string>\n");
+	push(@$out_ref, "#include \"cell.h\"\n");
+	push(@$out_ref, "#include \"cctk_Types.h\"\n");
+	push(@$out_ref, "\n");
+
+	for my $asciiwriter (keys %{$ascii_ref}) {
+		push(@$out_ref, $_) for (@{$ascii_ref->{$asciiwriter}{"data"}});
+		push(@$out_ref, "\n");
+	}
+
+	for my $bovwriter (keys %{$bov_ref}) {
+		push(@$out_ref, $_) for (@{$bov_ref->{$bovwriter}{"data"}});
+		push(@$out_ref, "\n");
+	}
+
+	push(@$out_ref, "#endif /* _\U$name\E_H_ */\n");
 
 	return;
 }
@@ -120,19 +181,9 @@ sub addBovSelector
 sub createSelectors
 {
 	my ($inf_ref, $cellname, $out_ref) = @_;
-	my ($class);
+	my (@header, %bovwriter, %asciiwriter);
 
-	# init
-	$class = "selectors";
-
-	push(@$out_ref, "#ifndef _\U$class\E_H_\n");
-	push(@$out_ref, "#define _\U$class\E_H_\n");
-	push(@$out_ref, "\n");
-	push(@$out_ref, "#include <string>\n");
-	push(@$out_ref, "#include \"cell.h\"\n");
-	push(@$out_ref, "#include \"cctk_Types.h\"\n");
-	push(@$out_ref, "\n");
-
+	# build selectors
 	for my $group (keys %{$inf_ref}) {
 		my (@names, $gtype, $vtype);
 
@@ -146,15 +197,18 @@ sub createSelectors
 		next if ($gtype =~ /^ARRAY$/i);
 
 		foreach my $name (@names) {
-			addAsciiSelector($name, $vtype, $cellname, $out_ref);
-			push(@$out_ref, "\n");
+			buildAsciiSelector($name, $vtype, $cellname, \%asciiwriter);
 		}
-		addBovSelector(\@names, $vtype, $cellname, $out_ref);
-		push(@$out_ref, "\n");
+		buildBovSelector(\@names, $group, $vtype, $cellname, \%bovwriter);
 	}
 
-	push(@$out_ref, "\n");
-	push(@$out_ref, "#endif /* _\U$class\E_H_ */\n");
+	# build header
+	buildHeader(\%bovwriter, \%asciiwriter, \@header);
+
+	# prepare hash
+	$out_ref->{"selectorh"}   = \@header;
+	$out_ref->{"bovwriter"}   = \%bovwriter;
+	$out_ref->{"asciiwriter"} = \%asciiwriter;
 
 	return;
 }

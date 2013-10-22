@@ -18,6 +18,7 @@ use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir)
 use Cactusinterfacing::Make qw(createLibgeodecompMakefile);
 use Cactusinterfacing::CreateCellClass qw(createCellClass);
 use Cactusinterfacing::CreateInitializerClass qw(createInitializerClass);
+use Cactusinterfacing::CreateSelector qw(createSelectors);
 use Cactusinterfacing::ThornList qw(parseThornList);
 
 # exports
@@ -308,7 +309,7 @@ sub createLibgeodecompApp
 	my ($config_ref) = @_;
 	my ($outputdir, $init_class, $cell_class);
 	my (%option, %thorninfo);
-	my (%cell, %init, @main, @make, @paramh);
+	my (%cell, %init, %selector, @main, @make, @paramh);
 
 	# init
 	$outputdir = $config_ref->{"outputdir"}."/".$config_ref->{"config"};
@@ -321,9 +322,10 @@ sub createLibgeodecompApp
 	createLibgeodecompMakefile($config_ref, \%option, \@make);
 	util_writeFile(\@make, $outputdir."/Makefile");
 
-	# get cell, init
+	# get cell, init, selectors
 	createCellClass($config_ref, \%thorninfo, \%cell);
 	createInitializerClass($config_ref, \%thorninfo, \%cell, \%init);
+	createSelectors($cell{"inf_data"}, $cell{"class_name"}, \%selector);
 
 	# get class names
 	$init_class = $init{"class_name"};
@@ -334,13 +336,13 @@ sub createLibgeodecompApp
 	createParameterHeader("parameter", \%init, \%cell, \@paramh);
 
 	# write main, cell, init, parameter, selectors
-	util_writeFile(\@main,             $outputdir."/main.cpp");
-	util_writeFile(\@paramh,           $outputdir."/parameter.h");
-	util_writeFile($cell{"cellcpp"},   $outputdir."/cell.cpp");
-	util_writeFile($cell{"cellh"},     $outputdir."/cell.h");
-	util_writeFile($init{"initcpp"},   $outputdir."/init.cpp");
-	util_writeFile($init{"inith"},     $outputdir."/init.h");
-	util_writeFile($cell{"selectors"}, $outputdir."/selectors.h");
+	util_writeFile(\@main,                 $outputdir."/main.cpp");
+	util_writeFile(\@paramh,               $outputdir."/parameter.h");
+	util_writeFile($cell{"cellcpp"},       $outputdir."/cell.cpp");
+	util_writeFile($cell{"cellh"},         $outputdir."/cell.h");
+	util_writeFile($init{"initcpp"},       $outputdir."/init.cpp");
+	util_writeFile($init{"inith"},         $outputdir."/init.h");
+	util_writeFile($selector{"selectorh"}, $outputdir."/selectors.h");
 
 	# setup include dir
 	setupIncludeDir(\%init, \%cell, $config_ref, $outputdir);
