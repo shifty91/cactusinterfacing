@@ -79,19 +79,22 @@ sub getSources
 sub createLibgeodecompMakefile
 {
 	my ($config_ref, $opt_ref, $out_ref) = @_;
-	my ($cxx, $name);
+	my ($cxx, $cxxflags, $name);
 
 	# init name and compiler, use mpicxx if mpi is used, g++ is default
 	$name = "cactus_".$config_ref->{"config"};
 	$cxx  = $opt_ref->{"mpi"} ? "mpicxx" : "g++";
+	# ignore some unused variables/parameters warnings,
+	# they're caused by some adjustments to the code
+	$cxxflags  = "-pedantic -Wall -Wextra -Wno-unused-parameter ";
+	$cxxflags .= "-Wno-unused-variable -Wno-unused-but-set-variable ";
+	# at this stage always compile with DEBUG
+	# ignore warnings about variadic macros since they're only standard in c++11
+	$cxxflags .= "-Wno-variadic-macros -O3 -I./include -DDEBUG";
 
 	push(@$out_ref, "RM       = rm\n");
 	push(@$out_ref, "CXX      = $cxx\n");
-	# - ignore some unused variables/parameters warnings,
-	# they're caused by some adjustments to the code
-	# - and ignore variadic macros warning, only in c++11 its standard
-	# - at this stage always compile with DEBUG
-	push(@$out_ref, "CXXFLAGS = -pedantic -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-variadic-macros -O2 -I./include -DDEBUG\n");
+	push(@$out_ref, "CXXFLAGS = $cxxflags\n");
 	# link against libgeodecomp which requires an installation of that library
 	# (to do that build libgeodecomp and run `sudo make install`)
 	# some boost libraries are required, too
