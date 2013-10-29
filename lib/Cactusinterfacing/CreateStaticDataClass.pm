@@ -17,7 +17,7 @@ use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Utils qw(util_indent);
 
 # export
-our @EXPORT_OK = qw(generateStaticDataClass);
+our @EXPORT_OK = qw(createStaticDataClass);
 
 #
 # Builds up parameter strings, including:
@@ -142,8 +142,8 @@ sub buildHeader
 	$class = $val_ref->{"class_name"};
 
 	# build header
-	push(@$out_ref, "#ifndef _\U$class\E_H_\n");
-	push(@$out_ref, "#define _\U$class\E_H_\n");
+	push(@$out_ref, "#ifndef _STATICDATA_H_\n");
+	push(@$out_ref, "#define _STATICDATA_H_\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "#include \"cctk_Types.h\"\n");
 	push(@$out_ref, "\n");
@@ -161,7 +161,7 @@ sub buildHeader
 	push(@$out_ref, "\n");
 	push(@$out_ref, "};\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "#endif /* _\U$class\E_H_ */\n");
+	push(@$out_ref, "#endif /* _STATICDATA_H_ */\n");
 
 	return;
 }
@@ -179,7 +179,7 @@ sub buildHeader
 # return:
 #  - none, resulting file will be stored in out_ref
 #
-sub generateStaticDataClass
+sub createStaticDataClass
 {
 	my ($inf_ref, $par_ref, $class_name, $out_ref) = @_;
 	my (@header, $class, %values);

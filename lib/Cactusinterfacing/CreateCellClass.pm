@@ -19,7 +19,7 @@ use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 use Cactusinterfacing::Interface qw(getInterfaceVars buildInterfaceStrings);
 use Cactusinterfacing::Libgeodecomp qw(getCoordZero generateSoAMacro
 									   getGFIndexFirst getFixedCoordZero);
-use Cactusinterfacing::CreateStaticDataClass qw(generateStaticDataClass);
+use Cactusinterfacing::CreateStaticDataClass qw(createStaticDataClass);
 
 # exports
 our @EXPORT_OK = qw(createCellClass);
@@ -389,6 +389,7 @@ sub buildCellHeader
 	push(@$out_ref, "#include <cmath>\n");
 	push(@$out_ref, "#include \"cctk.h\"\n");
 	push(@$out_ref, "#include \"cctk_$val_ref->{\"class_name\"}.h\"\n");
+	push(@$out_ref, "#include \"staticdata.h\"\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "using namespace LibGeoDecomp;\n");
 	push(@$out_ref, "\n");
@@ -402,7 +403,8 @@ sub buildCellHeader
 	push(@$out_ref, $tab.$tab."public APITraits::HasSoA,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasUpdateLineX,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasStencil<Stencils::Moore<$val_ref->{\"dim\"}, 1> >,\n");
-	push(@$out_ref, $tab.$tab."public APITraits::HasCubeTopology<$val_ref->{\"dim\"}>\n");
+	push(@$out_ref, $tab.$tab."public APITraits::HasCubeTopology<$val_ref->{\"dim\"}>,\n");
+	push(@$out_ref, $tab.$tab."public APITraits::HasStaticData<$val_ref->{\"static_class_name\"}>\n");
 	push(@$out_ref, $tab."{};\n");
 	push(@$out_ref, "\n");
 	# check here if there are cell vars for avoiding build failures
@@ -523,7 +525,7 @@ sub createCellClass
 	my ($thorndir, $thorn, $arrangement, $impl, $class);
 	my (@cellh, @cellcpp);
 	my (@param_macro, @inf_macros, @inf_macros_undef, @special_macros, @special_macros_undef);
-	my (%inf_data, %param_data, %values);
+	my (%inf_data, %param_data, %static, %values);
 
 	# init
 	initValueHash(\%values);
@@ -560,6 +562,11 @@ sub createCellClass
 	# build updateLineX function
 	buildUpdateLineFunction(\%values, \%inf_data);
 
+	# generate a class holding all static data
+	# this is needed for having static data in a LibGeoDecomp cell class
+	createStaticDataClass(\%inf_data, \%param_data, $class, \%static);
+	$values{"static_class_name"} = $static{"class_name"};
+
 	# build final files
 	buildCellHeader(\%values, \@cellh);
 	buildCellCpp(\%values, \@cellcpp);
@@ -575,6 +582,7 @@ sub createCellClass
 	$out_ref->{"class_name"}            = $values{"class_name"};
 	$out_ref->{"dim"}                   = $values{"dim"};
 	$out_ref->{"inf_data"}              = \%inf_data;
+	$out_ref->{"static_data_class"}     = \%static;
 
 	return;
 }

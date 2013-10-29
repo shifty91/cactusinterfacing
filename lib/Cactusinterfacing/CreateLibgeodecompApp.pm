@@ -358,7 +358,7 @@ sub createLibgeodecompApp
 	createMain(\%option, \%selector, ,$init_class, $cell_class, \@main);
 	createParameterHeader("parameter", \%init, \%cell, \@paramh);
 
-	# write main, cell, init, parameter, selectors
+	# write main, cell, init, parameter, selectors and the static data class
 	util_writeFile(\@main,                 $outputdir."/main.cpp");
 	util_writeFile(\@paramh,               $outputdir."/parameter.h");
 	util_writeFile($cell{"cellcpp"},       $outputdir."/cell.cpp");
@@ -366,6 +366,7 @@ sub createLibgeodecompApp
 	util_writeFile($init{"initcpp"},       $outputdir."/init.cpp");
 	util_writeFile($init{"inith"},         $outputdir."/init.h");
 	util_writeFile($selector{"selectorh"}, $outputdir."/selectors.h");
+	util_writeFile($cell{"static_data_class"}{"statich"}, $outputdir."/staticdata.h");
 
 	# setup include dir
 	setupIncludeDir(\%init, \%cell, $config_ref, $outputdir);
