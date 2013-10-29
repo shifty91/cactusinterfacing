@@ -94,6 +94,7 @@ sub createLibgeodecompMakefile
 
 	push(@$out_ref, "RM       = rm\n");
 	push(@$out_ref, "CXX      = $cxx\n");
+	push(@$out_ref, "LD       = $cxx\n");
 	push(@$out_ref, "CXXFLAGS = $cxxflags\n");
 	# link against libgeodecomp which requires an installation of that library
 	# (to do that build libgeodecomp and run `sudo make install`)
@@ -109,7 +110,7 @@ sub createLibgeodecompMakefile
 	push(@$out_ref, "\n");
 	push(@$out_ref, "\$(PROG): \$(OBJECTS)\n");
 	push(@$out_ref, "\t\@echo \"LD\t\t\$@\"\n");
-	push(@$out_ref, "\t\@\$(CXX) -o \$@ \$^ \$(LDFLAGS)\n");
+	push(@$out_ref, "\t\@\$(LD) -o \$@ \$^ \$(LDFLAGS)\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "%.o: %.cpp\n");
 	push(@$out_ref, "\t\@echo \"CXX\t\t\$@\"\n");
