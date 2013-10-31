@@ -123,7 +123,7 @@ sub buildObjectsDecl
 #
 sub buildSpecialMacros
 {
-	my ($val_ref, $out_ref) = @_;
+	my ($val_ref, $cinf_ref, $out_ref) = @_;
 	my ($dim, $coord, $gfindex, $i, $char, @letters);
 
 	# init
@@ -140,6 +140,35 @@ sub buildSpecialMacros
 	push(@$out_ref, "#define $gfindex ($coord".".toIndex(box.dimensions))\n");
 	# FIXME: this shouldn't be needed, but atm there's no other way to do this
 	push(@$out_ref, "#define SQR(X) ((X)*(X))\n");
+	push(@$out_ref, "\n");
+
+	# add variables for cGH
+	# this provides access for the thorn code to all cctk grid hierachie variables
+	push(@$out_ref, "#define cctk_dim cctkGH->cctk_dim()\n");
+	push(@$out_ref, "#define cctk_gsh (cctkGH->cctk_gsh())\n");
+	push(@$out_ref, "#define cctk_lsh (cctkGH->cctk_lsh())\n");
+	push(@$out_ref, "#define cctk_lbnd (cctkGH->cctk_lbnd())\n");
+	push(@$out_ref, "#define cctk_ubnd (cctkGH->cctk_ubnd())\n");
+	push(@$out_ref, "#define cctk_bbox (cctkGH->cctk_bbox())\n");
+	push(@$out_ref, "#define cctk_delta_time cctkGH->cctk_delta_time()\n");
+	push(@$out_ref, "#define cctk_time cctkGH->cctk_time()\n");
+	push(@$out_ref, "#define cctk_delta_space (cctkGH->cctk_delta_space())\n");
+	push(@$out_ref, "#define cctk_origin_space (cctkGH->cctk_origin_space())\n");
+	push(@$out_ref, "#define cctk_levfac (cctkGH->cctk_levfac())\n");
+	push(@$out_ref, "#define cctk_levoff (cctkGH->cctk_levoff())\n");
+	push(@$out_ref, "#define cctk_levoffdenom (cctkGH->cctk_levoffdenom())\n");
+	push(@$out_ref, "#define cctk_nghostzones (cctkGH->cctk_nghostzones())\n");
+	push(@$out_ref, "#define cctk_iteration cctkGH->cctk_iteration()\n");
+	push(@$out_ref, "\n");
+
+	# build init specific macros
+	buildReadMemberMacro($val_ref, $out_ref);
+	push(@$out_ref, "\n");
+	buildWriteMemberMacro($val_ref, $out_ref);
+	push(@$out_ref, "\n");
+	buildWriteMember($val_ref, $cinf_ref, $out_ref);
+	push(@$out_ref, "\n");
+	buildObjectsDecl($val_ref, $cinf_ref);
 
 	return;
 }
@@ -523,7 +552,7 @@ sub createInitializerClass
 	my ($config_ref, $thorninfo_ref, $cell_ref, $out_ref) = @_;
 	my ($init_ar, $cell_ar, $thorndir, $thorn, $arrangement, $impl, $class);
 	my (@inith, @initcpp);
-	my (@param_macro, @read_macro, @write_macro, @write_member, @special_macros);
+	my (@param_macro, @special_macros);
 	my (%inf_data, %param_data, %values);
 
 	# init
@@ -544,18 +573,14 @@ sub createInitializerClass
 
 	# parse param ccl to get parameters
 	getParameters($thorndir, $thorn, \%param_data);
-	buildParameterStrings(\%param_data, $class, \%values);
-	generateParameterMacro(\%param_data, $thorn, $impl, $class, \@param_macro);
+	buildParameterStrings(\%param_data, $class, 1, \%values);
+	generateParameterMacro(\%param_data, $thorn, $impl, $class, "", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_INITIAL-Timestep
 	getInitFunction($thorndir, $thorn, \%values);
 
-	# build init specific macros
-	buildReadMemberMacro(\%values, \@read_macro);
-	buildWriteMemberMacro(\%values, \@write_macro);
-	buildWriteMember(\%values, $cell_ref->{"inf_data"}, \@write_member);
-	buildSpecialMacros(\%values, \@special_macros);
-	buildObjectsDecl(\%values, $cell_ref->{"inf_data"});
+	# build init specific special macros
+	buildSpecialMacros(\%values, $cell_ref->{"inf_data"}, \@special_macros);
 
 	# build grid function
 	buildGridFunction(\%values);
@@ -568,9 +593,6 @@ sub createInitializerClass
 	$out_ref->{"inith"}          = \@inith;
 	$out_ref->{"initcpp"}        = \@initcpp;
 	$out_ref->{"param_macro"}    = \@param_macro;
-	$out_ref->{"read_macro"}     = \@read_macro;
-	$out_ref->{"write_macro"}    = \@write_macro;
-	$out_ref->{"write_member"}   = \@write_member;
 	$out_ref->{"special_macros"} = \@special_macros;
 	$out_ref->{"class_name"}     = $values{"class_name"};
 	$out_ref->{"dim"}            = $values{"dim"};

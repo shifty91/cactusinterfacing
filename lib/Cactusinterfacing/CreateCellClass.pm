@@ -85,7 +85,7 @@ sub getDimension
 #
 sub buildSpecialMacros
 {
-	my ($val_ref, $def_ref, $undef_ref) = @_;
+	my ($val_ref, $inf_ref, $par_ref, $def_ref, $undef_ref) = @_;
 	my ($dim);
 
 	# init
@@ -123,12 +123,84 @@ sub buildSpecialMacros
 		_err("Dimension does not fit!", __FILE__, __LINE__);
 	}
 
+	push(@$def_ref, "\n");
+
+	# add variables for cGH
+	# this provides access for the thorn code to all cctk grid hierachie variables
+	push(@$def_ref, "#define cctk_dim staticData.cctkGH->cctk_dim()\n");
+	push(@$undef_ref, "#undef cctk_dim\n");
+	push(@$def_ref, "#define cctk_gsh (staticData.cctkGH->cctk_gsh())\n");
+	push(@$undef_ref, "#undef cctk_gsh\n");
+	push(@$def_ref, "#define cctk_lsh (staticData.cctkGH->cctk_lsh())\n");
+	push(@$undef_ref, "#undef cctk_lsh\n");
+	push(@$def_ref, "#define cctk_lbnd (staticData.cctkGH->cctk_lbnd())\n");
+	push(@$undef_ref, "#undef cctk_lbnd\n");
+	push(@$def_ref, "#define cctk_ubnd (staticData.cctkGH->cctk_ubnd())\n");
+	push(@$undef_ref, "#undef cctk_ubnd\n");
+	push(@$def_ref, "#define cctk_bbox (staticData.cctkGH->cctk_bbox())\n");
+	push(@$undef_ref, "#undef cctk_bbox\n");
+	push(@$def_ref, "#define cctk_delta_time staticData.cctkGH->cctk_delta_time()\n");
+	push(@$undef_ref, "#undef cctk_delta_time\n");
+	push(@$def_ref, "#define cctk_time staticData.cctkGH->cctk_time()\n");
+	push(@$undef_ref, "#undef cctk_time\n");
+	push(@$def_ref, "#define cctk_delta_space (staticData.cctkGH->cctk_delta_space())\n");
+	push(@$undef_ref, "#undef cctk_delta_space\n");
+	push(@$def_ref, "#define cctk_origin_space (staticData.cctkGH->cctk_origin_space())\n");
+	push(@$undef_ref, "#undef cctk_origin_space\n");
+	push(@$def_ref, "#define cctk_levfac (staticData.cctkGH->cctk_levfac())\n");
+	push(@$undef_ref, "#undef cctk_levfac\n");
+	push(@$def_ref, "#define cctk_levoff (staticData.cctkGH->cctk_levoff())\n");
+	push(@$undef_ref, "#undef cctk_levoff\n");
+	push(@$def_ref, "#define cctk_levoffdenom (staticData.cctkGH->cctk_levoffdenom())\n");
+	push(@$undef_ref, "#undef cctk_levoffdenom\n");
+	push(@$def_ref, "#define cctk_nghostzones (staticData.cctkGH->cctk_nghostzones())\n");
+	push(@$undef_ref, "#undef cctk_nghostzones\n");
+	push(@$def_ref, "#define cctk_iteration staticData.cctkGH->cctk_iteration()\n");
+	push(@$undef_ref, "#undef cctk_iteration\n");
+
+	push(@$def_ref, "\n");
+
+	# build macros for struct of array access
+	buildInfVarMacros($val_ref, $inf_ref, $def_ref, $undef_ref);
+
+	push(@$def_ref, "\n");
+
+	# build parameter macros
+	buildParameterMacros($par_ref, $def_ref, $undef_ref);
+
+	return;
+}
+
+#
+# Build parameter macros. Parameter become static data in a cell classes.
+# Static data is hold in a separate class called "staticData". This is
+# why these macros define parameter names into staticData.name. An example:
+#  - #define bound staticData.bound
+#
+# param:
+#  - par_ref  : ref to parameter hash
+#  - def_ref  : ref to array where defines will be stored
+#  - undef_ref: ref to array where undefines will be stored
+#
+# return:
+#  - none, macros and undefs will be stored in def_ref and undef_ref
+#
+sub buildParameterMacros
+{
+	my ($par_ref, $def_ref, $undef_ref) = @_;
+
+	foreach my $name (keys %{$par_ref}) {
+		# build define and undefines
+		push(@$def_ref,   "#define $name staticData.$name\n");
+		push(@$undef_ref, "#undef $name\n");
+	}
+
 	return;
 }
 
 #
 # Generates macros for LibGeoDecomps variables to have same code
-# as cactus has. An Example:
+# as cactus has. An example:
 #   #define phi     &hoodNew[FixedCoord<0, 0, 0>()].var_phi
 #   #define phi_p   &hoodOld[FixedCoord<0, 0, 0>()].var_phi
 #   #define phi_p_p &hoodOld[FixedCoord<0, 0, 0>()].var_phi_p
@@ -388,16 +460,15 @@ sub buildCellHeader
 	push(@$out_ref, "#include <libgeodecomp.h>\n");
 	push(@$out_ref, "#include <cmath>\n");
 	push(@$out_ref, "#include \"cctk.h\"\n");
-	push(@$out_ref, "#include \"cctk_$val_ref->{\"class_name\"}.h\"\n");
 	push(@$out_ref, "#include \"staticdata.h\"\n");
+	push(@$out_ref, "#include \"cctk_$val_ref->{\"class_name\"}.h\"\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "using namespace LibGeoDecomp;\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "class $val_ref->{\"class_name\"}\n");
 	push(@$out_ref, "{\n");
 	push(@$out_ref, "public:\n");
-	# inherit from Line to use static updateLineX, which should make
-	# things pretty much faster
+	# for cactus code using updateLineX which should things a bit faster
 	push(@$out_ref, $tab."class API :\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasFixedCoordsOnlyUpdate,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasSoA,\n");
@@ -420,9 +491,8 @@ sub buildCellHeader
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"inf_vars\"}\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."// cactus grid hierachy\n");
-	push(@$out_ref, $tab."static CactusGrid *cctkGH;\n");
-	push(@$out_ref, "$val_ref->{\"param_def\"}\n");
+	push(@$out_ref, $tab."// class for static data\n");
+	push(@$out_ref, $tab."static $val_ref->{\"static_class_name\"} staticData;\n");
 	push(@$out_ref, "};\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"soa_macro\"}\n");
@@ -447,13 +517,16 @@ sub buildCellHeader
 sub buildCellCpp
 {
 	my ($val_ref, $out_ref) = @_;
+	my ($static_class, $class);
 
-	# init parameters with default values
-	# and set cctkGH pointer to NULL
+	# init
+	$static_class = $val_ref->{"static_class_name"};
+	$class        = $val_ref->{"class_name"};
+
+	# init staticData of cell class
 	push(@$out_ref, "#include \"cell.h\"\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, $val_ref->{"param_init"}."\n");
-	push(@$out_ref, "CactusGrid* $val_ref->{\"class_name\"}::cctkGH = 0;\n");
+	push(@$out_ref, "$static_class $class"."::staticData;\n");
 	push(@$out_ref, "\n");
 
 	return;
@@ -475,8 +548,6 @@ sub initValueHash
 
 	$val_ref->{"dim"}                  = 0;
 	$val_ref->{"class_name"}           = "";
-	$val_ref->{"param_def"}            = "";
-	$val_ref->{"param_init"}           = "";
 	$val_ref->{"cctk_evol_arr"}        = ();
 	$val_ref->{"cctk_evol"}            = "";
 	$val_ref->{"update_line"}          = "";
@@ -484,6 +555,7 @@ sub initValueHash
 	$val_ref->{"cell_params"}          = "";
 	$val_ref->{"cell_init_params"}     = "";
 	$val_ref->{"soa_macro"}            = "";
+	$val_ref->{"static_class_name"}    = "";
 
 	return;
 }
@@ -524,7 +596,7 @@ sub createCellClass
 	my ($config_ref, $thorninfo_ref, $out_ref) = @_;
 	my ($thorndir, $thorn, $arrangement, $impl, $class);
 	my (@cellh, @cellcpp);
-	my (@param_macro, @inf_macros, @inf_macros_undef, @special_macros, @special_macros_undef);
+	my (@param_macro, @special_macros, @special_macros_undef);
 	my (%inf_data, %param_data, %static, %values);
 
 	# init
@@ -538,8 +610,7 @@ sub createCellClass
 
 	# parse param.ccl to get parameters
 	getParameters($thorndir, $thorn, \%param_data);
-	buildParameterStrings(\%param_data, $class, \%values);
-	generateParameterMacro(\%param_data, $thorn, $impl, $class, \@param_macro);
+	generateParameterMacro(\%param_data, $thorn, $impl, $class, "staticData.", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_Evol-Timestep
 	getEvolFunction($thorndir, $thorn, \%values);
@@ -552,12 +623,12 @@ sub createCellClass
 	# get dimension
 	$values{"dim"} = getDimension(\%inf_data);
 
-	# build macros for struct of array access
-	buildInfVarMacros(\%values, \%inf_data, \@inf_macros, \@inf_macros_undef);
+	# build LibGeoDecomp Struct of Array macro
 	$values{"soa_macro"} = generateSoAMacro(\%inf_data, $class);
 
 	# special macros
-	buildSpecialMacros(\%values, \@special_macros, \@special_macros_undef);
+	buildSpecialMacros(\%values, \%inf_data, \%param_data, \@special_macros,
+					   \@special_macros_undef);
 
 	# build updateLineX function
 	buildUpdateLineFunction(\%values, \%inf_data);
@@ -575,8 +646,6 @@ sub createCellClass
 	$out_ref->{"cellh"}                 = \@cellh;
 	$out_ref->{"cellcpp"}               = \@cellcpp;
 	$out_ref->{"param_macro"}           = \@param_macro;
-	$out_ref->{"inf_macros"}            = \@inf_macros;
-	$out_ref->{"inf_macros_undef"}      = \@inf_macros_undef;
 	$out_ref->{"special_macros"}        = \@special_macros;
 	$out_ref->{"special_macros_undef"}  = \@special_macros_undef;
 	$out_ref->{"class_name"}            = $values{"class_name"};

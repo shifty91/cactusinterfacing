@@ -15,55 +15,10 @@ use Data::Dumper;
 use Exporter 'import';
 use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Utils qw(util_indent);
+use Cactusinterfacing::Parameter qw(buildParameterStrings);
 
 # export
 our @EXPORT_OK = qw(createStaticDataClass);
-
-#
-# Builds up parameter strings, including:
-#  - definitions for static data class
-#  - init with default values for constructor
-#
-# param:
-#  - par_ref: ref to parameter data
-#  - val_ref: ref to value hash
-#
-# return:
-#  - none, strings will bestored into values hash, keys are
-#    "param_def", "param_init"
-#
-sub buildParameterStrings
-{
-	my ($par_ref, $val_ref) = @_;
-	my (@def, @init);
-
-	foreach my $name (keys %{$par_ref}) {
-		my ($type, $default, $desc);
-
-		# init
-		$type    = $par_ref->{$name}{"type"};
-		$default = $par_ref->{$name}{"default"};
-		$desc    = $par_ref->{$name}{"description"};
-
-		# add description first
-		push(@def, "// $desc");
-
-		# def:  'type name;'
-		# init: 'name = default;'
-		push(@def,  "$type $name;");
-		push(@init, "$name = $default;");
-	}
-
-	# indent
-	util_indent(\@def , 1);
-	util_indent(\@init, 2);
-
-	# final strings
-	$val_ref->{"param_def"}  = join("\n", @def);
-	$val_ref->{"param_init"} = join("\n", @init);
-
-	return;
-}
 
 #
 # Builds interface strings for ARRAYs and SCALARs.
@@ -146,16 +101,24 @@ sub buildHeader
 	push(@$out_ref, "#define _STATICDATA_H_\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "#include \"cctk_Types.h\"\n");
+	push(@$out_ref, "#include \"cactusgrid.h\"\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "class $class\n");
 	push(@$out_ref, "{\n");
+	# all variables become public members, since their values
+	# need to be changeable
 	push(@$out_ref, "public:\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."$class()\n");
 	push(@$out_ref, $tab."{\n");
+	# set the cctkGH pointer to NULL
+	push(@$out_ref, $tab.$tab."cctkGH = 0;\n");
+	# init all parameters to their default values
 	push(@$out_ref, "$val_ref->{\"param_init\"}\n");
 	push(@$out_ref, $tab."}\n");
 	push(@$out_ref, "\n");
+	push(@$out_ref, $tab."// cactus grid hierarchy\n");
+	push(@$out_ref, $tab."CactusGrid* cctkGH;\n");
 	push(@$out_ref, "$val_ref->{\"param_def\"}\n");
 	push(@$out_ref, "$val_ref->{\"inf_def\"}\n");
 	push(@$out_ref, "\n");
@@ -189,7 +152,7 @@ sub createStaticDataClass
 	$values{"class_name"} = $class;
 
 	# build definitions
-	buildParameterStrings($par_ref, \%values);
+	buildParameterStrings($par_ref, "", 0, \%values);
 	buildInterfaceStrings($inf_ref, \%values);
 
 	# build header

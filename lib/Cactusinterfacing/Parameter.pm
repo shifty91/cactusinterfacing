@@ -42,7 +42,7 @@ sub getParameters
 	my (@global, @restricted, @private, @shares);
 
 	@indata = read_file("$thorndir/param.ccl");
-	@data = parse_param_ccl($thorn, @indata);
+	@data   = parse_param_ccl($thorn, @indata);
 	util_arrayToHash(\@data, \%paramdata);
 
 	# get variables
@@ -111,22 +111,24 @@ sub prepareValues
 }
 
 #
-# Builds up parameter strings, including:
-#  - definitions for header file
-#  - init with default values for cpp file
+# This functions builds parameter strings. This includes definition and
+# initialization with default values. It can build these strings either for
+# static members and normal members. To specify which version to build
+# set the parameter static to one or zero.
 #
 # param:
 #  - par_ref: ref to parameter data
-#  - class  : name of class
+#  - class  : name of class, which is not needed for non static build
+#  - static : boolean which indicates if the definitions should be static or not
 #  - val_ref: ref to value hash
 #
 # return:
-#  - none, strings will be stored into value hash, keys are
-#    "param_def", "param_init"
+#  - none, strings will be stored into value hash, keys are "param_def",
+#    "param_init"
 #
 sub buildParameterStrings
 {
-	my ($par_ref, $class, $val_ref) = @_;
+	my ($par_ref, $class, $static, $val_ref) = @_;
 	my (@def, @init);
 
 	foreach my $name (keys %{$par_ref}) {
@@ -140,14 +142,26 @@ sub buildParameterStrings
 		# add description first
 		push(@def, "// $desc");
 
-		# def : 'static type name;'
-		# init: 'type classname::name = default;'
-		push(@def,  "static $type $name;");
-		push(@init, "$type $class"."::"."$name = $default;");
+		if ($static) {
+			# def : 'static type name;'
+			# init: 'type classname::name = default;'
+			push(@def,  "static $type $name;");
+			push(@init, "$type $class"."::"."$name = $default;");
+		} else {
+			# def:  'type name;'
+			# init: 'name = default;'
+			push(@def,  "$type $name;");
+			push(@init, "$name = $default;");
+		}
 	}
 
 	# indent
-	util_indent(\@def, 1);
+	if ($static) {
+		util_indent(\@def, 1);
+	} else {
+		util_indent(\@def , 1);
+		util_indent(\@init, 2);
+	}
 
 	# final strings
 	$val_ref->{"param_def"}  = join("\n", @def);
@@ -162,7 +176,9 @@ sub buildParameterStrings
 # param:
 #  - par_ref: ref to parameter data hash
 #  - thorn  : name of thorn
+#  - impl   : implementation of thorn
 #  - class  : name of class
+#  - prefix : additional prefix for variable, may be ""
 #  - out_ref: ref to hash where to store macros
 #
 # return:
@@ -170,7 +186,7 @@ sub buildParameterStrings
 #
 sub generateParameterMacro
 {
-	my ($par_ref, $thorn, $impl, $class, $out_ref) = @_;
+	my ($par_ref, $thorn, $impl, $class, $prefix, $out_ref) = @_;
 	my ($macro_name);
 
 	# build name of macro
@@ -187,7 +203,7 @@ sub generateParameterMacro
 		# init
 		$implname  = $impl."::".$par_ref->{$name}{"realname"};
 		$vtype     = $par_ref->{$name}{"type"};
-		$classname = $class."::".$par_ref->{$name}{"realname"};
+		$classname = $class."::".$prefix.$par_ref->{$name}{"realname"};
 
 		# GET(impl::name, vtype, class::name);
 		push(@$out_ref, $tab.$tab."GET($implname, $vtype, $classname); \\\n");

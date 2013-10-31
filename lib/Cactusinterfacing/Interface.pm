@@ -235,25 +235,9 @@ sub buildInterfaceStrings
 		push(@inf_vars, "// $desc");
 
 		foreach my $name (@{$inf_ref->{$group}{"names"}}) {
-			# scalars become static cell members
-			if ($gtype =~ /^SCALAR$/i) {
-				# cactus SCALARs cannot have timelevels
-				# see cactus reference
-				push(@inf_vars, "static $vtype var_$name;");
-				next;
-			}
-
-			# array become static cell members, too
-			if ($gtype =~ /^ARRAY$/i) {
-				for ($i = 0; $i < $timelevels; ++$i) {
-					my ($past_name);
-
-					$past_name = $name . ("_p" x $i);
-
-					push(@inf_vars, "static $vtype $past_name"."[$size];");
-				}
-				next;
-			}
+			# arrays scalars become static cell members
+			next if ($gtype =~ /ARRAY/i);
+			next if ($gtype =~ /SCALAR/i);
 
 			# grid functions become normal cell members
 			for ($i = 0; $i < ($timelevels - 1); ++$i) {
@@ -262,9 +246,9 @@ sub buildInterfaceStrings
 				# build past_name with appending _p and prepend var_
 				$past_name = "var_" . $name . ("_p" x $i);
 
-				push(@inf_vars, "$vtype $past_name;");
+				push(@inf_vars,    "$vtype $past_name;");
 				# for cell member and constructor declaration
-				push(@c_vars, "const $vtype& _$past_name = 0");
+				push(@c_vars,      "const $vtype& _$past_name = 0");
 				push(@c_init_vars, "$past_name(_$past_name)");
 				++$gfs_cnt;
 			}
