@@ -138,7 +138,7 @@ sub getAllInterfaceVars
 #  - testing and computing size of ARRAYs
 #
 # param:
-#  - var    : parameter variable
+#  - group  : name of variable group
 #  - out_ref: ref to interface data hash
 #
 # return:
@@ -198,10 +198,10 @@ sub prepareValues
 
 #
 # Builds interface variables strings, including:
-#  - grid scalars as static vars
-#  - grid arrays as static arrays
-#  - grid functions as member vars in appropriate timelevels
+#  - grid functions as member variables in appropriate timelevels
 #  - constructor definitions
+# Note: Grid arrays and grid scalars become static cell members by
+#       CreateStaticDataClass.pm.
 #
 # param:
 #  - inf_ref: ref to interface data

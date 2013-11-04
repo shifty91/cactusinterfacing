@@ -21,7 +21,7 @@ use Cactusinterfacing::Parameter qw(buildParameterStrings);
 our @EXPORT_OK = qw(createStaticDataClass);
 
 #
-# Builds interface strings for ARRAYs and SCALARs.
+# Builds interface strings for grid ARRAYs and SCALARs.
 #
 # param:
 #  - inf_ref: ref to interface data hash
@@ -130,8 +130,8 @@ sub buildHeader
 }
 
 #
-# Generates a data class which contains parameters
-# and scalar,arrays interface variables.
+# Generates a data class which contains parameters,
+# grid scalars and grid arrays interface variables.
 #
 # param:
 #  - inf_ref   : ref to interface data hash
@@ -160,7 +160,6 @@ sub createStaticDataClass
 
 	# save
 	$out_ref->{"statich"}    = \@header;
-	#$out_ref->{"staticcpp"}  = \@cpp;
 	$out_ref->{"class_name"} = $class;
 
 	return;

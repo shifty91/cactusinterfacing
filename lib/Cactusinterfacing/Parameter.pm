@@ -19,7 +19,7 @@ use Cactusinterfacing::ParameterParser qw(parse_param_ccl);
 our @EXPORT_OK = qw(getParameters generateParameterMacro buildParameterStrings);
 
 #
-# parses param.ccl to get Parameters
+# Parses param.ccl to get Parameters.
 #
 # param:
 #  - thorndir: directory to thorn (abs. path)

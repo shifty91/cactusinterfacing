@@ -74,9 +74,16 @@ sub getDimension
 # Moreover since the cell class consists only of a header file,
 # these macros will be undefined at the end of the header file to
 # avoid redefining compiler warnings.
+# This includes:
+#  - CCTK_GFINDEX, CCTK_VECTGFINDEX
+#  - macros for Cactus grid hierarchy variables
+#  - macros for interface variables
+#  - macros for parameters
 #
 # param:
 #  - val_ref  : ref to values hash
+#  - inf_ref  : ref to interface data hash
+#  - par_ref  : ref to parameter data hash
 #  - def_ref  : ref to array where defines will be stored
 #  - undef_ref: ref to array where undefines will be stored
 #
@@ -376,8 +383,8 @@ sub addRotateTimelevels
 # to be adjusted.
 #
 # params:
-#  - evol_ref: ref of evol array
-#  - inf_ref : ref of interface data hash
+#  - inf_ref : ref to interface data hash
+#  - val_ref : ref to values hash
 #  - out_ref : ref to array where to store adjusted function
 #
 # return:

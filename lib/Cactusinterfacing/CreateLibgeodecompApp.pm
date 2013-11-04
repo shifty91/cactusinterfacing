@@ -2,7 +2,8 @@
 ##
 ## CreateLibgeodecompApp.pm
 ##
-## Bunch of functions which generate the fully LibGeoDecomp Application.
+## This module builds the complete LibGeoDecomp application.
+## All classes like cell, initializer will be made up and written to disk.
 ##
 ##
 
@@ -29,6 +30,7 @@ our @EXPORT_OK = qw(createLibgeodecompApp);
 #
 # param:
 #  - opt_ref   : ref to option hash
+#  - sel_ref   : ref to selector hash
 #  - init_class: name of init class
 #  - cell_class: name of cell class
 #  - out_ref   : ref to an array where to store the complete main.cpp
@@ -107,6 +109,7 @@ sub createMain
 #
 # param:
 #  - opt_ref   : ref to options hash
+#  - sel_ref   : ref to selector hash
 #  - init_class: name of init class
 #  - cell_class: name of cell class
 #  - out_ref   : ref to store runSimulation function
@@ -221,7 +224,7 @@ sub createParameterHeader
 #
 # This function sets up the include directory. It creates
 # it if it doesn't exist. It constructs three header files
-# which contain the specific macros for cell and init class.
+# which contain the specific macros for cell and init classes.
 # At last it copies the definethisthorn header files into
 # the include directory.
 #
@@ -303,13 +306,18 @@ sub setupIncludeDir
 
 #
 # Main entry point.
-# This function creates a complete libgeodecomp application.
+# This function creates a complete LibGeoDecomp application.
 # including:
 #  - cell class
 #  - init class
+#  - selector classes
+#  - static data class
+#  - parameter parser class
+#  - lots of include files which contain macros
 #  - main.cpp
 #  - Makefile
-# into directory ./$config
+# into directory ./$config where $config is the name of the cactus configuration.
+# The output directory is configurable by config_ref, key is "outputdir".
 #
 # param:
 #  - config_ref: ref to config hash

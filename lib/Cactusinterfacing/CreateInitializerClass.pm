@@ -112,7 +112,13 @@ sub buildObjectsDecl
 }
 
 #
-# Builds some cactus macros that are different for a initializer.
+# Builds some Cactus macros that are different for a initializer.
+# This includes:
+#  - CCTK_GFINDEX
+#  - variables of cactus grid hierarchy
+#  - read member macro
+#  - write member macro
+#  - object declaration
 #
 # param:
 #  - val_ref: ref to values hash
@@ -484,8 +490,7 @@ sub buildInitCpp
 }
 
 #
-# The subroutine checks whether the init thorn
-# inherits from teh evol thorn.
+# The subroutine checks whether the init thorn inherits from the evol thorn.
 #
 # param:
 #  - thorninfo_ref: ref to thorninfo data hash
@@ -493,7 +498,7 @@ sub buildInitCpp
 #  - evol_ar      : arrangement/EvolThorn
 #
 # return:
-#  - none
+#  - none, exits on error
 #
 sub preCheck
 {
