@@ -85,6 +85,12 @@ public:
 	 */
 	CactusGrid(unsigned int dim);
 	/**
+	 * Copy constructor.
+	 *
+	 * @param other other cactus grid hierarchy
+	 */
+	CactusGrid(const CactusGrid& other);
+	/**
 	 * Deconstructor. Frees all allocated memory.
 	 *
 	 */

@@ -158,6 +158,12 @@ public:
 	 */
 	ParParser(const std::string& file);
 	/**
+	 * Copy constructor.
+	 *
+	 * @param parser
+	 */
+	ParParser(const ParParser& parser);
+	/**
 	 * Deconstructor. Does nothing.
 	 * The cactus grid hierarchy has to be freed by user.
 	 *

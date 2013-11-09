@@ -45,6 +45,11 @@ CactusGrid::CactusGrid(unsigned int dim)
 	allocateMemory(dim);
 }
 
+CactusGrid::CactusGrid(const CactusGrid& other)
+{
+	*this = other;
+}
+
 CactusGrid::~CactusGrid()
 {
 	freeMemory();
