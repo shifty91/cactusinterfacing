@@ -142,24 +142,6 @@ private:
 		}
 		return t;
 	}
-	/**
-	 * Converts a given value from type T into a string.
-	 *
-	 * @param t value to be converted into string
-	 *
-	 * @return value as string
-	 */
-	template<class T>
-	std::string toString(const T& t)
-	{
-		std::ostringstream stream;
-		stream << t;
-		if (stream.fail()) {
-			throw std::invalid_argument("Failed to convert " + std::string(t));
-		}
-		return stream.str();
-	}
-
 public:
 	/**
 	 * Constructor.
