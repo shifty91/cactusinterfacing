@@ -94,7 +94,7 @@ public:
 	 * Deconstructor. Frees all allocated memory.
 	 *
 	 */
-	~CactusGrid();
+	virtual ~CactusGrid();
 	/**
 	 * Returns cctk_dim.
 	 *

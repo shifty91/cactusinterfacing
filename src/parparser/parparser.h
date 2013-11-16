@@ -168,7 +168,7 @@ public:
 	 * The cactus grid hierarchy has to be freed by user.
 	 *
 	 */
-	~ParParser() {}
+	virtual ~ParParser() {}
 	/**
 	 * Parses the parameter file as given by file and setups all parameters.
 	 *
