@@ -63,7 +63,7 @@
 		}													\
 	} while (0)
 
-ParParser::ParParser(const char* file) :
+ParParser::ParParser(const char *file) :
 	m_file(file)
 {
 	unsigned int dim = CCTKGHDIM;
@@ -192,9 +192,8 @@ void ParParser::proceedPUGH(void)
 	}
 
 	// global given
-	if (m_globalNSize > 0) {
+	if (m_globalNSize > 0)
 		m_global[0] = m_global[1] = m_global[2] = m_globalNSize;
-	}
 
 	for (i = 0; i < dim; ++i) {
 		m_cctkGH->cctk_gsh()[i] = m_global[i];
@@ -205,7 +204,7 @@ void ParParser::proceedPUGH(void)
 void ParParser::setupSymmetry(void)
 {
 	int i;
-	bool quadrant = false;
+	bool quadrant    = false;
 	unsigned int dim = m_cctkGH->cctk_dim();
 
 	if (equals(m_domain, "bitant")) {
@@ -229,9 +228,8 @@ void ParParser::setupSymmetry(void)
 	// apply symmetry
 	for (; i >= 0; --i) {
 		unsigned int x = quadrant ? i : 2 - i;
-		if (x >= dim) {
+		if (x >= dim)
 			continue;
-		}
 		if (m_avoidOrigin[x]) {
 			m_cctkGH->cctk_origin_space()[x] = -m_cctkGH->cctk_delta_space()[x] / 2.0;
 		} else {
@@ -256,16 +254,14 @@ void ParParser::proceedCartGrid(void)
 	GET(grid::avoid_originx, bool, m_avoidOrigin[0]);
 	GET(grid::avoid_originy, bool, m_avoidOrigin[1]);
 	GET(grid::avoid_originz, bool, m_avoidOrigin[2]);
-	if (!m_avoidOriginNSize) {
+	if (!m_avoidOriginNSize)
 		m_avoidOrigin[0] = m_avoidOrigin[1] = m_avoidOrigin[2] = false;
-	}
 
 	if (equals(m_gridType, "box")) {
 		// grid::xyzmin = -0.5, grid::xyzmax = +0.5
 		m_cctkGH->cctk_origin_space(-0.5);
-		for (i = 0; i < dim; ++i) {
+		for (i = 0; i < dim; ++i)
 			m_cctkGH->cctk_delta_space()[i] = 1.0 / m_cctkGH->cctk_gsh()[i];
-		}
 	} else if (equals(m_gridType, "byrange")) {
 		// get ranges
 		GET(grid::xyzmax, CCTK_REAL, m_xyzmax);
@@ -277,12 +273,10 @@ void ParParser::proceedCartGrid(void)
 		GET(grid::ymin, CCTK_REAL, m_min[1]);
 		GET(grid::zmin, CCTK_REAL, m_min[2]);
 
-		if (m_xyzmax != -424242) {
+		if (m_xyzmax != -424242)
 			m_max[0] = m_max[1] = m_max[2] = m_xyzmax;
-		}
-		if (m_xyzmin != -424242) {
+		if (m_xyzmin != -424242)
 			m_min[0] = m_min[1] = m_min[2] = m_xyzmin;
-		}
 
 		// set origin
 		for (i = 0; i < dim; ++i) {
@@ -299,9 +293,8 @@ void ParParser::proceedCartGrid(void)
 		GET(grid::dy, CCTK_REAL, m_d[1]);
 		GET(grid::dz, CCTK_REAL, m_d[2]);
 
-		if (m_dxyz > 0.0) {
+		if (m_dxyz > 0.0)
 			m_d[0] = m_d[1] = m_d[2] = m_dxyz;
-		}
 
 		// set spacings
 		for (i = 0; i < dim; ++i) {
@@ -358,7 +351,7 @@ void ParParser::proceedTime(void)
 void ParParser::prepareValues(void)
 {
 	for (std::map<std::string, std::string>::iterator it = m_parMap.begin();
-		 it != m_parMap.end(); it++)
+		 it != m_parMap.end(); ++it)
 	{
 		// remove \"\"
 		boost::algorithm::erase_all(it->second, "\"");
@@ -368,11 +361,13 @@ void ParParser::prepareValues(void)
 
 		// boolean: yes -> 1, no -> 0
 		if (equals(it->second, "yes") || equals(it->second, "y") ||
-			equals(it->second, "true") || equals(it->second, "t")) {
+			equals(it->second, "true") || equals(it->second, "t"))
+		{
 			it->second = "1";
 		}
 		if (equals(it->second, "no") || equals(it->second, "n") ||
-			equals(it->second, "false") || equals(it->second, "f")) {
+			equals(it->second, "false") || equals(it->second, "f"))
+		{
 			it->second = "0";
 		}
 	}
@@ -394,8 +389,8 @@ void ParParser::parseLine(const std::string& line)
 		return;
 	// parse line
 	if (boost::regex_search(line, token, parameter)) {
-		std::string implname  = token[1];
-		std::string value     = token[2];
+		std::string implname = token[1];
+		std::string value    = token[2];
 
 		// parameters and values are case independent
 		boost::algorithm::to_lower(implname);
@@ -412,15 +407,15 @@ void ParParser::parse()
 	std::string line;
 	std::ifstream parFile;
 
-	if (!m_file) {
+	if (!m_file)
 		throw std::invalid_argument("No Parameter file given!");
-	}
 
 	parFile.open(m_file);
 	if (parFile.fail()) {
-		throw std::invalid_argument("Bad Parameter file \"" +
-									std::string(m_file) +
-									"\". Is the path correct?");
+		std::string errMsg = "Bad Parameter file \"";
+		errMsg += std::string(m_file);
+		errMsg += "\". Is the path correct?";
+		throw std::invalid_argument(errMsg);
 	}
 
 	while (!parFile.eof()) {

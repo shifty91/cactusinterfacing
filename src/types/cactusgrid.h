@@ -65,9 +65,8 @@ private:
 			m_cctk_levoffdenom[i]  = rhs.m_cctk_levoffdenom[i];
 			m_cctk_nghostzones[i]  = rhs.m_cctk_nghostzones[i];
 		}
-		for (unsigned int i = 0; i < (2 * m_cctk_dim + 1); ++i) {
+		for (unsigned int i = 0; i < (2 * m_cctk_dim + 1); ++i)
 			m_cctk_bbox[i] = rhs.m_cctk_bbox[i];
-		}
 	}
 
 public:
@@ -249,9 +248,8 @@ public:
 	{
 		unsigned int i;
 
-		for (i = 0; i < m_cctk_dim; ++i) {
+		for (i = 0; i < m_cctk_dim; ++i)
 			m_cctk_gsh[i] = nsize;
-		}
 	}
 	/**
 	 * Sets cctk_lsh to nsize in each direction.
@@ -262,9 +260,8 @@ public:
 	{
 		unsigned int i;
 
-		for (i = 0; i < m_cctk_dim; ++i) {
+		for (i = 0; i < m_cctk_dim; ++i)
 			m_cctk_lsh[i] = nsize;
-		}
 	}
 	/**
 	 * Sets cctk_gsh to nsize in each direction.
@@ -275,9 +272,8 @@ public:
 	{
 		unsigned int i;
 
-		for (i = 0; i < m_cctk_dim; ++i) {
+		for (i = 0; i < m_cctk_dim; ++i)
 			m_cctk_delta_space[i] = nsize;
-		}
 	}
 	/**
 	 * Sets cctk_origin_space to nsize in each direction.
@@ -288,9 +284,8 @@ public:
 	{
 		unsigned int i;
 
-		for (i = 0; i < m_cctk_dim; ++i) {
+		for (i = 0; i < m_cctk_dim; ++i)
 			m_cctk_origin_space[i] = nsize;
-		}
 	}
 	/**
 	 * Sets cctk_levfac to nsize in each direction.
@@ -301,9 +296,8 @@ public:
 	{
 		unsigned int i;
 
-		for (i = 0; i < m_cctk_dim; ++i) {
+		for (i = 0; i < m_cctk_dim; ++i)
 			m_cctk_levfac[i] = nsize;
-		}
 	}
 	/**
 	 * Sets cctk_levoff to nsize in each direction.
@@ -314,9 +308,8 @@ public:
 	{
 		unsigned int i;
 
-		for (i = 0; i < m_cctk_dim; ++i) {
+		for (i = 0; i < m_cctk_dim; ++i)
 			m_cctk_levoff[i] = nsize;
-		}
 	}
 	/**
 	 * Sets cctk_levoffdenom to nsize in each direction.
@@ -327,9 +320,8 @@ public:
 	{
 		unsigned int i;
 
-		for (i = 0; i < m_cctk_dim; ++i) {
+		for (i = 0; i < m_cctk_dim; ++i)
 			m_cctk_levoffdenom[i] = nsize;
-		}
 	}
 	/**
 	 * Sets cctk_nghostzones to nsize in each direction.
@@ -340,9 +332,8 @@ public:
 	{
 		unsigned int i;
 
-		for (i = 0; i < m_cctk_dim; ++i) {
+		for (i = 0; i < m_cctk_dim; ++i)
 			m_cctk_nghostzones[i] = nsize;
-		}
 	}
 	/**
 	 * Computes the minimum of cctk_delta_space.

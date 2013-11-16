@@ -20,11 +20,11 @@ our @EXPORT_OK = qw(createLibgeodecompMakefile getSources);
 
 #
 # This subroutine gatheres all source files
-# from a cactus make.code.defn Makefile
-# therefore it works recursivly.
+# from a cactus make.code.defn Makefile.
+# Therefore it works recursivly.
 #
 # param:
-#  - dir:         directory
+#  - dir        : directory of cactus thorn
 #  - sources_ref: ref to sources array
 #
 # return:
@@ -33,30 +33,40 @@ our @EXPORT_OK = qw(createLibgeodecompMakefile getSources);
 sub getSources
 {
 	my ($dir, $sources_ref) = @_;
-	my ($subdirs, @lines, $str, $sources, @tmp);
+	my ($subdirs, @lines, $str, $sources, @token);
 
 	util_readFile("$dir/make.code.defn", \@lines);
 
 	$str = join("", @lines);
 
 	# get sources files in current directory
-	if ($str =~ /\s*SRCS\s*=\s*([\w\s.\\]+)/) {
+	if ($str =~ /SRCS\s*=\s*([\w\s.\\]+)/) {
 		$sources = $1;
+
+		# strip '\' and comments
 		$sources =~ s/\\//g;
 		$sources =~ s/#.*//g;
-		@tmp = split(' ', $sources);
-		$_ = $dir."/".$_ for (@tmp);
-		push(@$sources_ref, @tmp);
+		@token = split(' ', $sources);
+
+		# append path to source files
+		@token = map { $dir."/".$_ } @token;
+
+		# save
+		push(@$sources_ref, @token);
 	} else {
 		_warn("No source files found in $dir/make.code.defn", __FILE__,
-				__LINE__);
+			  __LINE__);
 	}
 
 	# get all subdirectories and append sources
-	if ($str =~ /\s*SUBDIRS\s*=\s*([\-\w\s.\\]+)/) {
+	if ($str =~ /SUBDIRS\s*=\s*([\-\w\s.\\]+)/) {
 		$subdirs = $1;
+
+		# strip '\' and comments
 		$subdirs =~ s/\\//g;
 		$subdirs =~ s/#.*//g;
+
+		# go in all sub directories
 		getSources($dir."/".$_, $sources_ref) for (split(' ', $subdirs));
 	}
 

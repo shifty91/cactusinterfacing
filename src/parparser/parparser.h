@@ -11,9 +11,9 @@
 class ParParser
 {
 private:
-	const char* m_file;			/**< parameter file */
+	const char *m_file;			/**< parameter file */
 	std::map<std::string, std::string> m_parMap; /**< hash map to store parsing result */
-	CactusGrid* m_cctkGH;		/**< cactus grid hierachy to set up */
+	CactusGrid *m_cctkGH;		/**< cactus grid hierachy to set up */
 	int m_globalNSize;			/**< global grid size */
 	int m_global[3];			/**< global grid size in each direction */
 	int m_localNSize;			/**< local grid size */
@@ -102,6 +102,7 @@ private:
 	 * PUGH sets
 	 *  - cctk_gsh
 	 *  - cctk_lsh
+	 * See CactusPUGH/PUGH.
 	 *
 	 */
 	void proceedPUGH(void);
@@ -116,11 +117,13 @@ private:
 	 * CartGrid3D sets
 	 *  - cctk_delta_space
 	 *  - cctk_origin_space.
+	 * See CactusBase/CartGrid3D.
 	 *
 	 */
 	void proceedCartGrid(void);
 	/**
 	 * Time sets cctk_delta_time.
+	 * See CactusBase/Time.
 	 *
 	 */
 	void proceedTime(void);
