@@ -68,6 +68,9 @@ ParParser::ParParser(const char *file) :
 {
 	unsigned int dim = CCTKGHDIM;
 	m_cctkGH         = new CactusGrid(dim);
+
+	// use default values
+	initDefaults();
 }
 
 ParParser::ParParser(const std::string& file) :
@@ -75,6 +78,9 @@ ParParser::ParParser(const std::string& file) :
 {
 	unsigned int dim = CCTKGHDIM;
 	m_cctkGH         = new CactusGrid(dim);
+
+	// use default values
+	initDefaults();
 }
 
 bool ParParser::exists(const std::string& key) const
@@ -429,9 +435,6 @@ void ParParser::parse()
 
 	// prepare for further processing
 	prepareValues();
-
-	// use default values
-	initDefaults();
 
 	// init m_cctkGH
 	proceedCactus();
