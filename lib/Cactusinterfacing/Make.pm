@@ -12,7 +12,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Data::Dumper;
-use Cactusinterfacing::Config;
+use Cactusinterfacing::Config qw($debug);
 use Cactusinterfacing::Utils qw(util_readFile _warn);
 
 # exports
@@ -88,9 +88,10 @@ sub createLibgeodecompMakefile
 	# they're caused by some adjustments to the code
 	$cxxflags  = "-pedantic -Wall -Wextra -Wno-unused-parameter ";
 	$cxxflags .= "-Wno-unused-variable -Wno-unused-but-set-variable ";
-	# at this stage always compile with DEBUG
 	# ignore warnings about variadic macros since they're only standard in c++11
-	$cxxflags .= "-Wno-variadic-macros -O3 -I./include -DDEBUG";
+	$cxxflags .= "-Wno-variadic-macros -O3 -I./include";
+	# build with debug code?
+	$cxxflags .= " -DDEBUG" if ($debug);
 
 	push(@$out_ref, "RM       = rm\n");
 	push(@$out_ref, "CXX      = $cxx\n");
