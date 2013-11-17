@@ -8,6 +8,26 @@
 #include "cctk_Types.h"			// cactus data types like CCTK_REAL
 #include "cactusgrid.h"			// cactusgrid to setup
 
+/**
+ * @file   parparser.h
+ *
+ * @brief Parameter file parser for Cactus parameter files.
+ *
+ * This parser has two different tasks. First of all it sets
+ * the parameter of the thorns to the given values. Unknown
+ * parameter are ignored. Next is, it sets up a CactusGrid
+ * hierarchy by evaluating the parameters for the cactus flesh
+ * and CactusBase thorns. If anything goes wrong a exception
+ * will be thrown.
+ *
+ * Example usage:
+ *   ParParser parser(paramFile);
+ *   parser.parse();
+ *   CactusGrid *myCactusGrid = parser.getCctkGH();
+ *   // do something with it ...
+ *   delete myCactusGrid;
+ *
+ */
 class ParParser
 {
 private:

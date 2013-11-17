@@ -4,15 +4,20 @@
 #include <string>
 #include "cctk_Types.h"
 
+/**
+ * @file   cactusgrid.h
+ *
+ * @brief This class holds the variables for the Cactus grid hierarchy.
+ *
+ * Void ***data, cGHGoupData *GroupData are not needed. Moreover removed
+ * cctk_timefac, cctk_convlevel, cctk_convfac, since their values are fixed.
+ * Finally removed cctk_ash, because PUGH sets it to cctk_lsh.
+ * For all variables and explanations see src/include/cGH.h.
+ *
+ */
 class CactusGrid
 {
 private:
-	// Variables for cactus grid hierachy.
-	// Void ***data, cGHGoupData *GroupData are not needed.
-	// Removed cctk_timefac, cctk_convlevel, cctk_convfac, since
-	// they're fixed values.
-	// Removed cctk_ash, because PUGH sets it to cctk_lsh.
-
 	unsigned int m_cctk_dim;	/**< dimension */
 	unsigned int m_cctk_iteration; /**< current iteration */
 	// do not use unsigned here, since cactus thorns expect this to be signed
