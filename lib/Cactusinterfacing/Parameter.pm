@@ -67,10 +67,10 @@ sub getParameters
 		$out_ref->{$var}{"default"}     = $paramdata{"\U$thorn $var\E default"};
 		$out_ref->{$var}{"realname"}    = $paramdata{"\U$thorn $var\E realname"};
 		$out_ref->{$var}{"description"} = $paramdata{"\U$thorn $var\E description"};
-		$out_ref->{$var}{"access"} = "global"     if ($var ~~ @global);
-		$out_ref->{$var}{"access"} = "restricted" if ($var ~~ @restricted);
-		$out_ref->{$var}{"access"} = "private"    if ($var ~~ @private);
-		$out_ref->{$var}{"access"} = "shares"     if ($var ~~ @shares);
+		$out_ref->{$var}{"access"} = "global"     if (grep { $var eq $_ } @global);
+		$out_ref->{$var}{"access"} = "restricted" if (grep { $var eq $_ } @restricted);
+		$out_ref->{$var}{"access"} = "private"    if (grep { $var eq $_ } @private);
+		$out_ref->{$var}{"access"} = "shares"     if (grep { $var eq $_ } @shares);
 
 		# prepare type, default and description for further processing
 		prepareValues($var, $out_ref);

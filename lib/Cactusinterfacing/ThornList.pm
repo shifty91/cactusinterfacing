@@ -35,7 +35,7 @@ sub isInherit
 
 	getInherits($ar_0, $info_ref, \@inherits);
 
-	return ($ar_1 ~~ @inherits || $ar_0 =~ /^$ar_1$/i);
+	return ((scalar grep { $ar_1 =~ /^$_$/i } @inherits) || $ar_0 =~ /^$ar_1$/i);
 }
 
 #
@@ -56,7 +56,7 @@ sub isFriend
 
 	getFriends($ar_0, $info_ref, \@friends);
 
-	return ($ar_1 ~~ @friends || $ar_0 =~ /^$ar_1$/i);
+	return ((scalar grep { $ar_1 =~ /^$_$/i } @friends) || $ar_0 =~ /^$ar_1$/i);
 }
 
 #

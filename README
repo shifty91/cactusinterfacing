@@ -12,13 +12,13 @@ The Coding Style follows the following directions:
 1. Requirements
 ---------------
 The following requirements have to be met, otherwise it won't compile/work:
-	- Perl Version >= 5.010 (for smart match operator ~~)
 	- Perl modules
 	  - Exporter
 	  - FindBin
 	  - Data::Dumper
 	  - File::Copy
 	  - File::Path
+	  - Getopt::Long
 	- Boost Regex           (for perl like regex)
 	- LibGeoDecomp, installed on your system
 

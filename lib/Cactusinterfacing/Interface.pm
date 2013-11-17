@@ -80,9 +80,9 @@ sub getInterfaceVars
 		$out_ref->{$group}{"dim"}         = $dim;
 		$out_ref->{$group}{"size"}        = $size;
 		$out_ref->{$group}{"timelevels"}  = $timelevels;
-		$out_ref->{$group}{"access"} = "public"    if ($group ~~ @publicgroups);
-		$out_ref->{$group}{"access"} = "protected" if ($group ~~ @protectedgroups);
-		$out_ref->{$group}{"access"} = "private"   if ($group ~~ @privategroups);
+		$out_ref->{$group}{"access"} = "public"    if (grep { $group eq $_ } @publicgroups);
+		$out_ref->{$group}{"access"} = "protected" if (grep { $group eq $_ } @protectedgroups);
+		$out_ref->{$group}{"access"} = "private"   if (grep { $group eq $_ } @privategroups);
 
 		# prepare desc, type, timelevels and ARRAY sizes for further processing
 		prepareValues($group, $out_ref);
