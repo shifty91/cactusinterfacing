@@ -528,13 +528,13 @@ sub initValueHash
 {
 	my ($val_ref) = @_;
 
-	$val_ref->{"dim"}                = 0;
-	$val_ref->{"class_name"}         = "";
-	$val_ref->{"cell_class_name"}    = "";
-	$val_ref->{"cctk_initial_arr"}   = ();
-	$val_ref->{"param_def"}          = "";
-	$val_ref->{"param_init"}         = "";
-	$val_ref->{"objects_decl"}       = "";
+	$val_ref->{"dim"}              = 0;
+	$val_ref->{"class_name"}       = "";
+	$val_ref->{"cell_class_name"}  = "";
+	$val_ref->{"cctk_initial_arr"} = ();
+	$val_ref->{"param_def"}        = "";
+	$val_ref->{"param_init"}       = "";
+	$val_ref->{"objects_decl"}     = "";
 
 	return;
 }
