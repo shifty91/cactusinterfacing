@@ -75,8 +75,10 @@ sub getSources
 
 
 #
-# Creating a Makefile for compiling the final
-# LibGeoDecomp application.
+# Creating a Makefile for compiling the final LibGeoDecomp application.
+# This uses `pkg-config' to determine compiler flags and libs. Make sure the
+# LibGeoDecomp is installed on your system. This can be installed by
+# `sudo make install`. Additionally -O3 is used for optimizations.
 #
 # param:
 #  - config_ref: ref to config hash
@@ -89,7 +91,7 @@ sub getSources
 sub createLibgeodecompMakefile
 {
 	my ($config_ref, $opt_ref, $out_ref) = @_;
-	my ($cxx, $cxxflags, $name);
+	my ($cxx, $cxxflags, $ldflags, $name);
 
 	# init name and compiler, use mpicxx if mpi is used, g++ is default
 	$name = "cactus_".$config_ref->{"config"};
@@ -99,18 +101,19 @@ sub createLibgeodecompMakefile
 	$cxxflags  = "-pedantic -Wall -Wextra -Wno-unused-parameter ";
 	$cxxflags .= "-Wno-unused-variable -Wno-unused-but-set-variable ";
 	# ignore warnings about variadic macros since they're only standard in c++11
-	$cxxflags .= "-Wno-variadic-macros -O3 -I./include";
+	$cxxflags .= "-Wno-variadic-macros -O3 -Iinclude";
+	$cxxflags .= " `pkg-config --cflags libgeodecomp`";
 	# build with debug code?
 	$cxxflags .= " -DDEBUG" if ($debug);
+	# additionally we need to link against boost_regex
+	# the rest will be determined by pkg-config, make sure PKG_CONFIG_PATH is set
+	$ldflags = "`pkg-config --libs libgeodecomp` -lboost_regex";
 
 	push(@$out_ref, "RM       = rm\n");
 	push(@$out_ref, "CXX      = $cxx\n");
 	push(@$out_ref, "LD       = $cxx\n");
 	push(@$out_ref, "CXXFLAGS = $cxxflags\n");
-	# link against libgeodecomp which requires an installation of that library
-	# (to do that build libgeodecomp and run `sudo make install`)
-	# some boost libraries are required, too
-	push(@$out_ref, "LDFLAGS  = -lgeodecomp -lboost_date_time -lboost_regex\n");
+	push(@$out_ref, "LDFLAGS  = $ldflags\n");
 	push(@$out_ref, "SOURCES  = \$(shell find . -name \"*.cpp\")\n");
 	push(@$out_ref, "OBJECTS  = \$(SOURCES:%.cpp=%.o)\n");
 	push(@$out_ref, "DEPS     = \$(OBJECTS:%.o=%.d)\n");
