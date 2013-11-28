@@ -238,7 +238,7 @@ sub getGFIndex
 	# test length of arr
 	if (@$arr_ref != $dim) {
 		_warn("Dimension does not fit to number of arguments in getCoord()",
-				__FILE__, __LINE__);
+			  __FILE__, __LINE__);
 		goto out;
 	}
 

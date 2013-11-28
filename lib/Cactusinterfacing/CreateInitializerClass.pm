@@ -516,7 +516,7 @@ sub buildCctkGHFunction
 	for ($i = 0, $x = 'x'; $i < $dim; ++$i, ++$x) {
 		push(@outdata, $tab.$tab."cctkGH->cctk_lsh()[$i]  = box.dimensions.$x();\n");
 		push(@outdata, $tab.$tab."cctkGH->cctk_lbnd()[$i] = box.origin.$x();\n");
-		push(@outdata, $tab.$tab."cctkGH->cctk_ubnd()[$i] = box.origin.$x() + box.dimensions.$x();\n");
+		push(@outdata, $tab.$tab."cctkGH->cctk_ubnd()[$i] = box.origin.$x() + box.dimensions.$x() - 1;\n");
 	}
 	push(@outdata, $tab."}\n");
 
