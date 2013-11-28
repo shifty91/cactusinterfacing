@@ -327,6 +327,206 @@ sub buildWriteMemberMacro
 }
 
 #
+# Builds constructor. Allocates memory for x, y and z.
+#
+# param:
+#  - val_ref: ref to values hash
+#
+# return:
+#  - none, result will be stored in val_ref using key "constructor"
+#
+sub buildConstructor
+{
+	my ($val_ref) = @_;
+	my (@outdata, $class, $dim, $i, $x, @grid_size, $size_coord);
+
+	# init
+	$dim   = $val_ref->{"dim"};
+	$class = $val_ref->{"class_name"};
+	# setup grid size in apprioriate dimension
+	for ($i = 0; $i < $dim; ++$i) {
+		push(@grid_size, "cctkGH->cctk_gsh()[$i]");
+	}
+	$size_coord = getCoord("coord", $dim, \@grid_size);
+
+	# go
+	push(@outdata, $tab."$class() : SimpleInitializer<$val_ref->{\"cell_class_name\"}>($size_coord, cctkGH->cctk_iteration())\n");
+	push(@outdata, $tab."{\n");
+
+	if ($dim == 1) {
+		push(@outdata, $tab.$tab."int i = cctkGH->cctk_lsh()[0];\n");
+		push(@outdata, $tab.$tab."int size = i;\n");
+		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
+	} elsif ($dim == 2) {
+		push(@outdata, $tab.$tab."int i = cctkGH->cctk_lsh()[0];\n");
+		push(@outdata, $tab.$tab."int j = cctkGH->cctk_lsh()[1];\n");
+		push(@outdata, $tab.$tab."int size = i * j;\n");
+		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
+		push(@outdata, $tab.$tab."y = new CCTK_REAL[size];\n");
+	} elsif ($dim == 3) {
+		push(@outdata, $tab.$tab."int i = cctkGH->cctk_lsh()[0];\n");
+		push(@outdata, $tab.$tab."int j = cctkGH->cctk_lsh()[1];\n");
+		push(@outdata, $tab.$tab."int k = cctkGH->cctk_lsh()[2];\n");
+		push(@outdata, $tab.$tab."int size = i * j * k;\n");
+		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
+		push(@outdata, $tab.$tab."y = new CCTK_REAL[size];\n");
+		push(@outdata, $tab.$tab."z = new CCTK_REAL[size];\n");
+	} else {
+		_err("Dimension $dim is too high!", __FILE__, __LINE__);
+	}
+
+	push(@outdata, $tab."}\n");
+
+	# save data
+	$val_ref->{"constructor"} = join("", @outdata);
+
+	return;
+}
+
+#
+# Builds the deconstructor. This frees x, y and z.
+#
+# param:
+#  - val_ref: ref to values hash
+#
+# return:
+#  - none, result will be stored in val_ref using key "deconstructor"
+#
+sub buildDeconstructor
+{
+	my ($val_ref) = @_;
+	my (@outdata, $class, $dim, $i, $x);
+
+	# init
+	$dim   = $val_ref->{"dim"};
+	$class = $val_ref->{"class_name"};
+
+	# go
+	push(@outdata, $tab."virtual ~$class()\n");
+	push(@outdata, $tab."{\n");
+
+	for ($i = 0, $x = 'x'; $i < $dim; ++$i, ++$x) {
+		push(@outdata, $tab.$tab."delete[] $x;\n");
+	}
+
+	push(@outdata, $tab."}\n");
+
+	# save data
+	$val_ref->{"deconstructor"} = join("", @outdata);
+
+	return;
+}
+
+#
+# This functions sets up fake x,y,z. This would be done by CartGrid3D Thorn.
+# Generates the code in appropriate dimension.
+#
+# param:
+#  - val_ref: ref to values hash
+#
+# return:
+#  - none, the function will be stored in val_ref using key "xyz_func"
+#
+sub buildXYZFunction
+{
+	my ($val_ref) = @_;
+	my (@outdata, $dim);
+
+	# init
+	$dim = $val_ref->{"dim"};
+
+	push(@outdata, $tab."inline void setupXYZ()\n");
+	push(@outdata, $tab."{\n");
+
+	# switch dimension
+	if ($dim == 1) {
+		push(@outdata, $tab.$tab."int vindex, i;\n");
+		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
+		push(@outdata, $tab.$tab."CCTK_REAL X = cctkGH->cctk_origin_space()[0]+cctkGH->cctk_delta_space()[0]*cctkGH->cctk_lbnd()[0];\n");
+		push(@outdata, $tab.$tab."for (i = 0; i < iend; ++i, X += cctkGH->cctk_delta_space()[0]) {\n");
+		push(@outdata, $tab.$tab.$tab."vindex = i;\n");
+		push(@outdata, $tab.$tab.$tab."x[vindex] = X;\n");
+		push(@outdata, $tab.$tab."}\n");
+	} elsif ($dim == 2) {
+		push(@outdata, $tab.$tab."int vindex, i, j;\n");
+		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
+		push(@outdata, $tab.$tab."int jend = cctkGH->cctk_gsh()[1];\n");
+		push(@outdata, $tab.$tab."CCTK_REAL X = cctkGH->cctk_origin_space()[0]+cctkGH->cctk_delta_space()[0]*cctkGH->cctk_lbnd()[0];\n");
+		push(@outdata, $tab.$tab."CCTK_REAL Y = cctkGH->cctk_origin_space()[1]+cctkGH->cctk_delta_space()[1]*cctkGH->cctk_lbnd()[1];\n");
+		push(@outdata, $tab.$tab."for (j = 0; j < jend; ++j, Y += cctkGH->cctk_delta_space()[1]) {\n");
+		push(@outdata, $tab.$tab.$tab."for (i = 0; i < iend; ++i, X += cctkGH->cctk_delta_space()[0]) {\n");
+		push(@outdata, $tab.$tab.$tab.$tab."vindex = (i + iend * j);\n");
+		push(@outdata, $tab.$tab.$tab.$tab."x[vindex] = X; y[vindex] = Y;\n");
+		push(@outdata, $tab.$tab.$tab."}\n");
+		push(@outdata, $tab.$tab.$tab."X = cctkGH->cctk_origin_space()[0];\n");
+		push(@outdata, $tab.$tab."}\n");
+	} elsif ($dim == 3) {
+		push(@outdata, $tab.$tab."int vindex, i, j, k;\n");
+		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
+		push(@outdata, $tab.$tab."int jend = cctkGH->cctk_gsh()[1];\n");
+		push(@outdata, $tab.$tab."int kend = cctkGH->cctk_gsh()[2];\n");
+		push(@outdata, $tab.$tab."CCTK_REAL X = cctkGH->cctk_origin_space()[0]+cctkGH->cctk_delta_space()[0]*cctkGH->cctk_lbnd()[0];\n");
+		push(@outdata, $tab.$tab."CCTK_REAL Y = cctkGH->cctk_origin_space()[1]+cctkGH->cctk_delta_space()[1]*cctkGH->cctk_lbnd()[1];\n");
+		push(@outdata, $tab.$tab."CCTK_REAL Z = cctkGH->cctk_origin_space()[2]+cctkGH->cctk_delta_space()[2]*cctkGH->cctk_lbnd()[2];\n");
+		push(@outdata, $tab.$tab."for (k = 0; k < kend; ++k, Z += cctkGH->cctk_delta_space()[2]) {\n");
+		push(@outdata, $tab.$tab.$tab."for (j = 0; j < jend; ++j, Y += cctkGH->cctk_delta_space()[1]) {\n");
+		push(@outdata, $tab.$tab.$tab.$tab."for (i = 0; i < iend; ++i, X += cctkGH->cctk_delta_space()[0]) {\n");
+		push(@outdata, $tab.$tab.$tab.$tab.$tab."vindex = (i + iend * (j + jend * k));\n");
+		push(@outdata, $tab.$tab.$tab.$tab.$tab."x[vindex] = X; y[vindex] = Y; z[vindex] = Z;\n");
+		push(@outdata, $tab.$tab.$tab.$tab."}\n");
+		push(@outdata, $tab.$tab.$tab.$tab."X = cctkGH->cctk_origin_space()[0];\n");
+		push(@outdata, $tab.$tab.$tab."}\n");
+		push(@outdata, $tab.$tab.$tab."Y = cctkGH->cctk_origin_space()[1];\n");
+		push(@outdata, $tab.$tab."}\n");
+	} else {
+		_err("Dimension $dim is too high!", __FILE__, __LINE__);
+	}
+
+	push(@outdata, $tab."}\n");
+
+	# save
+	$val_ref->{"xyz_func"} = join("", @outdata);
+
+	return;
+}
+
+#
+# This functions initializes cctk_lbnd, cctk_ubnd and cctk_lsh.
+# This cannot be done in parameter parser, since we do not have
+# decomposition there. This is why this needs to be done in
+# initializer.
+#
+# param:
+#  - val_ref: ref to values hash
+#
+# return:
+#  - none, result will be stored in values hash using key "cctk_func"
+#
+sub buildCctkGHFunction
+{
+	my ($val_ref) = @_;
+	my (@outdata, $dim, $i, $x);
+
+	# init
+	$dim = $val_ref->{"dim"};
+
+	# build function
+	push(@outdata, $tab."inline void setupCctkGH(const CoordBox<$dim>& box)\n");
+	push(@outdata, $tab."{\n");
+	for ($i = 0, $x = 'x'; $i < $dim; ++$i, ++$x) {
+		push(@outdata, $tab.$tab."cctkGH->cctk_lsh()[$i]  = box.dimensions.$x();\n");
+		push(@outdata, $tab.$tab."cctkGH->cctk_lbnd()[$i] = box.origin.$x();\n");
+		push(@outdata, $tab.$tab."cctkGH->cctk_ubnd()[$i] = box.origin.$x() + box.dimensions.$x();\n");
+	}
+	push(@outdata, $tab."}\n");
+
+	# save
+	$val_ref->{"cctk_func"} = join("", @outdata);
+
+	return;
+}
+
+#
 # Builds grid function. This function sets up the initial grid.
 #
 # param:
@@ -355,6 +555,10 @@ sub buildGridFunction
 	push(@outdata, "void $init_class"."::"."grid(GridBase<$cell_class, $dim> *target)\n");
 	push(@outdata, "{\n");
 	push(@outdata, "$decl\n");
+	# call functions to set up variables
+	push(@outdata, $tab."setupCctkGH(box);\n");
+	push(@outdata, $tab."setupXYZ();\n");
+	push(@outdata, $tab."\n");
 	push(@outdata, "$code_str\n");
 	push(@outdata, "}\n");
 
@@ -377,17 +581,12 @@ sub buildGridFunction
 sub buildInitHeader
 {
 	my ($val_ref, $out_ref) = @_;
-	my ($dim, $i, @grid_size, $size_coord);
+	my ($dim);
 
 	# init
 	$dim       = $val_ref->{"dim"};
-	# setup grid size in apprioriate dimension
-	for ($i = 0; $i < $dim; ++$i) {
-		push(@grid_size, "cctkGH->cctk_gsh()[$i]");
-	}
-	$size_coord = getCoord("coord", $dim, \@grid_size);
 
-	# FIXME: what to do with x,y,z?
+	# go
 	push(@$out_ref, "#ifndef _INIT_H_\n");
 	push(@$out_ref, "#define _INIT_H_\n");
 	push(@$out_ref, "\n");
@@ -403,54 +602,20 @@ sub buildInitHeader
 	push(@$out_ref, "public:\n");
 	push(@$out_ref, $tab."using SimpleInitializer<$val_ref->{\"cell_class_name\"}>::gridDimensions;\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."$val_ref->{\"class_name\"}() : SimpleInitializer<$val_ref->{\"cell_class_name\"}>($size_coord, cctkGH->cctk_iteration())\n");
-	push(@$out_ref, $tab."{\n");
-	# FIXME: will segfault if dimension < 3
-	push(@$out_ref, $tab.$tab."int i = cctkGH->cctk_gsh()[0];\n");
-	push(@$out_ref, $tab.$tab."int j = cctkGH->cctk_gsh()[1];\n");
-	push(@$out_ref, $tab.$tab."int k = cctkGH->cctk_gsh()[2];\n");
-	push(@$out_ref, $tab.$tab."int size = i * j * k;\n");
-	push(@$out_ref, $tab.$tab."x = new CCTK_REAL[size];\n");
-	push(@$out_ref, $tab.$tab."y = new CCTK_REAL[size];\n");
-	push(@$out_ref, $tab.$tab."z = new CCTK_REAL[size];\n");
-	push(@$out_ref, $tab.$tab."setupXYZ();\n");
-	push(@$out_ref, $tab."}\n");
+	push(@$out_ref, "$val_ref->{\"constructor\"}");
 	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."~$val_ref->{\"class_name\"}()\n");
-	push(@$out_ref, $tab."{\n");
-	push(@$out_ref, $tab.$tab."delete[] x;\n");
-	push(@$out_ref, $tab.$tab."delete[] y;\n");
-	push(@$out_ref, $tab.$tab."delete[] z;\n");
-	push(@$out_ref, $tab."}\n");
+	push(@$out_ref, "$val_ref->{\"deconstructor\"}");
 	push(@$out_ref, "\n");
-	# FIXME: will segfault if dimension < 3
-	push(@$out_ref, $tab."void setupXYZ()\n");
-	push(@$out_ref, $tab."{\n");
-	push(@$out_ref, $tab.$tab."int vindex, i, j, k;\n");
-	push(@$out_ref, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
-	push(@$out_ref, $tab.$tab."int jend = cctkGH->cctk_gsh()[1];\n");
-	push(@$out_ref, $tab.$tab."int kend = cctkGH->cctk_gsh()[2];\n");
-	push(@$out_ref, $tab.$tab."CCTK_REAL X = cctkGH->cctk_origin_space()[0];\n");
-	push(@$out_ref, $tab.$tab."CCTK_REAL Y = cctkGH->cctk_origin_space()[1];\n");
-	push(@$out_ref, $tab.$tab."CCTK_REAL Z = cctkGH->cctk_origin_space()[2];\n");
-	push(@$out_ref, $tab.$tab."for (k = 0; k < kend; ++k, Z += cctkGH->cctk_delta_space()[2]) {\n");
-	push(@$out_ref, $tab.$tab.$tab."for (j = 0; j < jend; ++j, Y += cctkGH->cctk_delta_space()[1]) {\n");
-	push(@$out_ref, $tab.$tab.$tab.$tab."for (i = 0; i < iend; ++i, X += cctkGH->cctk_delta_space()[0]) {\n");
-	push(@$out_ref, $tab.$tab.$tab.$tab.$tab."vindex = (i + iend * (j + jend * k));\n");
-	push(@$out_ref, $tab.$tab.$tab.$tab.$tab."x[vindex] = X; y[vindex] = Y; z[vindex] = Z;\n");
-	push(@$out_ref, $tab.$tab.$tab.$tab."}\n");
-	push(@$out_ref, $tab.$tab.$tab.$tab."X = cctkGH->cctk_origin_space()[0];\n");
-	push(@$out_ref, $tab.$tab.$tab."}\n");
-	push(@$out_ref, $tab.$tab.$tab."Y = cctkGH->cctk_origin_space()[1];\n");
-	push(@$out_ref, $tab.$tab."}\n");
-	push(@$out_ref, $tab."}\n");
+	push(@$out_ref, "$val_ref->{\"xyz_func\"}");
+	push(@$out_ref, "\n");
+	push(@$out_ref, "$val_ref->{\"cctk_func\"}");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."virtual void grid(GridBase<$val_ref->{\"cell_class_name\"}, $dim>*);\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{'param_def'}\n");
 	push(@$out_ref, $tab."// cactus grid hierarchy\n");
 	push(@$out_ref, $tab."static CactusGrid *cctkGH;\n");
-	push(@$out_ref, $tab."// fake x,y,z\n");
+	push(@$out_ref, $tab."// fake x, y, z\n");
 	push(@$out_ref, $tab."CCTK_REAL *x;\n");
 	push(@$out_ref, $tab."CCTK_REAL *y;\n");
 	push(@$out_ref, $tab."CCTK_REAL *z;\n");
@@ -478,11 +643,11 @@ sub buildInitCpp
 	push(@$out_ref, "#include \"init.h\"\n");
 	push(@$out_ref, "#include \"cctk_$val_ref->{\"class_name\"}.h\"\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "// parameter init to default values\n");
+	push(@$out_ref, "// parameter initialisation to default values\n");
 	push(@$out_ref, "$val_ref->{'param_init'}\n");
 	push(@$out_ref, "CactusGrid* $val_ref->{\"class_name\"}::cctkGH = 0;\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "// setting up intitial grid\n");
+	push(@$out_ref, "// setting up initial grid\n");
 	push(@$out_ref, "$val_ref->{'grid_func'}\n");
 	push(@$out_ref, "\n");
 
@@ -534,7 +699,12 @@ sub initValueHash
 	$val_ref->{"cctk_initial_arr"} = ();
 	$val_ref->{"param_def"}        = "";
 	$val_ref->{"param_init"}       = "";
+	$val_ref->{"constructor"}      = "";
+	$val_ref->{"deconstructor"}    = "";
 	$val_ref->{"objects_decl"}     = "";
+	$val_ref->{"xyz_func"}         = "";
+	$val_ref->{"cctk_func"}        = "";
+	$val_ref->{"cctk_func_call"}   = "";
 
 	return;
 }
@@ -587,8 +757,12 @@ sub createInitializerClass
 	# build init specific special macros
 	buildSpecialMacros(\%values, $cell_ref->{"inf_data"}, \@special_macros);
 
-	# build grid function
+	# build grid, setupXYZ and setupCctkGH function as well as (de|con)structor
 	buildGridFunction(\%values);
+	buildXYZFunction(\%values);
+	buildCctkGHFunction(\%values);
+	buildConstructor(\%values);
+	buildDeconstructor(\%values);
 
 	# build cpp and header file
 	buildInitHeader(\%values, \@inith);

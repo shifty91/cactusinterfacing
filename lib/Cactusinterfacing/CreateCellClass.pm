@@ -475,7 +475,7 @@ sub buildCellHeader
 	push(@$out_ref, "class $val_ref->{\"class_name\"}\n");
 	push(@$out_ref, "{\n");
 	push(@$out_ref, "public:\n");
-	# for cactus code using updateLineX which should things a bit faster
+	# for cactus code using updateLineX which should make things a bit faster
 	push(@$out_ref, $tab."class API :\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasFixedCoordsOnlyUpdate,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasSoA,\n");
