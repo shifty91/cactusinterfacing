@@ -481,7 +481,7 @@ sub buildCellHeader
 	push(@$out_ref, $tab.$tab."public APITraits::HasSoA,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasUpdateLineX,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasStencil<Stencils::Moore<$val_ref->{\"dim\"}, 1> >,\n");
-	push(@$out_ref, $tab.$tab."public APITraits::HasCubeTopology<$val_ref->{\"dim\"}>,\n");
+	push(@$out_ref, $tab.$tab."public APITraits::HasTorusTopology<$val_ref->{\"dim\"}>,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasStaticData<$val_ref->{\"static_class_name\"}>\n");
 	push(@$out_ref, $tab."{};\n");
 	push(@$out_ref, "\n");
