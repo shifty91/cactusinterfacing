@@ -600,8 +600,6 @@ sub buildInitHeader
 	push(@$out_ref, "class $val_ref->{\"class_name\"} : public SimpleInitializer<$val_ref->{\"cell_class_name\"}>\n");
 	push(@$out_ref, "{\n");
 	push(@$out_ref, "public:\n");
-	push(@$out_ref, $tab."using SimpleInitializer<$val_ref->{\"cell_class_name\"}>::gridDimensions;\n");
-	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"constructor\"}");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"deconstructor\"}");
