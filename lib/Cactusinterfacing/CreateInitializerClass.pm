@@ -351,31 +351,7 @@ sub buildConstructor
 
 	# go
 	push(@outdata, $tab."$class() : SimpleInitializer<$val_ref->{\"cell_class_name\"}>($size_coord, cctkGH->cctk_iteration())\n");
-	push(@outdata, $tab."{\n");
-
-	if ($dim == 1) {
-		push(@outdata, $tab.$tab."int i = cctkGH->cctk_lsh()[0];\n");
-		push(@outdata, $tab.$tab."int size = i;\n");
-		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
-	} elsif ($dim == 2) {
-		push(@outdata, $tab.$tab."int i = cctkGH->cctk_lsh()[0];\n");
-		push(@outdata, $tab.$tab."int j = cctkGH->cctk_lsh()[1];\n");
-		push(@outdata, $tab.$tab."int size = i * j;\n");
-		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
-		push(@outdata, $tab.$tab."y = new CCTK_REAL[size];\n");
-	} elsif ($dim == 3) {
-		push(@outdata, $tab.$tab."int i = cctkGH->cctk_lsh()[0];\n");
-		push(@outdata, $tab.$tab."int j = cctkGH->cctk_lsh()[1];\n");
-		push(@outdata, $tab.$tab."int k = cctkGH->cctk_lsh()[2];\n");
-		push(@outdata, $tab.$tab."int size = i * j * k;\n");
-		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
-		push(@outdata, $tab.$tab."y = new CCTK_REAL[size];\n");
-		push(@outdata, $tab.$tab."z = new CCTK_REAL[size];\n");
-	} else {
-		_err("Dimension $dim is too high!", __FILE__, __LINE__);
-	}
-
-	push(@outdata, $tab."}\n");
+	push(@outdata, $tab."{}\n");
 
 	# save data
 	$val_ref->{"constructor"} = join("", @outdata);
@@ -435,11 +411,14 @@ sub buildXYZFunction
 	# init
 	$dim = $val_ref->{"dim"};
 
-	push(@outdata, $tab."inline void setupXYZ()\n");
+	push(@outdata, $tab."void setupXYZ()\n");
 	push(@outdata, $tab."{\n");
 
 	# switch dimension
 	if ($dim == 1) {
+		push(@outdata, $tab.$tab."int a = cctkGH->cctk_lsh()[0];\n");
+		push(@outdata, $tab.$tab."int size = a;\n");
+		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
 		push(@outdata, $tab.$tab."int vindex, i;\n");
 		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
 		push(@outdata, $tab.$tab."CCTK_REAL X = cctkGH->cctk_origin_space()[0]+cctkGH->cctk_delta_space()[0]*cctkGH->cctk_lbnd()[0];\n");
@@ -448,6 +427,11 @@ sub buildXYZFunction
 		push(@outdata, $tab.$tab.$tab."x[vindex] = X;\n");
 		push(@outdata, $tab.$tab."}\n");
 	} elsif ($dim == 2) {
+		push(@outdata, $tab.$tab."int a = cctkGH->cctk_lsh()[0];\n");
+		push(@outdata, $tab.$tab."int b = cctkGH->cctk_lsh()[1];\n");
+		push(@outdata, $tab.$tab."int size = a * b;\n");
+		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
+		push(@outdata, $tab.$tab."y = new CCTK_REAL[size];\n");
 		push(@outdata, $tab.$tab."int vindex, i, j;\n");
 		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
 		push(@outdata, $tab.$tab."int jend = cctkGH->cctk_gsh()[1];\n");
@@ -461,6 +445,13 @@ sub buildXYZFunction
 		push(@outdata, $tab.$tab.$tab."X = cctkGH->cctk_origin_space()[0];\n");
 		push(@outdata, $tab.$tab."}\n");
 	} elsif ($dim == 3) {
+		push(@outdata, $tab.$tab."int a = cctkGH->cctk_lsh()[0];\n");
+		push(@outdata, $tab.$tab."int b = cctkGH->cctk_lsh()[1];\n");
+		push(@outdata, $tab.$tab."int c = cctkGH->cctk_lsh()[2];\n");
+		push(@outdata, $tab.$tab."int size = a * b * c;\n");
+		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
+		push(@outdata, $tab.$tab."y = new CCTK_REAL[size];\n");
+		push(@outdata, $tab.$tab."z = new CCTK_REAL[size];\n");
 		push(@outdata, $tab.$tab."int vindex, i, j, k;\n");
 		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
 		push(@outdata, $tab.$tab."int jend = cctkGH->cctk_gsh()[1];\n");
