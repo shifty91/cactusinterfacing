@@ -549,7 +549,7 @@ sub buildGridFunction
 	# call functions to set up variables
 	push(@outdata, $tab."setupCctkGH(box);\n");
 	push(@outdata, $tab."setupXYZ();\n");
-	push(@outdata, $tab."\n");
+	push(@outdata, "\n");
 	push(@outdata, "$code_str\n");
 	push(@outdata, "}\n");
 
