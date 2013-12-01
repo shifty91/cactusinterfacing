@@ -575,7 +575,7 @@ sub buildInitHeader
 	my ($dim);
 
 	# init
-	$dim       = $val_ref->{"dim"};
+	$dim = $val_ref->{"dim"};
 
 	# go
 	push(@$out_ref, "#ifndef _INIT_H_\n");
@@ -717,7 +717,7 @@ sub createInitializerClass
 	my ($init_ar, $cell_ar, $thorndir, $thorn, $arrangement, $impl, $class);
 	my (@inith, @initcpp);
 	my (@param_macro, @special_macros);
-	my (%inf_data, %param_data, %values);
+	my (%param_data, %values);
 
 	# init
 	initValueHash(\%values);
