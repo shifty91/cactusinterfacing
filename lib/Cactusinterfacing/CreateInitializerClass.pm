@@ -665,7 +665,7 @@ sub preCheck
 	unless (isInherit($thorninfo_ref, $init_ar, $cell_ar) ||
 		isFriend($thorninfo_ref, $init_ar, $cell_ar)) {
 		_err("Init Thorn and Evol Thorn do not share same variables!",
-			__FILE__, __LINE__);
+			 __FILE__, __LINE__);
 	}
 
 	return;
