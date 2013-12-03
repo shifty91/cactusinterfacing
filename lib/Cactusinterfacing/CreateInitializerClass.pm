@@ -327,7 +327,7 @@ sub buildWriteMemberMacro
 }
 
 #
-# Builds constructor. Allocates memory for x, y and z.
+# Builds constructor. Sets x, y and z to NULL.
 #
 # param:
 #  - val_ref: ref to values hash
@@ -350,7 +350,9 @@ sub buildConstructor
 	$size_coord = getCoord("coord", $dim, \@grid_size);
 
 	# go
-	push(@outdata, $tab."$class() : SimpleInitializer<$val_ref->{\"cell_class_name\"}>($size_coord, cctkGH->cctk_iteration())\n");
+	push(@outdata, $tab."$class() :\n");
+	push(@outdata, $tab.$tab."SimpleInitializer<$val_ref->{\"cell_class_name\"}>($size_coord, cctkGH->cctk_iteration()),\n");
+	push(@outdata, $tab.$tab."x(0), y(0), z(0)\n");
 	push(@outdata, $tab."{}\n");
 
 	# save data
@@ -693,7 +695,6 @@ sub initValueHash
 	$val_ref->{"objects_decl"}     = "";
 	$val_ref->{"xyz_func"}         = "";
 	$val_ref->{"cctk_func"}        = "";
-	$val_ref->{"cctk_func_call"}   = "";
 
 	return;
 }
