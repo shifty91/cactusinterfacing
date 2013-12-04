@@ -12,12 +12,13 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Data::Dumper;
-use Cactusinterfacing::Config qw($debug);
+use Cactusinterfacing::Config qw($debug $tab);
 use Cactusinterfacing::Utils qw(_warn);
 
 # exports
 our @EXPORT_OK = qw(generateSoAMacro getCoord getGFIndex getCoordZero
-					getFixedCoordZero getGFIndexLast getGFIndexFirst);
+					getFixedCoordZero getGFIndexLast getGFIndexFirst
+					buildCctkSteerer);
 
 #
 # Generates SoA macro for LibGeoDecomp.
@@ -248,6 +249,59 @@ sub getGFIndex
 
  out:
 	return $ret;
+}
+
+#
+# Builds the cctk steerer. It increments the iteration and the time
+# every step.
+#
+# param:
+#  - cell_class  : name of cell class
+#  - static_class: name of static data class for the cell
+#  - out_ref     : ref to array where to store steerer header file containing
+#                  the class called "CctkSteerer"
+#
+# return:
+#  - none, resulting class will be stored in out_ref
+#
+sub buildCctkSteerer
+{
+	my ($cell_class, $static_class, $out_ref) = @_;
+
+	push(@$out_ref, "#include <libgeodecomp.h>\n");
+	push(@$out_ref, "#include <libgeodecomp/io/steerer.h>\n");
+	push(@$out_ref, "#include \"cell.h\"\n");
+	push(@$out_ref, "#include \"staticdata.h\"\n");
+	push(@$out_ref, "\n");
+	push(@$out_ref, "class CctkSteerer : public Steerer<$cell_class>\n");
+	push(@$out_ref, "{\n");
+	push(@$out_ref, "public:\n");
+	push(@$out_ref, $tab."CctkSteerer($static_class *staticData) :\n");
+	push(@$out_ref, $tab.$tab."Steerer<$cell_class>(1),\n");
+	push(@$out_ref, $tab.$tab."data(staticData)\n");
+	push(@$out_ref, $tab.$tab."{}\n");
+	push(@$out_ref, $tab."virtual void nextStep(\n");
+	push(@$out_ref, $tab.$tab."GridType *grid,\n");
+	push(@$out_ref, $tab.$tab."const Region<Topology::DIM>& validRegion,\n");
+	push(@$out_ref, $tab.$tab."const CoordType& globalDimensions,\n");
+	push(@$out_ref, $tab.$tab."unsigned step,\n");
+	push(@$out_ref, $tab.$tab."SteererEvent event,\n");
+	push(@$out_ref, $tab.$tab."std::size_t rank,\n");
+	push(@$out_ref, $tab.$tab."bool lastCall,\n");
+	push(@$out_ref, $tab.$tab."SteererFeedback *feedback)\n");
+	push(@$out_ref, $tab."{\n");
+	push(@$out_ref, $tab.$tab."// increment current iteration and timestep\n");
+	push(@$out_ref, $tab.$tab."data->cctkGH->IncrCctkIteration();\n");
+	push(@$out_ref, $tab.$tab."data->cctkGH->incrCctkTime();\n");
+	push(@$out_ref, "\n");
+	push(@$out_ref, $tab."// finally set data back\n");
+	push(@$out_ref, $tab."feedback->setStaticData(*data);\n");
+	push(@$out_ref, $tab."}\n");
+	push(@$out_ref, "private:\n");
+	push(@$out_ref, $tab."$static_class *data;\n");
+	push(@$out_ref, "};\n");
+
+	return;
 }
 
 1;
