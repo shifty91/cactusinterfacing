@@ -338,20 +338,21 @@ sub buildWriteMemberMacro
 sub buildConstructor
 {
 	my ($val_ref) = @_;
-	my (@outdata, $class, $dim, $i, $x, @grid_size, $size_coord);
+	my (@outdata, $class, $cell_class, $dim, $i, $x, @grid_size, $size_coord);
 
 	# init
-	$dim   = $val_ref->{"dim"};
-	$class = $val_ref->{"class_name"};
+	$dim        = $val_ref->{"dim"};
+	$class      = $val_ref->{"class_name"};
+	$cell_class = $val_ref->{"cell_class_name"};
 	# setup grid size in apprioriate dimension
 	for ($i = 0; $i < $dim; ++$i) {
 		push(@grid_size, "cctkGH->cctk_gsh()[$i]");
 	}
 	$size_coord = getCoord("coord", $dim, \@grid_size);
 
-	# go
-	push(@outdata, $tab."$class() :\n");
-	push(@outdata, $tab.$tab."SimpleInitializer<$val_ref->{\"cell_class_name\"}>($size_coord, cctkGH->cctk_iteration()),\n");
+	# itMax contains the steps to perform
+	push(@outdata, $tab."$class(const unsigned& itMax) :\n");
+	push(@outdata, $tab.$tab."SimpleInitializer<$cell_class>($size_coord, itMax),\n");
 	push(@outdata, $tab.$tab."x(0), y(0), z(0)\n");
 	push(@outdata, $tab."{}\n");
 

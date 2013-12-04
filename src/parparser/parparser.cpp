@@ -43,28 +43,8 @@
 		}													\
 	} while (0)
 
-/**
- * Checks whether an parameter is given and
- * sets it directly into cactus grid hierarchy via
- * a pointer. This is why an index is needed here.
- *
- * @param name
- * @param type
- * @param toSet
- * @param index
- *
- * @return
- */
-#define CGETANDSETINDEX(name, type, toSet, index)			\
-	do {													\
-		if (exists(#name)) {								\
-			type tmp = fromString<type>(getString(#name));	\
-			m_cctkGH->toSet()[index] = tmp;					\
-		}													\
-	} while (0)
-
 ParParser::ParParser(const char *file) :
-	m_file(file)
+	m_parsed(false), m_file(file)
 {
 	unsigned int dim = CCTKGHDIM;
 	m_cctkGH         = new CactusGrid(dim);
@@ -74,7 +54,7 @@ ParParser::ParParser(const char *file) :
 }
 
 ParParser::ParParser(const std::string& file) :
-	m_file(file.c_str())
+	m_parsed(false), m_file(file.c_str())
 {
 	unsigned int dim = CCTKGHDIM;
 	m_cctkGH         = new CactusGrid(dim);
@@ -165,8 +145,7 @@ void ParParser::initDefaults(void)
 
 void ParParser::proceedCactus(void)
 {
-	// FIXME: this isn't correct
-	CGETANDSET(cactus::cctk_itlast, unsigned int, cctk_iteration);
+	GET(cactus::cctk_itlast, unsigned int, m_it_max);
 }
 
 void ParParser::proceedPUGH(void)
@@ -444,4 +423,6 @@ void ParParser::parse()
 
 	// setup thorn specific parameters
 	SETUPTHORNPARAMETERS;
+
+	m_parsed = true;
 }

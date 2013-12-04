@@ -366,7 +366,23 @@ public:
 	 *
 	 * @return the old one which equals rhs
 	 */
-	CactusGrid& operator= (const CactusGrid& rhs);
+	CactusGrid& operator = (const CactusGrid& rhs);
+	/**
+	 * Increments current iteration.
+	 *
+	 */
+	void incrCctkIteration()
+	{
+		m_cctk_iteration++;
+	}
+	/**
+	 * Increases current time.
+	 *
+	 */
+	void incrCctkTime()
+	{
+		m_cctk_time += m_cctk_delta_time;
+	}
 
 #ifdef DEBUG
 	/**

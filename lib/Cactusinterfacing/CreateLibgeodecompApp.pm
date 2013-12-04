@@ -58,24 +58,11 @@ sub createMain
 	push(@$out_ref, "\n");
 	push(@$out_ref, "using namespace LibGeoDecomp;\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "static void prepareSimulation(char *argv[])\n");
-	push(@$out_ref, "{\n");
-	push(@$out_ref, $tab."ParParser parser(argv[1]);\n");
-	push(@$out_ref, $tab."parser.parse();\n");
-	push(@$out_ref, $tab."CactusGrid *cctkGH = parser.getCctkGH();\n");
-	push(@$out_ref, "#ifdef DEBUG\n");
-	push(@$out_ref, $tab."cctkGH->dumpCctkGH();\n");
-	push(@$out_ref, "#endif\n");
-	push(@$out_ref, $tab."// set cctkGH pointer to cell/init class\n");
-	push(@$out_ref, $tab.$cell_class."::staticData.cctkGH = cctkGH;\n");
-	push(@$out_ref, $tab.$init_class."::cctkGH = cctkGH;\n");
-	push(@$out_ref, $tab."return;\n");
-	push(@$out_ref, "}\n");
-	push(@$out_ref, "\n");
 	push(@$out_ref, "static void cleanup()\n");
 	push(@$out_ref, "{\n");
 	push(@$out_ref, $tab."// free cactus grid hierarchy\n");
 	push(@$out_ref, $tab."delete ".$cell_class."::staticData.cctkGH;\n");
+	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."return;\n");
 	push(@$out_ref, "}\n");
 	push(@$out_ref, "\n");
@@ -86,11 +73,9 @@ sub createMain
 	if ($mpi) {
 		push(@$out_ref, $tab."MPI_Init(&argc, &argv);\n");
 		push(@$out_ref, $tab."LibGeoDecomp::Typemaps::initializeMaps();\n");
+		push(@$out_ref, "\n");
 	}
-	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."prepareSimulation(argv);\n");
-	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."runSimulation();\n");
+	push(@$out_ref, $tab."runSimulation(argv[1]);\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."cleanup();\n");
 	push(@$out_ref, "\n");
@@ -125,11 +110,21 @@ sub createRunSimulation
 	# init
 	$mpi = $opt_ref->{"mpi"};
 
-	push(@$out_ref, "static void runSimulation()\n");
+	push(@$out_ref, "static void runSimulation(const char *paramFile)\n");
 	push(@$out_ref, "{\n");
 	push(@$out_ref, $tab."int outputFrequency = 1;\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."$init_class *init = new $init_class();\n");
+	push(@$out_ref, $tab."ParParser parser(paramFile);\n");
+	push(@$out_ref, $tab."parser.parse();\n");
+	push(@$out_ref, $tab."CactusGrid *cctkGH = parser.getCctkGH();\n");
+	push(@$out_ref, "#ifdef DEBUG\n");
+	push(@$out_ref, $tab."cctkGH->dumpCctkGH();\n");
+	push(@$out_ref, "#endif\n");
+	push(@$out_ref, $tab."// set cctkGH pointer to cell/init class\n");
+	push(@$out_ref, $tab.$cell_class."::staticData.cctkGH = cctkGH;\n");
+	push(@$out_ref, $tab.$init_class."::cctkGH = cctkGH;\n");
+	push(@$out_ref, "\n");
+	push(@$out_ref, $tab."$init_class *init = new $init_class(parser.itMax());\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."SerialSimulator<$cell_class> sim(init);\n");
 

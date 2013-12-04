@@ -31,6 +31,7 @@
 class ParParser
 {
 private:
+	bool m_parsed;
 	const char *m_file;			/**< parameter file */
 	std::map<std::string, std::string> m_parMap; /**< hash map to store parsing result */
 	CactusGrid *m_cctkGH;		/**< cactus grid hierachy to set up */
@@ -53,6 +54,7 @@ private:
 	CCTK_REAL m_courant_fac;	/**< courant factor */
 	CCTK_REAL m_courant_speed;	/**< courant speed */
 	CCTK_REAL m_courant_min_time; /**< courant minimum time */
+	unsigned  m_it_max;			/**< maximum iteration */
 	/**
 	 * Parses a line of parameter file
 	 * and stores impl::name and value into the hash map.
@@ -199,11 +201,30 @@ public:
 	void parse();
 	/**
 	 * Returns a pointer to cactus grid hierarchy.
-	 * Note: the caller has to free that object.
+	 * Note: The caller has to free that object and call parse() first.
 	 *
 	 * @return pointer to cctkGH
 	 */
-	CactusGrid *getCctkGH() { return m_cctkGH; }
+	CactusGrid *getCctkGH() const
+	{
+		if (!m_parsed)
+			throw std::logic_error("ParParser: Call parse() first!");
+
+		return m_cctkGH;
+	}
+	/**
+	 * Gets the specified maximum number of iterations.
+	 * Note: Call parse() first.
+	 *
+	 * @return maximum number of iterations
+	 */
+	const unsigned& itMax() const
+	{
+		if (!m_parsed)
+			throw std::logic_error("ParParser: Call parse() first!");
+
+		return m_it_max;
+	}
 };
 
 #endif /* _PARPARSER_H_ */
