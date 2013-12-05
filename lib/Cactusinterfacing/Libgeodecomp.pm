@@ -279,7 +279,7 @@ sub buildCctkSteerer
 	push(@$out_ref, $tab."CctkSteerer($static_class *staticData) :\n");
 	push(@$out_ref, $tab.$tab."Steerer<$cell_class>(1),\n");
 	push(@$out_ref, $tab.$tab."data(staticData)\n");
-	push(@$out_ref, $tab.$tab."{}\n");
+	push(@$out_ref, $tab."{}\n");
 	push(@$out_ref, $tab."virtual void nextStep(\n");
 	push(@$out_ref, $tab.$tab."GridType *grid,\n");
 	push(@$out_ref, $tab.$tab."const Region<Topology::DIM>& validRegion,\n");
@@ -294,8 +294,8 @@ sub buildCctkSteerer
 	push(@$out_ref, $tab.$tab."data->cctkGH->IncrCctkIteration();\n");
 	push(@$out_ref, $tab.$tab."data->cctkGH->incrCctkTime();\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."// finally set data back\n");
-	push(@$out_ref, $tab."feedback->setStaticData(*data);\n");
+	push(@$out_ref, $tab.$tab."// finally set data back\n");
+	push(@$out_ref, $tab.$tab."feedback->setStaticData(*data);\n");
 	push(@$out_ref, $tab."}\n");
 	push(@$out_ref, "private:\n");
 	push(@$out_ref, $tab."$static_class *data;\n");
