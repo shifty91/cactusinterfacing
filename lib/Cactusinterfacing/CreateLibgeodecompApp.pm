@@ -20,6 +20,7 @@ use Cactusinterfacing::Make qw(createLibgeodecompMakefile);
 use Cactusinterfacing::CreateCellClass qw(createCellClass);
 use Cactusinterfacing::CreateInitializerClass qw(createInitializerClass);
 use Cactusinterfacing::CreateSelector qw(createSelectors);
+use Cactusinterfacing::Libgeodecomp qw(buildCctkSteerer);
 use Cactusinterfacing::ThornList qw(parseThornList);
 
 # exports
@@ -55,6 +56,7 @@ sub createMain
 	push(@$out_ref, "#include \"init.h\"\n");
 	push(@$out_ref, "#include \"parparser.h\"\n");
 	push(@$out_ref, "#include \"selectors.h\"\n");
+	push(@$out_ref, "#include \"cctksteerer.h\"\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "using namespace LibGeoDecomp;\n");
 	push(@$out_ref, "\n");
@@ -105,10 +107,11 @@ sub createMain
 sub createRunSimulation
 {
 	my ($opt_ref, $sel_ref, $init_class, $cell_class, $out_ref) = @_;
-	my ($mpi);
+	my ($mpi, $static_pointer);
 
 	# init
-	$mpi = $opt_ref->{"mpi"};
+	$mpi            = $opt_ref->{"mpi"};
+	$static_pointer = "&" . $cell_class . "::staticData";
 
 	push(@$out_ref, "static void runSimulation(const char *paramFile)\n");
 	push(@$out_ref, "{\n");
@@ -125,6 +128,7 @@ sub createRunSimulation
 	push(@$out_ref, $tab.$init_class."::cctkGH = cctkGH;\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."$init_class *init = new $init_class(parser.itMax());\n");
+	push(@$out_ref, $tab."CctkSteerer *steerer = new CctkSteerer($static_pointer);\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."SerialSimulator<$cell_class> sim(init);\n");
 
@@ -153,6 +157,7 @@ sub createRunSimulation
 
 		push(@$out_ref, $writer."\n");
 	}
+	push(@$out_ref, $tab."sim.addSteerer(steerer);\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."sim.run();\n");
 	push(@$out_ref, "}\n");
@@ -325,7 +330,7 @@ sub createLibgeodecompApp
 	my ($config_ref) = @_;
 	my ($outputdir, $init_class, $cell_class);
 	my (%option, %thorninfo);
-	my (%cell, %init, %selector, @main, @make, @paramh);
+	my (%cell, %init, %selector, @main, @make, @paramh, @cctksteerer);
 
 	# init
 	$outputdir = $config_ref->{"outputdir"}."/".$config_ref->{"config"};
@@ -344,6 +349,8 @@ sub createLibgeodecompApp
 	createCellClass($config_ref, \%thorninfo, \%cell);
 	createInitializerClass($config_ref, \%thorninfo, \%cell, \%init);
 	createSelectors($cell{"inf_data"}, $cell{"class_name"}, \%selector);
+	buildCctkSteerer($cell{"class_name"}, $cell{"static_data_class"}{"class_name"},
+					 \@cctksteerer);
 
 	# get class names
 	$init_class = $init{"class_name"};
@@ -353,7 +360,7 @@ sub createLibgeodecompApp
 	createMain(\%option, \%selector, ,$init_class, $cell_class, \@main);
 	createParameterHeader("parameter", \%init, \%cell, \@paramh);
 
-	# write main, cell, init, parameter, selectors and the static data class
+	# write main, cell, init, parameter, selectors, static data class and steerer
 	util_writeFile(\@main,                 $outputdir."/main.cpp");
 	util_writeFile(\@paramh,               $outputdir."/parameter.h");
 	util_writeFile($cell{"cellcpp"},       $outputdir."/cell.cpp");
@@ -362,6 +369,7 @@ sub createLibgeodecompApp
 	util_writeFile($init{"inith"},         $outputdir."/init.h");
 	util_writeFile($selector{"selectorh"}, $outputdir."/selectors.h");
 	util_writeFile($cell{"static_data_class"}{"statich"}, $outputdir."/staticdata.h");
+	util_writeFile(\@cctksteerer,          $outputdir."/cctksteerer.h");
 
 	# setup include dir
 	setupIncludeDir(\%init, \%cell, $config_ref, $outputdir);
