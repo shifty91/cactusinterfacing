@@ -293,9 +293,6 @@ sub buildCctkSteerer
 	push(@$out_ref, $tab.$tab."// increment current iteration and timestep\n");
 	push(@$out_ref, $tab.$tab."data->cctkGH->incrCctkIteration();\n");
 	push(@$out_ref, $tab.$tab."data->cctkGH->incrCctkTime();\n");
-	push(@$out_ref, "\n");
-	push(@$out_ref, $tab.$tab."// finally set data back\n");
-	push(@$out_ref, $tab.$tab."feedback->setStaticData(*data);\n");
 	push(@$out_ref, $tab."}\n");
 	push(@$out_ref, "private:\n");
 	push(@$out_ref, $tab."$static_class *data;\n");
