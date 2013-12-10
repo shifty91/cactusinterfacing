@@ -120,9 +120,6 @@ sub createRunSimulation
 	push(@$out_ref, $tab."ParParser parser(paramFile);\n");
 	push(@$out_ref, $tab."parser.parse();\n");
 	push(@$out_ref, $tab."CactusGrid *cctkGH = parser.getCctkGH();\n");
-	push(@$out_ref, "#ifdef DEBUG\n");
-	push(@$out_ref, $tab."cctkGH->dumpCctkGH();\n");
-	push(@$out_ref, "#endif\n");
 	push(@$out_ref, $tab."// set cctkGH pointer to cell/init class\n");
 	push(@$out_ref, $tab.$cell_class."::staticData.cctkGH = cctkGH;\n");
 	push(@$out_ref, $tab.$init_class."::cctkGH = cctkGH;\n");
