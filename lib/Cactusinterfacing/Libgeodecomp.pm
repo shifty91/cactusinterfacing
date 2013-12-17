@@ -290,9 +290,11 @@ sub buildCctkSteerer
 	push(@$out_ref, $tab.$tab."bool lastCall,\n");
 	push(@$out_ref, $tab.$tab."SteererFeedback *feedback)\n");
 	push(@$out_ref, $tab."{\n");
-	push(@$out_ref, $tab.$tab."// increment current iteration and timestep\n");
-	push(@$out_ref, $tab.$tab."data->cctkGH->incrCctkIteration();\n");
-	push(@$out_ref, $tab.$tab."data->cctkGH->incrCctkTime();\n");
+	push(@$out_ref, $tab.$tab."if (event == STEERER_NEXT_STEP) {\n");
+	push(@$out_ref, $tab.$tab.$tab."// increment current iteration and timestep\n");
+	push(@$out_ref, $tab.$tab.$tab."data->cctkGH->incrCctkIteration();\n");
+	push(@$out_ref, $tab.$tab.$tab."data->cctkGH->incrCctkTime();\n");
+	push(@$out_ref, $tab.$tab."}\n");
 	push(@$out_ref, $tab."}\n");
 	push(@$out_ref, "private:\n");
 	push(@$out_ref, $tab."$static_class *data;\n");
