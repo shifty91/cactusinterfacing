@@ -199,7 +199,7 @@ sub util_input
 
 #
 # Creates a directory given by parameter dir.
-# It works recursively like `mkdir -p`.
+# It works recursively like `mkdir -p'.
 #
 # param:
 #  - dir: directory to be created
@@ -218,9 +218,9 @@ sub util_mkdir
 }
 
 #
-# error checked copy
+# Error checked copy.
 #
-# it is possible to use wildcars here:
+# It is possible to use wildcars here:
 #  - example: util_cp("*.h", "/tmp");
 #
 # param:
@@ -269,7 +269,7 @@ sub util_arrayToHash
 }
 
 #
-# Read a file and returns its content.
+# Read a file and return its content.
 #
 # param:
 #  - file   : file to read
@@ -319,15 +319,15 @@ sub util_writeFile
 }
 
 #
-# Do directory listing (like `ls`).
+# Do directory listing (like `ls').
 # .dotfiles will be skipped.
 #
 # param:
-#  - $dir    : directory
-#  - $out_ref: ref of an array to store content
+#  - dir    : directory
+#  - out_ref: ref of an array to store content
 #
 # return:
-#  - none, values will be stored in $out_ref
+#  - none, values will be stored in out_ref
 #
 sub util_readDir
 {
@@ -357,7 +357,8 @@ sub util_readDir
 # return:
 #  - trimmed string
 #
-sub util_trim {
+sub util_trim
+{
 	my ($string) = @_;
 
 	$string =~ s/^\s+//;
