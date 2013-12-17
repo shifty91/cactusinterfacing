@@ -207,7 +207,7 @@ sub buildParameterMacros
 
 #
 # Generates macros for LibGeoDecomps variables to have same code
-# as cactus has. An example:
+# as Cactus has. An example:
 #   #define phi     &hoodNew[FixedCoord<0, 0, 0>()].var_phi
 #   #define phi_p   &hoodOld[FixedCoord<0, 0, 0>()].var_phi
 #   #define phi_p_p &hoodOld[FixedCoord<0, 0, 0>()].var_phi_p
@@ -409,7 +409,7 @@ sub adjustUpdateLine
 	@blocks = $codestr =~ /((?:for\s*\([\w\s()+\-*\/=<>;,\[\]]*\)\s*\{\s*){$dim})/g;
 	unless (@blocks) {
 		_warn("Could not adjust loop indices.\n  -> You propably want to adjust the".
-				" code on your own.", __FILE__, __LINE__);
+			  " code on your own.", __FILE__, __LINE__);
 		goto out;
 	}
 
@@ -553,16 +553,16 @@ sub initValueHash
 {
 	my ($val_ref) = @_;
 
-	$val_ref->{"dim"}                  = 0;
-	$val_ref->{"class_name"}           = "";
-	$val_ref->{"cctk_evol_arr"}        = ();
-	$val_ref->{"cctk_evol"}            = "";
-	$val_ref->{"update_line"}          = "";
-	$val_ref->{"inf_vars"}             = "";
-	$val_ref->{"cell_params"}          = "";
-	$val_ref->{"cell_init_params"}     = "";
-	$val_ref->{"soa_macro"}            = "";
-	$val_ref->{"static_class_name"}    = "";
+	$val_ref->{"dim"}               = 0;
+	$val_ref->{"class_name"}        = "";
+	$val_ref->{"cctk_evol_arr"}     = ();
+	$val_ref->{"cctk_evol"}         = "";
+	$val_ref->{"update_line"}       = "";
+	$val_ref->{"inf_vars"}          = "";
+	$val_ref->{"cell_params"}       = "";
+	$val_ref->{"cell_init_params"}  = "";
+	$val_ref->{"soa_macro"}         = "";
+	$val_ref->{"static_class_name"} = "";
 
 	return;
 }
@@ -572,7 +572,7 @@ sub initValueHash
 # from a given thorn:
 #  - parses interface.ccl to get variables
 #  - parses parameters.ccl to get parameters
-#  - parses schedule.ccl to get functions at specific (cactus-!)timesteps
+#  - parses schedule.ccl to get functions at specific (Cactus-!)timesteps
 #
 # param:
 #  - config_ref   : ref to config hash
@@ -586,17 +586,16 @@ sub initValueHash
 #
 # documentation:
 #  - all relevant and computed values will be stored in values hash:
-#    - dim             : dimension of code (2D/3D/4D)
-#    - class_name      : name of cell class e.g. "Cell"
-#    - param_def       : parameter definitions
-#    - param_init      : parameter initialization
-#    - cctk_evol_arr   : array of evol_func
-#    - cctk_evol       : string of evol function
-#    - update_line     : string of update line function
-#    - inf_vars        : all interface variables definitions
-#    - cell_params     : parameters for constructor
-#    - cell_init_params: init constructor variables
-#    - soa_macro       : string of LibGeoDecomp Struct of Array macro
+#    - dim              : dimension of code (2D/3D/4D)
+#    - class_name       : name of cell class e.g. "Cell"
+#    - cctk_evol_arr    : array of evol_func
+#    - cctk_evol        : string of evol function
+#    - update_line      : string of update line function
+#    - inf_vars         : all interface variables definitions
+#    - cell_params      : parameters for constructor
+#    - cell_init_params : init constructor variables
+#    - soa_macro        : string of LibGeoDecomp Struct of Array macro
+#    - static_class_name: name of the class which holds the static data for cell
 #
 sub createCellClass
 {
@@ -650,15 +649,15 @@ sub createCellClass
 	buildCellCpp(\%values, \@cellcpp);
 
 	# prepare hash
-	$out_ref->{"cellh"}                 = \@cellh;
-	$out_ref->{"cellcpp"}               = \@cellcpp;
-	$out_ref->{"param_macro"}           = \@param_macro;
-	$out_ref->{"special_macros"}        = \@special_macros;
-	$out_ref->{"special_macros_undef"}  = \@special_macros_undef;
-	$out_ref->{"class_name"}            = $values{"class_name"};
-	$out_ref->{"dim"}                   = $values{"dim"};
-	$out_ref->{"inf_data"}              = \%inf_data;
-	$out_ref->{"static_data_class"}     = \%static;
+	$out_ref->{"cellh"}                = \@cellh;
+	$out_ref->{"cellcpp"}              = \@cellcpp;
+	$out_ref->{"param_macro"}          = \@param_macro;
+	$out_ref->{"special_macros"}       = \@special_macros;
+	$out_ref->{"special_macros_undef"} = \@special_macros_undef;
+	$out_ref->{"class_name"}           = $values{"class_name"};
+	$out_ref->{"dim"}                  = $values{"dim"};
+	$out_ref->{"inf_data"}             = \%inf_data;
+	$out_ref->{"static_data_class"}    = \%static;
 
 	return;
 }
