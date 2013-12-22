@@ -359,7 +359,7 @@ sub createLibgeodecompApp
 	$cell_class = $cell{"class_name"};
 
 	# build main()
-	createMain(\%option, \%selector, ,$init_class, $cell_class, \@main);
+	createMain(\%option, \%selector, $init_class, $cell_class, \@main);
 
 	# write main, cell, init, selectors, static data class and steerer
 	util_writeFile(\@main,                 $outputdir."/main.cpp");
