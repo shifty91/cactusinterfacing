@@ -455,10 +455,13 @@ sub adjustUpdateLine
 sub buildCellHeader
 {
 	my ($val_ref, $out_ref) = @_;
-	my ($ncellvars, $nprot, $npriv);
+	my ($dim, $class, $static_class, $ncellvars);
 
 	# init
-	$ncellvars = $val_ref->{"cell_params"} eq "" ? 0 : 1;
+	$dim          = $val_ref->{"dim"};
+	$class        = $val_ref->{"class_name"};
+	$static_class = $val_ref->{"static_class_name"};
+	$ncellvars    = $val_ref->{"cell_params"} eq "" ? 0 : 1;
 
 	# all template related code goes into the header
 	push(@$out_ref, "#ifndef _CELL_H_\n");
@@ -468,28 +471,28 @@ sub buildCellHeader
 	push(@$out_ref, "#include <cmath>\n");
 	push(@$out_ref, "#include \"cctk.h\"\n");
 	push(@$out_ref, "#include \"staticdata.h\"\n");
-	push(@$out_ref, "#include \"cctk_$val_ref->{\"class_name\"}.h\"\n");
+	push(@$out_ref, "#include \"cctk_$class.h\"\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "using namespace LibGeoDecomp;\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "class $val_ref->{\"class_name\"}\n");
+	push(@$out_ref, "class $class\n");
 	push(@$out_ref, "{\n");
 	push(@$out_ref, "public:\n");
-	# for cactus code using updateLineX which should make things a bit faster
 	push(@$out_ref, $tab."class API :\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasFixedCoordsOnlyUpdate,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasSoA,\n");
+	# for cactus code using updateLineX which should make things a bit faster
 	push(@$out_ref, $tab.$tab."public APITraits::HasUpdateLineX,\n");
-	push(@$out_ref, $tab.$tab."public APITraits::HasStencil<Stencils::Moore<$val_ref->{\"dim\"}, 1> >,\n");
-	push(@$out_ref, $tab.$tab."public APITraits::HasTorusTopology<$val_ref->{\"dim\"}>,\n");
-	push(@$out_ref, $tab.$tab."public APITraits::HasStaticData<$val_ref->{\"static_class_name\"}>\n");
+	push(@$out_ref, $tab.$tab."public APITraits::HasStencil<Stencils::Moore<$dim, 1> >,\n");
+	push(@$out_ref, $tab.$tab."public APITraits::HasTorusTopology<$dim>,\n");
+	push(@$out_ref, $tab.$tab."public APITraits::HasStaticData<$static_class>\n");
 	push(@$out_ref, $tab."{};\n");
 	push(@$out_ref, "\n");
 	# check here if there are cell vars for avoiding build failures
 	if (!$ncellvars) {
-		push(@$out_ref, $tab."$val_ref->{\"class_name\"}() {}\n");
+		push(@$out_ref, $tab."$class() {}\n");
 	} else {
-		push(@$out_ref, $tab."$val_ref->{\"class_name\"}($val_ref->{\"cell_params\"}) :\n");
+		push(@$out_ref, $tab."$class($val_ref->{\"cell_params\"}) :\n");
 		push(@$out_ref, $tab.$tab."$val_ref->{\"cell_init_params\"}\n");
 		push(@$out_ref, $tab."{}\n");
 	}
@@ -499,12 +502,12 @@ sub buildCellHeader
 	push(@$out_ref, "$val_ref->{\"inf_vars\"}\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."// class for static data\n");
-	push(@$out_ref, $tab."static $val_ref->{\"static_class_name\"} staticData;\n");
+	push(@$out_ref, $tab."static $static_class staticData;\n");
 	push(@$out_ref, "};\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"soa_macro\"}\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "#include \"cctk_$val_ref->{\"class_name\"}_undef.h\"\n");
+	push(@$out_ref, "#include \"cctk_$class" . "_undef.h\"\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "#endif /* _CELL_H_ */\n");
 
