@@ -31,14 +31,16 @@ use strict;
 use warnings;
 use Exporter 'import';
 use File::Copy;
+use File::Which;
 use File::Path qw(mkpath);
-use Cactusinterfacing::Config qw($debug $verbose $tab);
+use Cactusinterfacing::Config qw($debug $verbose $tab $astyle_options);
 
 # export
 our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings _err
                     _warn dbg info vprint util_writeFile util_mkdir util_trim
                     util_cp util_arrayToHash util_readFile util_input
-					util_indent util_getFunction util_choose util_readDir);
+					util_indent util_getFunction util_choose util_readDir
+					util_tidySrcDir);
 
 #
 # Extract a function body from a given source file.
@@ -109,12 +111,11 @@ sub util_getFunction
 
 
 #
-# Indent existing c/c++ code.
+# Indent existing c/c++ code by using '{' and '}'.
 #
 # param:
 #  - arr_ref: ref to array of code
-#  - offset : very useful to start at a given level
-#    of indention
+#  - offset : very useful to start at a given level of indention
 #
 # return:
 #  - none
@@ -139,6 +140,35 @@ sub util_indent
 
 		$level++ if ($found);
 	}
+
+	return;
+}
+
+#
+# Tidies all source files in given directory. This function uses the external
+# tool `astyle' for that. If `astyle' is not found on the system, this function
+# does simply nothing.
+#
+# param:
+#  - directory: directory where to cleanup sources files
+#
+# return:
+#  - none
+#
+sub util_tidySrcDir
+{
+	my ($directory) = @_;
+	my ($options, $astyle);
+
+	$astyle = which("astyle");
+	return unless ($astyle);
+
+	$options  = "$astyle_options --recursive $directory/'*.cpp' $directory/'*.h' ";
+	$options .= "$directory/include/'*.h'";
+
+	`$astyle $options`;
+	_warn("Executing `astyle' failed with exitcode $?!", __FILE__, __LINE__)
+		if ($?);
 
 	return;
 }

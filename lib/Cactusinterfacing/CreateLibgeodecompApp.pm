@@ -15,7 +15,8 @@ use Exporter 'import';
 use FindBin qw($RealBin);
 use Data::Dumper;
 use Cactusinterfacing::Config qw($tab);
-use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir);
+use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir
+								util_tidySrcDir);
 use Cactusinterfacing::Make qw(createLibgeodecompMakefile);
 use Cactusinterfacing::CreateCellClass qw(createCellClass);
 use Cactusinterfacing::CreateInitializerClass qw(createInitializerClass);
@@ -377,6 +378,9 @@ sub createLibgeodecompApp
 	util_cp("$RealBin/src/parparser/parparser.cpp", $outputdir);
 	util_cp("$RealBin/src/types/cactusgrid.h",      $outputdir);
 	util_cp("$RealBin/src/types/cactusgrid.cpp",    $outputdir);
+
+	# tidy source code
+	util_tidySrcDir($outputdir);
 
 	return;
 }
