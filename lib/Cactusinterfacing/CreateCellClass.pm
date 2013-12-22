@@ -277,9 +277,9 @@ sub buildInfVarMacros
 #  - inf_ref: ref to interface data
 #
 # return:
-#  - none, stores string of update function into value hash, key "update_line"
+#  - none, stores string of update function into value hash, key "update_linex"
 #
-sub buildUpdateLineFunction
+sub buildUpdateLineXFunction
 {
 	my ($val_ref, $inf_ref) = @_;
 	my (@outdata, @indata, $code_str);
@@ -301,7 +301,7 @@ sub buildUpdateLineFunction
 	push(@outdata, $tab."}\n");
 
 	# build final string
-	$val_ref->{"update_line"} = join("", @outdata);
+	$val_ref->{"update_linex"} = join("", @outdata);
 
 	return;
 }
@@ -494,7 +494,7 @@ sub buildCellHeader
 		push(@$out_ref, $tab."{}\n");
 	}
 	push(@$out_ref, "\n");
-	push(@$out_ref, "$val_ref->{\"update_line\"}");
+	push(@$out_ref, "$val_ref->{\"update_linex\"}");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"inf_vars\"}\n");
 	push(@$out_ref, "\n");
@@ -557,7 +557,7 @@ sub initValueHash
 	$val_ref->{"class_name"}        = "";
 	$val_ref->{"cctk_evol_arr"}     = ();
 	$val_ref->{"cctk_evol"}         = "";
-	$val_ref->{"update_line"}       = "";
+	$val_ref->{"update_linex"}      = "";
 	$val_ref->{"inf_vars"}          = "";
 	$val_ref->{"cell_params"}       = "";
 	$val_ref->{"cell_init_params"}  = "";
@@ -590,7 +590,7 @@ sub initValueHash
 #    - class_name       : name of cell class e.g. "Cell"
 #    - cctk_evol_arr    : array of evol_func
 #    - cctk_evol        : string of evol function
-#    - update_line      : string of update line function
+#    - update_linex     : string of update line function
 #    - inf_vars         : all interface variables definitions
 #    - cell_params      : parameters for constructor
 #    - cell_init_params : init constructor variables
@@ -637,7 +637,7 @@ sub createCellClass
 					   \@special_macros_undef);
 
 	# build updateLineX function
-	buildUpdateLineFunction(\%values, \%inf_data);
+	buildUpdateLineXFunction(\%values, \%inf_data);
 
 	# generate a class holding all static data
 	# this is needed for having static data in a LibGeoDecomp cell class
