@@ -18,9 +18,12 @@ The following requirements have to be met, otherwise it won't compile/work:
 	  - Data::Dumper
 	  - File::Copy
 	  - File::Path
+	  - File::Which
 	  - Getopt::Long
 	- Boost Regex           (for perl like regex)
 	- LibGeoDecomp, installed on your system
+	- Cactus
+	- optionally astyle for formatting auto generated code
 
 Perl should be installed on most systems by default. The exporter and
 data dumper modules, too.
