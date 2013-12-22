@@ -239,7 +239,7 @@ sub createParameterHeader
 sub setupIncludeDir
 {
 	my ($init_ref, $cell_ref, $config_ref, $outputdir) = @_;
-	my (@cell, @cell_undef, @init);
+	my (@cell, @cell_undef, @init, @paramh);
 	my ($cell_name, $cell_undef_name, $init_name);
 
 	# init
@@ -250,6 +250,9 @@ sub setupIncludeDir
 
 	# create directory for cctk_ header files
 	util_mkdir($outputdir) unless (-d $outputdir);
+
+	# build parameter header
+	createParameterHeader("parameter", $init_ref, $cell_ref, \@paramh);
 
 	# generate header
 	push(@cell, "#ifndef _CCTK_\U$cell_ref->{\"class_name\"}\E_H\n");
@@ -287,6 +290,7 @@ sub setupIncludeDir
 	push(@init, "#endif /* _CCTK_\U$init_ref->{\"class_name\"}\E_H */\n");
 
 	# wite header
+	util_writeFile(\@paramh, $outputdir."/parameter.h");
 	util_writeFile(\@cell, $outputdir."/$cell_name");
 	util_writeFile(\@cell_undef, $outputdir."/$cell_undef_name");
 	util_writeFile(\@init, $outputdir."/$init_name");
@@ -328,7 +332,7 @@ sub createLibgeodecompApp
 	my ($config_ref) = @_;
 	my ($outputdir, $init_class, $cell_class);
 	my (%option, %thorninfo);
-	my (%cell, %init, %selector, @main, @make, @paramh, @cctksteerer);
+	my (%cell, %init, %selector, @main, @make, @cctksteerer);
 
 	# init
 	$outputdir = $config_ref->{"outputdir"}."/".$config_ref->{"config"};
@@ -354,13 +358,11 @@ sub createLibgeodecompApp
 	$init_class = $init{"class_name"};
 	$cell_class = $cell{"class_name"};
 
-	# build main() and parameter header
+	# build main()
 	createMain(\%option, \%selector, ,$init_class, $cell_class, \@main);
-	createParameterHeader("parameter", \%init, \%cell, \@paramh);
 
-	# write main, cell, init, parameter, selectors, static data class and steerer
+	# write main, cell, init, selectors, static data class and steerer
 	util_writeFile(\@main,                 $outputdir."/main.cpp");
-	util_writeFile(\@paramh,               $outputdir."/parameter.h");
 	util_writeFile($cell{"cellcpp"},       $outputdir."/cell.cpp");
 	util_writeFile($cell{"cellh"},         $outputdir."/cell.h");
 	util_writeFile($init{"initcpp"},       $outputdir."/init.cpp");
