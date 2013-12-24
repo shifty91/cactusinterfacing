@@ -161,7 +161,7 @@ sub getFunctionAt
 	# check if some sources where found
 	if (@sources == 0) {
 		_warn("Could not find any source files. Check your make.code.defn.",
-			__FILE__, __LINE__);
+			  __FILE__, __LINE__);
 		push(@func, "/** No sources found! **/");
 		goto out;
 	}
