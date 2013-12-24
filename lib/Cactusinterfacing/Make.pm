@@ -109,15 +109,16 @@ sub createLibgeodecompMakefile
 	# the rest will be determined by pkg-config, make sure PKG_CONFIG_PATH is set
 	$ldflags = "`pkg-config --libs libgeodecomp` -lboost_regex";
 
-	push(@$out_ref, "RM       = rm\n");
-	push(@$out_ref, "CXX      = $cxx\n");
-	push(@$out_ref, "LD       = $cxx\n");
-	push(@$out_ref, "CXXFLAGS = $cxxflags\n");
-	push(@$out_ref, "LDFLAGS  = $ldflags\n");
-	push(@$out_ref, "SOURCES  = \$(shell find . -name \"*.cpp\")\n");
-	push(@$out_ref, "OBJECTS  = \$(SOURCES:%.cpp=%.o)\n");
-	push(@$out_ref, "DEPS     = \$(OBJECTS:%.o=%.d)\n");
-	push(@$out_ref, "PROG     = $name\n");
+	push(@$out_ref, "RM       := rm\n");
+	push(@$out_ref, "CXX      := $cxx\n");
+	push(@$out_ref, "LD       := $cxx\n");
+	push(@$out_ref, "CXXFLAGS := $cxxflags\n");
+	push(@$out_ref, "LDFLAGS  := $ldflags\n");
+	push(@$out_ref, "OBJDIR   := build\n");
+	push(@$out_ref, "SOURCES  := \$(shell find . -name \"*.cpp\" -type f -print)\n");
+	push(@$out_ref, "OBJECTS  := \$(SOURCES:%.cpp=\$(OBJDIR)/%.o)\n");
+	push(@$out_ref, "DEPS     := \$(OBJECTS:\$(OBJDIR)/%.o=\$(OBJDIR)/%.d)\n");
+	push(@$out_ref, "PROG     := $name\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "all: \$(PROG)\n");
@@ -126,17 +127,19 @@ sub createLibgeodecompMakefile
 	push(@$out_ref, "\t\@echo \"LD\t\t\$@\"\n");
 	push(@$out_ref, "\t\@\$(LD) -o \$@ \$^ \$(LDFLAGS)\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "%.o: %.cpp\n");
+	push(@$out_ref, "\$(OBJDIR)/%.o: %.cpp\n");
+	push(@$out_ref, "\t\@if ! [ -d \$(OBJDIR) ]; then mkdir -p \$(OBJDIR); fi\n");
 	push(@$out_ref, "\t\@echo \"CXX\t\t\$@\"\n");
 	push(@$out_ref, "\t\@\$(CXX) \$(CXXFLAGS) -c -o \$@ \$<\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "%.d: %.cpp\n");
+	push(@$out_ref, "\$(OBJDIR)/%.d: %.cpp\n");
+	push(@$out_ref, "\t\@if ! [ -d \$(OBJDIR) ]; then mkdir -p \$(OBJDIR); fi\n");
 	push(@$out_ref, "\t\@echo \"DEP\t\t\$@\"\n");
 	push(@$out_ref, "\t\@\$(CXX) \$(CXXFLAGS) -MM -MF \$@ -MT \$*.o \$<\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "clean:\n");
 	push(@$out_ref, "\t\@echo \"CLEAN\"\n");
-	push(@$out_ref, "\t\@\$(RM) -f *.o *.d \$(PROG)\n");
+	push(@$out_ref, "\t\@\$(RM) -rf build \$(PROG)\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "ifneq (\$(MAKECMDGOALS),clean)\n");
 	push(@$out_ref, "-include \$(DEPS)\n");
