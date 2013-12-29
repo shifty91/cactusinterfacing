@@ -223,15 +223,15 @@ sub getOptions
 
 	# get options
 	foreach (@$thorn_ref) {
-		$option_ref->{"mpi"}       = 1 if /mpi/i;
-		$option_ref->{"io_jpeg"}   = 1 if /iojpeg$/i;
-		$option_ref->{"io_ascii"}  = 1 if /ioascii$/i;
-		$option_ref->{"io_hdf5"}   = 1 if /iohdf5$/i;
-		$option_ref->{"io_iso"}    = 1 if /isosurfacer$/i;
-		$option_ref->{"d_pugh"}    = 1 if /pugh/i;
-		$option_ref->{"d_carpet"}  = 1 if /carpet/i;
-		$option_ref->{"s_socket"}  = 1 if /socket$/i;
-		$option_ref->{"s_httpd"}   = 1 if /httpd$/i;
+		$option_ref->{"mpi"}      = 1 if /mpi/i;
+		$option_ref->{"io_jpeg"}  = 1 if /iojpeg$/i;
+		$option_ref->{"io_ascii"} = 1 if /ioascii$/i;
+		$option_ref->{"io_hdf5"}  = 1 if /iohdf5$/i;
+		$option_ref->{"io_iso"}   = 1 if /isosurfacer$/i;
+		$option_ref->{"d_pugh"}   = 1 if /pugh/i;
+		$option_ref->{"d_carpet"} = 1 if /carpet/i;
+		$option_ref->{"s_socket"} = 1 if /socket$/i;
+		$option_ref->{"s_httpd"}  = 1 if /httpd$/i;
 	}
 
 	# perform some checks

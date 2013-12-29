@@ -321,7 +321,7 @@ sub buildWriteMemberMacro
 	push(@$out_ref, $tab."private: \\\n");
 	push(@$out_ref, $tab.$tab."GridBase<$cell_class, $dim> *target; \\\n");
 	push(@$out_ref, $tab.$tab."CoordBox<$dim> box; \\\n");
-	push(@$out_ref, $tab."}; \\\n");
+	push(@$out_ref, $tab."};\n");
 
 	return;
 }
