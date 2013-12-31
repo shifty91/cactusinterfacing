@@ -92,6 +92,7 @@ void ParParser::initCctkDefaults(void)
 	m_cctkGH->cctk_levfac(1);
 	m_cctkGH->cctk_levoff(0);
 	m_cctkGH->cctk_levoffdenom(1);
+	m_cctkGH->cctk_bbox(0);
 
 	// set ghostzones to 1
 	m_cctkGH->cctk_nghostzones(1);
