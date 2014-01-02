@@ -155,8 +155,8 @@ unless (defined $config) {
 		$config = util_choose("Choose config to Libgeodecomp App for", \@configs);
 	} elsif (@configs == 0) {
 		_err("You have to build a configuration first.\n".
-			"Therefore run `gmake <configname>-config` in your Cactus directory!",
-			__FILE__, __LINE__);
+			 "Therefore run `gmake <configname>-config` in your Cactus directory!",
+			 __FILE__, __LINE__);
 	} else {
 		$config = $configs[0];
 	}
@@ -167,13 +167,21 @@ $configdir = $cctk_home."/configs/".$config;
 get_thorns(\@thorns, $configdir);
 
 unless (defined $evol_thorn) {
-	# choose evol thorn
-	$evol_thorn = util_choose("Choose Evol Thorn", \@thorns);
+	if (@thorns > 1) {
+		# choose evol thorn
+		$evol_thorn = util_choose("Choose Evol Thorn", \@thorns);
+	} else {
+		$evol_thorn = $thorns[0];
+	}
 }
 
 unless (defined $init_thorn) {
-	# choose init thorn
-	$init_thorn = util_choose("Choose Init Thorn", \@thorns);
+	if (@thorns > 1) {
+		# choose init thorn
+		$init_thorn = util_choose("Choose Init Thorn", \@thorns);
+	} else {
+		$init_thorn = $thorns[0];
+	}
 }
 
 # get output directory
