@@ -9,7 +9,7 @@ void CactusGrid::allocateMemory(unsigned int dim)
 	m_cctk_ubnd         = new int[dim];
 	m_cctk_delta_space  = new CCTK_REAL[dim];
 	m_cctk_origin_space = new CCTK_REAL[dim];
-	m_cctk_bbox         = new int[2 * dim + 1];
+	m_cctk_bbox         = new int[2 * dim];
 	m_cctk_levfac       = new int[dim];
 	m_cctk_levoff       = new int[dim];
 	m_cctk_levoffdenom  = new int[dim];

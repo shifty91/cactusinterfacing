@@ -341,6 +341,18 @@ public:
 			m_cctk_nghostzones[i] = nsize;
 	}
 	/**
+	 * Sets cctk_bbox to nsize in each direction.
+	 *
+	 * @param nsize should be 0 or 1 (this is used as boolean)
+	 */
+	void cctk_bbox(int nsize)
+	{
+		unsigned int i;
+
+		for (i = 0; i < 2 * m_cctk_dim; ++i)
+			m_cctk_bbox[i] = nsize;
+	}
+	/**
 	 * Computes the minimum of cctk_delta_space.
 	 * This is used for setting up cctk_delta_time.
 	 *

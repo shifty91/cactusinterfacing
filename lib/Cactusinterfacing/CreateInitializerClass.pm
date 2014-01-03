@@ -485,7 +485,7 @@ sub buildXYZFunction
 }
 
 #
-# This functions initializes cctk_lbnd, cctk_ubnd and cctk_lsh.
+# This functions initializes cctk_lbnd, cctk_ubnd, cctk_lsh and cctk_bbox.
 # This cannot be done in parameter parser, since we do not have
 # decomposition there. This is why this needs to be done in
 # initializer.
@@ -508,9 +508,16 @@ sub buildCctkGHFunction
 	push(@outdata, $tab."inline void setupCctkGH(const CoordBox<$dim>& box)\n");
 	push(@outdata, $tab."{\n");
 	for ($i = 0, $x = 'x'; $i < $dim; ++$i, ++$x) {
+		my ($bbox_idx0, $bbox_idx1);
+
+		$bbox_idx0 = 2 * $i;
+		$bbox_idx1 = 2 * $i + 1;
+
 		push(@outdata, $tab.$tab."cctkGH->cctk_lsh()[$i]  = box.dimensions.$x();\n");
 		push(@outdata, $tab.$tab."cctkGH->cctk_lbnd()[$i] = box.origin.$x();\n");
 		push(@outdata, $tab.$tab."cctkGH->cctk_ubnd()[$i] = box.origin.$x() + box.dimensions.$x() - 1;\n");
+		push(@outdata, $tab.$tab."cctkGH->cctk_bbox()[$bbox_idx0] = box.origin.$x() == 0;\n");
+		push(@outdata, $tab.$tab."cctkGH->cctk_bbox()[$bbox_idx1] = (box.origin.$x() + dimensions.$x()) == cctkGH->cctk_gsh()[$i];\n");
 	}
 	push(@outdata, $tab."}\n");
 
