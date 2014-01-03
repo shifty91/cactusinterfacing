@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Data::Dumper;
-use Cactusinterfacing::Config qw($tab);
+use Cactusinterfacing::Config qw($tab $ghostzone_width $topology);
 use Cactusinterfacing::Utils qw(util_indent util_input _err _warn);
 use Cactusinterfacing::Schedule qw(getEvolFunction);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
@@ -483,8 +483,8 @@ sub buildCellHeader
 	push(@$out_ref, $tab.$tab."public APITraits::HasSoA,\n");
 	# for cactus code using updateLineX which should make things a bit faster
 	push(@$out_ref, $tab.$tab."public APITraits::HasUpdateLineX,\n");
-	push(@$out_ref, $tab.$tab."public APITraits::HasStencil<Stencils::Moore<$dim, 1> >,\n");
-	push(@$out_ref, $tab.$tab."public APITraits::HasTorusTopology<$dim>,\n");
+	push(@$out_ref, $tab.$tab."public APITraits::HasStencil<Stencils::Moore<$dim, $ghostzone_width> >,\n");
+	push(@$out_ref, $tab.$tab."public APITraits::Has"."$topology"."Topology<$dim>,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasStaticData<$static_class>\n");
 	push(@$out_ref, $tab."{};\n");
 	push(@$out_ref, "\n");

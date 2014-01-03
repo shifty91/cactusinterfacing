@@ -13,7 +13,15 @@ use warnings;
 use Exporter 'import';
 
 # export
-our @EXPORT_OK = qw($debug $verbose $tab $astyle_options);
+our @EXPORT_OK = qw($debug $verbose $tab $astyle_options $topology $scalar
+					$ghostzone_width checkConfiguration);
+
+
+################################################################################
+# Configuration sections begins here                                           #
+################################################################################
+
+# Change these variables for your needs
 
 # debug
 our $debug   = 1;
@@ -32,5 +40,43 @@ our $astyle_options = "--indent=spaces=4 --brackets=linux --indent-labels ".
 	                  "--pad-oper --unpad-paren --pad-header ".
 	                  "--keep-one-line-statements --suffix=none ".
 	                  "--convert-tabs --indent-preprocessor";
+
+# the topology which should be used
+# Valid topologies are:
+#  - Cube
+#  - Torus
+our $topology = "Cube";
+
+# if a scalar boundary condition is used, you can the actual value here
+our $scalar = 0;
+
+# ghostzone width
+our $ghostzone_width = 1;
+
+################################################################################
+# Configuration section ends here                                              #
+################################################################################
+
+#
+# Checks the values specified user above.
+#
+# param:
+#  - none
+#
+# return:
+#  - true if everything is okay, else false
+#
+sub checkConfiguration
+{
+	my $ret = 1;
+
+	# check general options
+	$ret = 0 if ($debug !~ /\d+/ || $verbose !~ /\d+/);
+	$ret = 0 if ($tab !~ /(?:[ ]+|\t)/);
+	$ret = 0 if ($topology !~ /"Cube|Torus"/);
+	$ret = 0 if ($ghostzone_width !~ /\d+/);
+
+	return $ret;
+}
 
 1;

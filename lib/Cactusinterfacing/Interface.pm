@@ -11,6 +11,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Data::Dumper;
+use Cactusinterfacing::Config qw($scalar);
 use Cactusinterfacing::Utils qw(read_file util_indent _warn _err);
 use Cactusinterfacing::InterfaceParser qw(parse_interface_ccl);
 
@@ -248,7 +249,7 @@ sub buildInterfaceStrings
 
 				push(@inf_vars,    "$vtype $past_name;");
 				# for cell member and constructor declaration
-				push(@c_vars,      "const $vtype& _$past_name = 0");
+				push(@c_vars,      "const $vtype& _$past_name = $scalar");
 				push(@c_init_vars, "$past_name(_$past_name)");
 				++$gfs_cnt;
 			}
