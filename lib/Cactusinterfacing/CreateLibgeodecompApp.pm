@@ -14,9 +14,9 @@ use warnings;
 use Exporter 'import';
 use FindBin qw($RealBin);
 use Data::Dumper;
-use Cactusinterfacing::Config qw($tab);
+use Cactusinterfacing::Config qw($tab checkConfiguration);
 use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir
-								util_tidySrcDir);
+								util_tidySrcDir _err);
 use Cactusinterfacing::Make qw(createLibgeodecompMakefile);
 use Cactusinterfacing::CreateCellClass qw(createCellClass);
 use Cactusinterfacing::CreateInitializerClass qw(createInitializerClass);
@@ -333,6 +333,10 @@ sub createLibgeodecompApp
 	my ($outputdir, $init_class, $cell_class);
 	my (%option, %thorninfo);
 	my (%cell, %init, %selector, @main, @make, @cctksteerer);
+
+	# first of check configuration
+	_err("Configuration is not valid. Check Config.pm", __FILE__, __LINE__)
+		unless (checkConfiguration());
 
 	# init
 	$outputdir = $config_ref->{"outputdir"}."/".$config_ref->{"config"};

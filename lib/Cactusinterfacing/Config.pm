@@ -73,7 +73,7 @@ sub checkConfiguration
 	# check general options
 	$ret = 0 if ($debug !~ /\d+/ || $verbose !~ /\d+/);
 	$ret = 0 if ($tab !~ /(?:[ ]+|\t)/);
-	$ret = 0 if ($topology !~ /"Cube|Torus"/);
+	$ret = 0 if ($topology !~ /^Cube|Torus$/);
 	$ret = 0 if ($ghostzone_width !~ /\d+/);
 
 	return $ret;
