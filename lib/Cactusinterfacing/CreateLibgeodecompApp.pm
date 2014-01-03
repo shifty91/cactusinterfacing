@@ -148,9 +148,9 @@ sub createRunSimulation
 
 		# for mpi using a bov writer else a serial bov writer
 		if ($mpi) {
-			$writer = $tab."sim.addWriter(new BOVWriter<$cell_class, $class>(\"output/$group\", outputFrequency));";
+			$writer = $tab."sim.addWriter(new BOVWriter<$cell_class, $class>(\"$group\", outputFrequency));";
 		} else {
-			$writer = $tab."sim.addWriter(new SerialBOVWriter<$cell_class, $class>(\"output/$group\", outputFrequency));";
+			$writer = $tab."sim.addWriter(new SerialBOVWriter<$cell_class, $class>(\"$group\", outputFrequency));";
 		}
 
 		push(@$out_ref, $writer."\n");
@@ -340,8 +340,6 @@ sub createLibgeodecompApp
 
 	# create directory where to store code
 	util_mkdir($outputdir) unless (-d $outputdir);
-	# create directory for LibGeoDecomp's writers
-	util_mkdir($outputdir."/output") unless (-d $outputdir."/output");
 
 	# gen Makefile and write
 	createLibgeodecompMakefile($config_ref, \%option, \@make);
