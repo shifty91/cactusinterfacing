@@ -2,8 +2,8 @@
 ##
 ## Config.pm
 ##
-## Configuration for cactusinterfacing.
-## Setups some variables, change for your needs.
+## Configuration for the cactusinterfacing tool.
+## This module setups some variables, change them for your needs.
 ##
 
 package Cactusinterfacing::Config;
@@ -18,12 +18,12 @@ our @EXPORT_OK = qw($debug $verbose $tab $astyle_options $topology $scalar
 
 
 ################################################################################
-# Configuration sections begins here                                           #
+# Configuration section begins here                                            #
 ################################################################################
 
-# Change these variables for your needs
+# Change these variables for your needs.
 
-# debug
+# choose whether to use debug or verbose output
 our $debug   = 1;
 our $verbose = 1;
 
@@ -42,12 +42,12 @@ our $astyle_options = "--indent=spaces=4 --brackets=linux --indent-labels ".
 	                  "--convert-tabs --indent-preprocessor";
 
 # the topology which should be used
-# Valid topologies are:
+# valid topologies are:
 #  - Cube
 #  - Torus
 our $topology = "Cube";
 
-# if a scalar boundary condition is used, you can the actual value here
+# if a scalar boundary condition is used, you can set the actual value here
 our $scalar = 0;
 
 # ghostzone width
@@ -58,7 +58,7 @@ our $ghostzone_width = 1;
 ################################################################################
 
 #
-# Checks the values specified user above.
+# Checks the values specified by the user above.
 #
 # param:
 #  - none

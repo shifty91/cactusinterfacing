@@ -47,14 +47,16 @@ my ($help, $config, $evol_thorn, $init_thorn, $cctk_home, $outputdir);
 #
 sub print_usage
 {
-	print STDERR "usage: main.pl [options]\n";
-	print STDERR "Options:\n";
-	print STDERR "--help, -h\t\tShow this help\n";
-	print STDERR "--config\t\tCactus-Configuration to build for\n";
-	print STDERR "--evolthorn, -e\t\tEvolution thorn\n";
-	print STDERR "--initthorn, -i\t\tInit thorn\n";
-	print STDERR "--cactushome\t\tDirectory to Cactus home\n";
-	print STDERR "--outputdir, -o\t\tOutput directory\n";
+	select(STDERR);
+	$| = 1;
+	print "usage: main.pl [options]\n";
+	print "Options:\n";
+	print "\t--help, -h\t\tshow this help\n";
+	print "\t--config\t\tCactus configuration to build for\n";
+	print "\t--evolthorn, -e\t\tevolution thorn\n";
+	print "\t--initthorn, -i\t\tinitialization thorn\n";
+	print "\t--cactushome\t\tdirectory to Cactus Home\n";
+	print "\t--outputdir, -o\t\toutput directory\n";
 
 	exit 0;
 }
@@ -135,7 +137,7 @@ get_args();
 # need help? no problem
 print_usage() if ($help);
 
-vprint("Transforming a Cactus Application into a Libgeodecomp App...");
+vprint("Transforming a Cactus configuration into a LibGeoDecomp application.");
 
 # get cactus directory
 $cctk_home = util_input("Specify the Cactus Home directory (CCTK_HOME)")
@@ -152,10 +154,10 @@ unless (defined $config) {
 
 	# choose one config
 	if (@configs > 1) {
-		$config = util_choose("Choose config to Libgeodecomp App for", \@configs);
+		$config = util_choose("Choose a Cactus configuration to build LibGeoDecomp application for", \@configs);
 	} elsif (@configs == 0) {
 		_err("You have to build a configuration first.\n".
-			 "Therefore run `gmake <configname>-config` in your Cactus directory!",
+			 "Therefore run `gmake <configname>-config` in your Cactus Home directory!",
 			 __FILE__, __LINE__);
 	} else {
 		$config = $configs[0];
@@ -169,7 +171,7 @@ get_thorns(\@thorns, $configdir);
 unless (defined $evol_thorn) {
 	if (@thorns > 1) {
 		# choose evol thorn
-		$evol_thorn = util_choose("Choose Evol Thorn", \@thorns);
+		$evol_thorn = util_choose("Choose evolution Thorn", \@thorns);
 	} else {
 		$evol_thorn = $thorns[0];
 	}
@@ -178,7 +180,7 @@ unless (defined $evol_thorn) {
 unless (defined $init_thorn) {
 	if (@thorns > 1) {
 		# choose init thorn
-		$init_thorn = util_choose("Choose Init Thorn", \@thorns);
+		$init_thorn = util_choose("Choose intialization Thorn", \@thorns);
 	} else {
 		$init_thorn = $thorns[0];
 	}

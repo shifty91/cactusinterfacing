@@ -349,8 +349,8 @@ sub util_writeFile
 }
 
 #
-# Do directory listing (like `ls').
-# .dotfiles will be skipped.
+# Do directory listing (like `ls'). The .dotfiles will be skipped.
+# Returns () if directory is empty or does not exist.
 #
 # param:
 #  - dir    : directory
@@ -364,8 +364,10 @@ sub util_readDir
 	my ($dir, $out_ref) = @_;
 	my ($dh, $file);
 
-	opendir($dh, $dir) ||
-		_err("Cannot open directory $dir: $!", __FILE__, __LINE__);
+	if (!opendir($dh, $dir)) {
+		@$out_ref = ();
+		return;
+	}
 
 	while ($file = readdir $dh) {
 		# skip dotfiles
