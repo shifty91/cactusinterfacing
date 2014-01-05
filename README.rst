@@ -1,53 +1,55 @@
+.. -*- restructuredtext -*-
+
 ==================================
 Automatic Cactus Interfacing
 ==================================
 
 0. Coding Style
----------------
+===============
 The Coding Style follows the following directions:
-	- indention with tabs
-	- tabsize is 4
-	- style is linux
+- indention with tabs
+- tabsize is 4
+- style is linux
 
 1. Requirements
----------------
+===============
 The following requirements have to be met, otherwise it won't compile/work:
-	- Perl modules
-	  - Exporter
-	  - FindBin
-	  - Data::Dumper
-	  - File::Copy
-	  - File::Path
-	  - File::Which
-	  - Getopt::Long
-	- Boost Regex           (for perl like regex)
-	- LibGeoDecomp, installed on your system
-	- Cactus
-	- optionally astyle for formatting auto generated code
+- Perl modules
+  - Exporter
+  - FindBin
+  - Data::Dumper
+  - File::Copy
+  - File::Path
+  - File::Which
+  - Getopt::Long
+  - Boost Regex           (for perl like regex)
+- LibGeoDecomp, installed on your system
+- Cactus
+- optionally astyle for formatting auto generated code
 
 Perl should be installed on most systems by default. The exporter and
 data dumper modules, too.
 
 Installing LibGeoDecomp is also simple. First you have to clone the
 repository and then build it from source. Therefore you'll need cmake
-installed. An example of building LibGeoDecomp is shown below:
+installed. An example of building LibGeoDecomp is shown below::
 
-$ hg clone http://bitbucket.org/gentryx/libgeodecomp
-$ cd libgeodecomp
-$ mkdir -p build
-$ cd build
-$ cmake ../src
-$ make -j8
-$ make test
-$ sudo make install
-$ sudo ldconfig
+  $ hg clone http://bitbucket.org/gentryx/libgeodecomp
+  $ cd libgeodecomp
+  $ mkdir -p build
+  $ cd build
+  $ cmake ../src
+  $ make -j8
+  $ make test
+  $ sudo make install
+  $ sudo ldconfig
 
 The last command updates the linker cache to find libgeodecomp.so as a new
 library on the system. For further information on building and using LibGeoDecomp,
 please refer to http://www.libgeodecomp.org/.
 
 2. About
----------------------
+========
 This project aims to provide a interface for LibGeoDecomp to
 execute Cactus thorns. It is mostly written in Perl. The code
 parses the thorn's ccl files and generates a C++ cell and
@@ -55,32 +57,36 @@ initializer class for LibGeoDecomp. In order to modify the
 thorn's code as little as possible auto generated macros are used.
 
 The directory layout:
-src/include   - Contains C header files which override some basic
-                Cactus macros and functions like CCTK_REAL etc.
-src/types     - Contains a C++ class which holds the variables representing
-                the Cactus grid hierarchy.
-src/parparser - Contains a C++ parser for Cactus parameter files.
-lib/          - This directory contains the Perl code which parses the thorn's
-                ccl files and generates the appropriate LibGeoDecomp classes.
+- src/include
+  Contains C header files which override some basic
+  Cactus macros and functions like CCTK_REAL etc.
+- src/types
+  Contains a C++ class which holds the variables representing
+  the Cactus grid hierarchy.
+- src/parparser
+  Contains a C++ parser for Cactus parameter files.
+- lib
+  This directory contains the Perl code which parses the thorn's
+  ccl files and generates the appropriate LibGeoDecomp classes.
 
 For authors see file AUTHORS.
 
 3. Example usage
----------------------
-The example below shows the adjustment of the Cactus WaveToyC demo.
+================
+The example below shows the adjustment of the Cactus WaveToyC demo::
 
-$ wget http://www.cactuscode.org/download/GetComponents
-$ chmod 755 GetComponents
-$ ./GetComponents http://cactuscode.org/documentation/tutorials/wavetoydemo/WaveDemo.th
-$ cd Cactus
-$ gmake WaveDemo-config
-$ gmake WaveDemo -j8
-$ export CCTK_HOME="/path/to/Cactus"
-$ cd ../cactusinterfacing
-$ ./main.pl
-$ cd WaveDemo
-$ gmake -j8
-$ ./cactus_WaveDemo <parameter_file>
+  $ wget http://www.cactuscode.org/download/GetComponents
+  $ chmod 755 GetComponents
+  $ ./GetComponents http://cactuscode.org/documentation/tutorials/wavetoydemo/WaveDemo.th
+  $ cd Cactus
+  $ gmake WaveDemo-config
+  $ gmake WaveDemo -j8
+  $ export CCTK_HOME="/path/to/Cactus"
+  $ cd ../cactusinterfacing
+  $ ./main.pl
+  $ cd WaveDemo
+  $ gmake -j8
+  $ ./cactus_WaveDemo <parameter_file>
 
 First of all the cactus flesh and the necessary thorns for building WaveDemo
 are resolved. Next step is to build a configuration. You can either build with
