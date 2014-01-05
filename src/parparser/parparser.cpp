@@ -95,7 +95,7 @@ void ParParser::initCctkDefaults(void)
 	m_cctkGH->cctk_bbox(0);
 
 	// set ghostzones to 1
-	m_cctkGH->cctk_nghostzones(1);
+	m_cctkGH->cctk_nghostzones(GHOSTZONEWIDTH);
 }
 
 void ParParser::initThornDefaults(void)
