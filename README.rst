@@ -7,25 +7,25 @@ Automatic Cactus Interfacing
 0. Coding Style
 ===============
 The Coding Style follows the following directions:
-- indention with tabs
-- tabsize is 4
-- style is linux
+    - indention with tabs
+    - tabsize is 4
+    - style is linux
 
 1. Requirements
 ===============
 The following requirements have to be met, otherwise it won't compile/work:
-- Perl modules
-  - Exporter
-  - FindBin
-  - Data::Dumper
-  - File::Copy
-  - File::Path
-  - File::Which
-  - Getopt::Long
-  - Boost Regex           (for perl like regex)
-- LibGeoDecomp, installed on your system
-- Cactus
-- optionally astyle for formatting auto generated code
+    - Perl modules
+        - Exporter
+        - FindBin
+        - Data::Dumper
+        - File::Copy
+        - File::Path
+        - File::Which
+        - Getopt::Long
+        - Boost Regex           (for perl like regex)
+    - LibGeoDecomp, installed on your system
+    - Cactus
+    - optionally astyle for formatting auto generated code
 
 Perl should be installed on most systems by default. The exporter and
 data dumper modules, too.
@@ -57,17 +57,17 @@ initializer class for LibGeoDecomp. In order to modify the
 thorn's code as little as possible auto generated macros are used.
 
 The directory layout:
-- src/include
-  Contains C header files which override some basic
-  Cactus macros and functions like CCTK_REAL etc.
-- src/types
-  Contains a C++ class which holds the variables representing
-  the Cactus grid hierarchy.
-- src/parparser
-  Contains a C++ parser for Cactus parameter files.
-- lib
-  This directory contains the Perl code which parses the thorn's
-  ccl files and generates the appropriate LibGeoDecomp classes.
+    - src/include :
+      Contains C header files which override some basic
+      Cactus macros and functions like CCTK_REAL etc.
+    - src/types :
+      Contains a C++ class which holds the variables representing
+      the Cactus grid hierarchy.
+    - src/parparser :
+      Contains a C++ parser for Cactus parameter files.
+    - lib :
+      This directory contains the Perl code which parses the thorn's
+      ccl files and generates the appropriate LibGeoDecomp classes.
 
 For authors see file AUTHORS.
 
