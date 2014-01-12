@@ -100,6 +100,9 @@ void ParParser::initCctkDefaults(void)
 
 void ParParser::initThornDefaults(void)
 {
+	// Cactus
+	m_it_max      = 10;
+
 	// CactusPUGH/PUGH
 	m_globalNSize = -1;
 	m_global[0]   = 10;
