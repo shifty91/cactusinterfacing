@@ -116,10 +116,9 @@ sub createRunSimulation
 
 	push(@$out_ref, "static void runSimulation(const char *paramFile)\n");
 	push(@$out_ref, "{\n");
-	push(@$out_ref, $tab."int outputFrequency = 1;\n");
-	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."ParParser parser(paramFile);\n");
 	push(@$out_ref, $tab."parser.parse();\n");
+	push(@$out_ref, $tab."int outputFrequency = parser.Hdf5Out();\n");
 	push(@$out_ref, $tab."CactusGrid *cctkGH = parser.getCctkGH();\n");
 	push(@$out_ref, $tab."// set cctkGH pointer to cell/init class\n");
 	push(@$out_ref, $tab.$cell_class."::staticData.cctkGH = cctkGH;\n");

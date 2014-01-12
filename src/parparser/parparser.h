@@ -55,6 +55,7 @@ private:
 	CCTK_REAL m_courant_speed;	/**< courant speed */
 	CCTK_REAL m_courant_min_time; /**< courant minimum time */
 	unsigned  m_it_max;			/**< maximum iteration */
+	unsigned  m_hdf5_out;		/**< hdf5 output frequency */
 	/**
 	 * Parses a line of parameter file
 	 * and stores impl::name and value into the hash map.
@@ -150,6 +151,11 @@ private:
 	 */
 	void proceedTime(void);
 	/**
+	 * Gets the parameters from the HDF5 thorn.
+	 *
+	 */
+	void proceedHDF5(void);
+	/**
 	 * Converts a string into type given by T.
 	 *
 	 * @param s string to convert
@@ -205,7 +211,7 @@ public:
 	 *
 	 * @return pointer to cctkGH
 	 */
-	CactusGrid *getCctkGH() const
+	inline CactusGrid *getCctkGH() const
 	{
 		if (!m_parsed)
 			throw std::logic_error("ParParser: Call parse() first!");
@@ -218,12 +224,25 @@ public:
 	 *
 	 * @return maximum number of iterations
 	 */
-	const unsigned& itMax() const
+	inline const unsigned& itMax() const
 	{
 		if (!m_parsed)
 			throw std::logic_error("ParParser: Call parse() first!");
 
 		return m_it_max;
+	}
+	/**
+	 * Gets the output frequency specified by HDF5 thorn.
+	 * Note: Call parse() first.
+	 *
+	 * @return hdf5 output frequency
+	 */
+	inline const unsigned& Hdf5Out() const
+	{
+		if (!m_parsed)
+			throw std::logic_error("ParParser: Call parse() first!");
+
+		return m_hdf5_out;
 	}
 };
 

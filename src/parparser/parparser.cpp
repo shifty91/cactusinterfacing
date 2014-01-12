@@ -136,6 +136,9 @@ void ParParser::initThornDefaults(void)
 	m_courant_fac      = 0.9;
 	m_courant_speed    = 0.0;
 	m_courant_min_time = 0.0;
+
+	// HDF5
+	m_hdf5_out         = 1;
 }
 
 void ParParser::initDefaults(void)
@@ -334,6 +337,12 @@ void ParParser::proceedTime(void)
 	m_cctkGH->cctk_delta_time(delta_time);
 }
 
+void ParParser::proceedHDF5(void)
+{
+	// get hdf5 output frequency
+	GET(iohdf5::out_every, unsigned, m_hdf5_out);
+}
+
 void ParParser::prepareValues(void)
 {
 	for (std::map<std::string, std::string>::iterator it = m_parMap.begin();
@@ -421,6 +430,9 @@ void ParParser::parse()
 	proceedPUGH();
 	proceedCartGrid();
 	proceedTime();
+
+	// init output parameters
+	proceedHDF5();
 
 	// setup thorn specific parameters
 	SETUPTHORNPARAMETERS;
