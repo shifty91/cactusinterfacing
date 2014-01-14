@@ -118,6 +118,8 @@ sub get_thorns
 			next if ($line =~ /^CactusPUGHIO/);
 			next if ($line =~ /^ExternalLibraries/);
 			next if ($line =~ /^CactusDoc/);
+			next if ($line =~ /^Carpet/);
+			next if ($line =~ /^LSUThorns/);
 			push(@$thorns_ref, $1);
 		} else {
 			_err("Syntax error in $configdir/ThornList", __FILE__, __LINE__);
