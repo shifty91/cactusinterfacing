@@ -135,7 +135,7 @@ sub createLibgeodecompMakefile
 	push(@$out_ref, "\$(OBJDIR)/%.d: %.cpp\n");
 	push(@$out_ref, "\t\@if ! [ -d \$(OBJDIR) ]; then mkdir -p \$(OBJDIR); fi\n");
 	push(@$out_ref, "\t\@echo \"DEP\t\t\$@\"\n");
-	push(@$out_ref, "\t\@\$(CXX) \$(CXXFLAGS) -MM -MF \$@ -MT \$*.o \$<\n");
+	push(@$out_ref, "\t\@\$(CXX) \$(CXXFLAGS) -MM -MF \$@ -MT \$(OBJDIR)/\$*.o \$<\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "clean:\n");
 	push(@$out_ref, "\t\@echo \"CLEAN\"\n");
