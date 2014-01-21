@@ -423,7 +423,7 @@ sub buildXYZFunction
 		push(@outdata, $tab.$tab."int size = a;\n");
 		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
 		push(@outdata, $tab.$tab."int vindex, i;\n");
-		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
+		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_lsh()[0];\n");
 		push(@outdata, $tab.$tab."CCTK_REAL X = cctkGH->cctk_origin_space()[0]+cctkGH->cctk_delta_space()[0]*cctkGH->cctk_lbnd()[0];\n");
 		push(@outdata, $tab.$tab."for (i = 0; i < iend; ++i, X += cctkGH->cctk_delta_space()[0]) {\n");
 		push(@outdata, $tab.$tab.$tab."vindex = i;\n");
@@ -436,8 +436,8 @@ sub buildXYZFunction
 		push(@outdata, $tab.$tab."x = new CCTK_REAL[size];\n");
 		push(@outdata, $tab.$tab."y = new CCTK_REAL[size];\n");
 		push(@outdata, $tab.$tab."int vindex, i, j;\n");
-		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
-		push(@outdata, $tab.$tab."int jend = cctkGH->cctk_gsh()[1];\n");
+		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_lsh()[0];\n");
+		push(@outdata, $tab.$tab."int jend = cctkGH->cctk_lsh()[1];\n");
 		push(@outdata, $tab.$tab."CCTK_REAL X = cctkGH->cctk_origin_space()[0]+cctkGH->cctk_delta_space()[0]*cctkGH->cctk_lbnd()[0];\n");
 		push(@outdata, $tab.$tab."CCTK_REAL Y = cctkGH->cctk_origin_space()[1]+cctkGH->cctk_delta_space()[1]*cctkGH->cctk_lbnd()[1];\n");
 		push(@outdata, $tab.$tab."for (j = 0; j < jend; ++j, Y += cctkGH->cctk_delta_space()[1]) {\n");
@@ -456,9 +456,9 @@ sub buildXYZFunction
 		push(@outdata, $tab.$tab."y = new CCTK_REAL[size];\n");
 		push(@outdata, $tab.$tab."z = new CCTK_REAL[size];\n");
 		push(@outdata, $tab.$tab."int vindex, i, j, k;\n");
-		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_gsh()[0];\n");
-		push(@outdata, $tab.$tab."int jend = cctkGH->cctk_gsh()[1];\n");
-		push(@outdata, $tab.$tab."int kend = cctkGH->cctk_gsh()[2];\n");
+		push(@outdata, $tab.$tab."int iend = cctkGH->cctk_lsh()[0];\n");
+		push(@outdata, $tab.$tab."int jend = cctkGH->cctk_lsh()[1];\n");
+		push(@outdata, $tab.$tab."int kend = cctkGH->cctk_lsh()[2];\n");
 		push(@outdata, $tab.$tab."CCTK_REAL X = cctkGH->cctk_origin_space()[0]+cctkGH->cctk_delta_space()[0]*cctkGH->cctk_lbnd()[0];\n");
 		push(@outdata, $tab.$tab."CCTK_REAL Y = cctkGH->cctk_origin_space()[1]+cctkGH->cctk_delta_space()[1]*cctkGH->cctk_lbnd()[1];\n");
 		push(@outdata, $tab.$tab."CCTK_REAL Z = cctkGH->cctk_origin_space()[2]+cctkGH->cctk_delta_space()[2]*cctkGH->cctk_lbnd()[2];\n");
