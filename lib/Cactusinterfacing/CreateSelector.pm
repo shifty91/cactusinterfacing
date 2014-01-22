@@ -17,11 +17,10 @@ use Cactusinterfacing::Config qw($tab);
 our @EXPORT_OK = qw(createSelectors);
 
 #
-# Builds a ASCII Selector class for one variable of
-# grid functions.
+# Builds a ASCII Selector class for one variable of grid functions.
 #
 # param:
-#  - names   : name of the variable
+#  - name    : name of the variable
 #  - type    : type of variable
 #  - cellname: name of cell class
 #  - out_ref : ref to asciiwriter hash
@@ -56,29 +55,25 @@ sub buildAsciiSelector
 }
 
 #
-# Builds a BOV Selector class for one group of
-# grid functions by combining them.
+# Builds a BOV Selector class for one variable the grid functions.
 #
 # param:
-#  - names_ref: ref to names array
-#  - group    : name of the variable group
-#  - type     : type of group
-#  - cellname : name of cell class
-#  - out_ref  : ref to bovwriter hash
+#  - name    : name of the variable
+#  - type    : type of variable
+#  - cellname: name of cell class
+#  - out_ref : ref to bovwriter hash
 #
 # return:
-#  - none, resulting class and name of the group  will be stored in out_ref,
+#  - none, resulting class and the name of the variable  will be stored in out_ref,
 #    key is the name of class (e.g. like BovPHISelector)
 #
 sub buildBovSelector
 {
-	my ($names_ref, $group, $type, $cellname, $out_ref) = @_;
-	my ($namescnt, $i, $datatype);
-	my ($class, @outdata);
+	my ($name, $type, $cellname, $out_ref) = @_;
+	my ($datatype, $class, @outdata);
 
 	# init
-	$namescnt = scalar @{$names_ref};
-	$class    = "Bov\U$group\ESelector";
+	$class    = "Bov\U$name\ESelector";
 	if ($type eq "CCTK_REAL") {
 		$datatype = "DOUBLE";
 	} elsif ($type eq "CCTK_INT") {
@@ -95,7 +90,7 @@ sub buildBovSelector
 	push(@outdata, $tab."typedef $type VariableType;\n");
 	push(@outdata, $tab."static std::string varName()\n");
 	push(@outdata, $tab."{\n");
-	push(@outdata, $tab.$tab."return \"$group\";\n");
+	push(@outdata, $tab.$tab."return \"$name\";\n");
 	push(@outdata, $tab."}\n");
 	push(@outdata, $tab."static std::string dataFormat()\n");
 	push(@outdata, $tab."{\n");
@@ -103,21 +98,17 @@ sub buildBovSelector
 	push(@outdata, $tab."}\n");
 	push(@outdata, $tab."static int dataComponents()\n");
 	push(@outdata, $tab."{\n");
-	push(@outdata, $tab.$tab."return $namescnt;\n");
+	push(@outdata, $tab.$tab."return 1;\n");
 	push(@outdata, $tab."}\n");
 	push(@outdata, $tab."void operator()(const $cellname& cell, $type *storage) const\n");
 	push(@outdata, $tab."{\n");
-	for ($i = 0; $i < $namescnt; $i++) {
-		my ($name);
-		$name = "var_".$names_ref->[$i];
-		push(@outdata, $tab.$tab."storage[$i] = cell.$name;\n");
-	}
+	push(@outdata, $tab.$tab."*storage = cell.var_$name;\n");
 	push(@outdata, $tab."}\n");
 	push(@outdata, "};\n");
 
 	# save back, data and name of group
-	$out_ref->{$class}{"data"}  = \@outdata;
-	$out_ref->{$class}{"group"} = $group;
+	$out_ref->{$class}{"data"}     = \@outdata;
+	$out_ref->{$class}{"var_name"} = $name;
 
 	return;
 }
@@ -196,10 +187,11 @@ sub createSelectors
 		next if ($gtype =~ /^SCALAR$/i);
 		next if ($gtype =~ /^ARRAY$/i);
 
+		# just build selectors for the first variables and not for all timelevels
 		foreach my $name (@names) {
 			buildAsciiSelector($name, $vtype, $cellname, \%asciiwriter);
+			buildBovSelector($name, $vtype, $cellname, \%bovwriter);
 		}
-		buildBovSelector(\@names, $group, $vtype, $cellname, \%bovwriter);
 	}
 
 	# build header

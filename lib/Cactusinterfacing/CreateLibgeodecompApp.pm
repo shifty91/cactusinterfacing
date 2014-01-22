@@ -137,19 +137,20 @@ sub createRunSimulation
 		push(@$out_ref, $tab.$tab."sim.addWriter(new TracingWriter<$cell_class>(outputFrequency, init->maxSteps()));\n");
 		push(@$out_ref, $tab."}\n");
 	}
-	# as a standard add a bov writer for each variable group
+	# as a standard add a bov writer for each variable
+	# use SerialBovWriter for non MPI code and BoVWriter for MPI code
 	for my $bovwriter (keys %{$sel_ref->{"bovwriter"}}) {
-		my ($writer, $group, $class);
+		my ($writer, $name, $class);
 
 		# init
-		$group  = $sel_ref->{"bovwriter"}{$bovwriter}{"group"};
+		$name  = $sel_ref->{"bovwriter"}{$bovwriter}{"var_name"};
 		$class  = $bovwriter;
 
 		# for mpi using a bov writer else a serial bov writer
 		if ($mpi) {
-			$writer = $tab."sim.addWriter(new BOVWriter<$cell_class, $class>(\"$group\", outputFrequency));";
+			$writer = $tab."sim.addWriter(new BOVWriter<$cell_class, $class>(\"$name\", outputFrequency));";
 		} else {
-			$writer = $tab."sim.addWriter(new SerialBOVWriter<$cell_class, $class>(\"$group\", outputFrequency));";
+			$writer = $tab."sim.addWriter(new SerialBOVWriter<$cell_class, $class>(\"$name\", outputFrequency));";
 		}
 
 		push(@$out_ref, $writer."\n");
