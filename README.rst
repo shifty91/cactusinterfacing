@@ -22,7 +22,7 @@ The following requirements have to be met, otherwise it won't compile/work:
         - File::Path
         - File::Which
         - Getopt::Long
-        - Boost Regex           (for perl like regex)
+    - Boost Regex           (for perl like regex)
     - LibGeoDecomp, installed on your system
     - Cactus
     - optionally astyle for formatting auto generated code
@@ -38,7 +38,7 @@ installed. An example of building LibGeoDecomp is shown below::
   $ cd libgeodecomp
   $ mkdir -p build
   $ cd build
-  $ cmake ../src
+  $ cmake ..
   $ make -j8
   $ make test
   $ sudo make install
