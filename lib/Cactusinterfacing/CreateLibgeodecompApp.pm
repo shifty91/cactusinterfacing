@@ -16,7 +16,7 @@ use FindBin qw($RealBin);
 use Data::Dumper;
 use Cactusinterfacing::Config qw($tab $ghostzone_width checkConfiguration);
 use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir
-								util_tidySrcDir _err);
+								util_tidySrcDir _err util_rmdir);
 use Cactusinterfacing::Make qw(createLibgeodecompMakefile);
 use Cactusinterfacing::CreateCellClass qw(createCellClass);
 use Cactusinterfacing::CreateInitializerClass qw(createInitializerClass);
@@ -343,7 +343,8 @@ sub createLibgeodecompApp
 	$outputdir = $config_ref->{"outputdir"}."/".$config_ref->{"config"};
 	parseThornList($config_ref, \%thorninfo, \%option);
 
-	# create directory where to store code
+	# create directory where to store code, delete it first
+	util_rmdir($outputdir) if     (-d $outputdir);
 	util_mkdir($outputdir) unless (-d $outputdir);
 
 	# gen Makefile and write

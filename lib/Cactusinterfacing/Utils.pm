@@ -32,7 +32,7 @@ use warnings;
 use Exporter 'import';
 use File::Copy;
 use File::Which;
-use File::Path qw(mkpath);
+use File::Path qw(mkpath remove_tree);
 use Cactusinterfacing::Config qw($debug $verbose $tab $astyle_options);
 
 # export
@@ -40,7 +40,7 @@ our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings _err
                     _warn dbg info vprint util_writeFile util_mkdir util_trim
                     util_cp util_arrayToHash util_readFile util_input
 					util_indent util_getFunction util_choose util_readDir
-					util_tidySrcDir);
+					util_tidySrcDir util_rmdir);
 
 #
 # Extract a function body from a given source file.
@@ -243,6 +243,26 @@ sub util_mkdir
 
 	eval { mkpath($dir) };
 	_err("Cannot create directory $dir: $@", __FILE__, __LINE__) if ($@);
+
+	return;
+}
+
+#
+# Removes a complete directory recursively.
+#
+# param:
+#  - dir: directory to be deleted
+#
+# return:
+#  - none, exits on error
+#
+sub util_rmdir
+{
+	my ($dir) = @_;
+	my ($err);
+
+	remove_tree($dir, {error => \$err});
+	_err("Cannot delete directory $dir!") if (@$err);
 
 	return;
 }
