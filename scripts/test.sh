@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 #
 # Automatic build test for Cactus WaveToyC demo.
@@ -48,7 +48,7 @@ function get_cctk_home
 
 function execute_main()
 {
-	./main.pl $MAINOPTS > /dev/null <<EOF
+	../main.pl $MAINOPTS > /dev/null <<EOF
 0
 EOF
 }
@@ -69,7 +69,7 @@ function cmd_run()
 
 function cmd_main()
 {
-	./main.pl $MAINOPTS <<EOF
+	../main.pl $MAINOPTS <<EOF
 0
 EOF
 }
@@ -79,6 +79,8 @@ get_cctk_home
 MAINOPTS="$MAINOPTS --cactushome $CCTK_HOME"
 
 # go
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$DIR"
 case "$1" in
 	-b|--build)
 		cmd_build
