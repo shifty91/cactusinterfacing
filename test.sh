@@ -2,6 +2,9 @@
 
 #
 # Automatic build test for Cactus WaveToyC demo.
+#  - executes the code generator on the Cactus WaveDemo
+#  - builds it
+#  - runs it
 # Returns 0 on success.
 #
 
@@ -21,7 +24,7 @@ function print_usage()
 {
 	echo "
 USAGE:
-    test.sh [command] [options]
+    $0 [command] [options]
 
 OPTIONS:
     -b, --build                        : build only
@@ -61,7 +64,7 @@ function cmd_build()
 function cmd_run()
 {
 	# parameter file can be specified by an optional argument
-	"$CONFIG/cactus_$CONFIG" ${2:-"$HOME/git/Cactus/wavetoyc_none.par"}
+	"$CONFIG/cactus_$CONFIG" "$1"
 }
 
 function cmd_main()
@@ -81,7 +84,7 @@ case "$1" in
 		cmd_build
 		;;
 	-r|--run)
-		cmd_run
+		cmd_run ${2:-"$HOME/git/Cactus/wavetoyc_none.par"}
 		;;
 	-m|--main)
 		cmd_main
