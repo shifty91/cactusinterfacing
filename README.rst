@@ -88,7 +88,7 @@ The example below shows the adjustment of the Cactus WaveToyC demo::
   $ gmake -j8
   $ ./cactus_WaveDemo <parameter_file>
 
-First of all the cactus flesh and the necessary thorns for building WaveDemo
+First of all the Cactus flesh and the necessary thorns for building WaveDemo
 are resolved. Next step is to build a configuration. You can either build with
 MPI or without.
 Now you change the directory to the interfacing code. The script you need to run
@@ -97,4 +97,4 @@ adjust.
 Finally a new directory with the name of the configuration will be created and
 everything needed will be stored there. This directory also contains a Makefile
 which can be used to compile the final LibGeoDecomp application.
-At least you should be able to run the application like the cactus executable.
+At least you should be able to run the application like the Cactus executable.
