@@ -65,8 +65,6 @@ sub createMain
 	push(@$out_ref, "{\n");
 	push(@$out_ref, $tab."// free cactus grid hierarchy\n");
 	push(@$out_ref, $tab."delete ".$cell_class."::staticData.cctkGH;\n");
-	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."return;\n");
 	push(@$out_ref, "}\n");
 	push(@$out_ref, "\n");
 	createRunSimulation($opt_ref, $sel_ref, $init_class, $cell_class, $out_ref);
