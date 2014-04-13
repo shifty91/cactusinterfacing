@@ -82,7 +82,7 @@ bool ParParser::equals(const std::string& str1, const std::string& str2) const
 	return boost::iequals(str1, str2);
 }
 
-void ParParser::initCctkDefaults(void)
+void ParParser::initCctkDefaults()
 {
 	// init cactus
 	m_cctkGH->cctk_iteration(0);
@@ -98,7 +98,7 @@ void ParParser::initCctkDefaults(void)
 	m_cctkGH->cctk_nghostzones(GHOSTZONEWIDTH);
 }
 
-void ParParser::initThornDefaults(void)
+void ParParser::initThornDefaults()
 {
 	// Cactus
 	m_it_max      = 10;
@@ -144,18 +144,18 @@ void ParParser::initThornDefaults(void)
 	m_hdf5_out         = 1;
 }
 
-void ParParser::initDefaults(void)
+void ParParser::initDefaults()
 {
 	initCctkDefaults();
 	initThornDefaults();
 }
 
-void ParParser::proceedCactus(void)
+void ParParser::proceedCactus()
 {
 	GET(cactus::cctk_itlast, unsigned int, m_it_max);
 }
 
-void ParParser::proceedPUGH(void)
+void ParParser::proceedPUGH()
 {
 	unsigned int i;
 	unsigned int dim = m_cctkGH->cctk_dim();
@@ -193,7 +193,7 @@ void ParParser::proceedPUGH(void)
 	}
 }
 
-void ParParser::setupSymmetry(void)
+void ParParser::setupSymmetry()
 {
 	int i;
 	bool quadrant    = false;
@@ -230,7 +230,7 @@ void ParParser::setupSymmetry(void)
 	}
 }
 
-void ParParser::proceedCartGrid(void)
+void ParParser::proceedCartGrid()
 {
 	unsigned int i;
 	unsigned int dim = m_cctkGH->cctk_dim();
@@ -306,7 +306,7 @@ void ParParser::proceedCartGrid(void)
 	setupSymmetry();
 }
 
-void ParParser::proceedTime(void)
+void ParParser::proceedTime()
 {
 	CCTK_REAL delta_time = 0.0;
 	CCTK_REAL min, sdim;
@@ -340,13 +340,13 @@ void ParParser::proceedTime(void)
 	m_cctkGH->cctk_delta_time(delta_time);
 }
 
-void ParParser::proceedHDF5(void)
+void ParParser::proceedHDF5()
 {
 	// get hdf5 output frequency
 	GET(iohdf5::out_every, unsigned, m_hdf5_out);
 }
 
-void ParParser::prepareValues(void)
+void ParParser::prepareValues()
 {
 	for (std::map<std::string, std::string>::iterator it = m_parMap.begin();
 		 it != m_parMap.end(); ++it)

@@ -100,27 +100,27 @@ private:
 	 *  - cactus boolean into c++ bool.
 	 *
 	 */
-	void prepareValues(void);
+	void prepareValues();
 	/**
 	 * Inits the cactus grid hierarchy with default values.
 	 *
 	 */
-	void initCctkDefaults(void);
+	void initCctkDefaults();
 	/**
 	 * Inits the base thorn parameters with default values.
 	 *
 	 */
-	void initThornDefaults(void);
+	void initThornDefaults();
 	/**
 	 * Meta function for init everything with default values.
 	 *
 	 */
-	void initDefaults(void);
+	void initDefaults();
 	/**
 	 * Sets cctk_iteration.
 	 *
 	 */
-	void proceedCactus(void);
+	void proceedCactus();
 	/**
 	 * PUGH sets
 	 *  - cctk_gsh
@@ -128,14 +128,14 @@ private:
 	 * See CactusPUGH/PUGH.
 	 *
 	 */
-	void proceedPUGH(void);
+	void proceedPUGH();
 	/**
 	 * Helper function for proceedCartGrid().
 	 * This function applys the symmetry to the grid.
 	 * Make sure all needed variables are set up.
 	 *
 	 */
-	void setupSymmetry(void);
+	void setupSymmetry();
 	/**
 	 * CartGrid3D sets
 	 *  - cctk_delta_space
@@ -143,18 +143,18 @@ private:
 	 * See CactusBase/CartGrid3D.
 	 *
 	 */
-	void proceedCartGrid(void);
+	void proceedCartGrid();
 	/**
 	 * Time sets cctk_delta_time.
 	 * See CactusBase/Time.
 	 *
 	 */
-	void proceedTime(void);
+	void proceedTime();
 	/**
 	 * Gets the parameters from the HDF5 thorn.
 	 *
 	 */
-	void proceedHDF5(void);
+	void proceedHDF5();
 	/**
 	 * Converts a string into type given by T.
 	 *
