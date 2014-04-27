@@ -86,7 +86,7 @@ case "$1" in
 		cmd_build
 		;;
 	-r|--run)
-		cmd_run ${2:-"$HOME/git/Cactus/wavetoyc_none.par"}
+		cmd_run ${2:-"$HOME/git/Cactus/WaveDemo.par"}
 		;;
 	-m|--main)
 		cmd_main
@@ -96,7 +96,7 @@ case "$1" in
 		;;
 	*)
 		cmd_build
-		cmd_run
+		cmd_run ${1:-"$HOME/git/Cactus/WaveDemo.par"}
 		;;
 esac
 
