@@ -51,8 +51,8 @@ sub createMain
 	# build main.cpp
 	push(@$out_ref, "#include <iostream>\n");
 	push(@$out_ref, "#include <libgeodecomp.h>\n");
-	push(@$out_ref, "#include <libgeodecomp/io/bovwriter.h>\n");
-	push(@$out_ref, "#include <libgeodecomp/io/serialbovwriter.h>\n");
+	push(@$out_ref, "#include <libgeodecomp/io/bovwriter.h>\n") if ($mpi);
+	push(@$out_ref, "#include <libgeodecomp/io/serialbovwriter.h>\n") if (!$mpi);
 	push(@$out_ref, "#include \"cell.h\"\n");
 	push(@$out_ref, "#include \"init.h\"\n");
 	push(@$out_ref, "#include \"parparser.h\"\n");
