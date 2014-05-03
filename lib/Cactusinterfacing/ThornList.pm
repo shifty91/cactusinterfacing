@@ -188,7 +188,7 @@ sub getThorns
 		if ($line =~ /^(\w+\/\w+)\s*#\s*(\w+)\s*\(([\w,\- ]*)\)\s*\[([\w,\- ]*)\]\s*\{([\w,\- ]*)\}\s*$/) {
 			@options = ($2, $3, $4, $5);
 			push(@$thorns_ref, $1);
-			s/\s//g for @options;
+			s/\s//g for (@options);
 			$info_ref->{$1} = \@options;
 		} else {
 			_err("Syntax error in $configdir/ThornList", __FILE__, __LINE__);
@@ -222,16 +222,16 @@ sub getOptions
 	my ($thorn_ref, $option_ref) = @_;
 
 	# get options
-	foreach (@$thorn_ref) {
-		$option_ref->{"mpi"}      = 1 if /mpi/i;
-		$option_ref->{"io_jpeg"}  = 1 if /iojpeg$/i;
-		$option_ref->{"io_ascii"} = 1 if /ioascii$/i;
-		$option_ref->{"io_hdf5"}  = 1 if /iohdf5$/i;
-		$option_ref->{"io_iso"}   = 1 if /isosurfacer$/i;
-		$option_ref->{"d_pugh"}   = 1 if /pugh/i;
-		$option_ref->{"d_carpet"} = 1 if /carpet/i;
-		$option_ref->{"s_socket"} = 1 if /socket$/i;
-		$option_ref->{"s_httpd"}  = 1 if /httpd$/i;
+	foreach my $thorn (@$thorn_ref) {
+		$option_ref->{"mpi"}      = 1 if ($thorn =~ /mpi/i);
+		$option_ref->{"io_jpeg"}  = 1 if ($thorn =~ /iojpeg$/i);
+		$option_ref->{"io_ascii"} = 1 if ($thorn =~ /ioascii$/i);
+		$option_ref->{"io_hdf5"}  = 1 if ($thorn =~ /iohdf5$/i);
+		$option_ref->{"io_iso"}   = 1 if ($thorn =~ /isosurfacer$/i);
+		$option_ref->{"d_pugh"}   = 1 if ($thorn =~ /pugh/i);
+		$option_ref->{"d_carpet"} = 1 if ($thorn =~ /carpet/i);
+		$option_ref->{"s_socket"} = 1 if ($thorn =~ /socket$/i);
+		$option_ref->{"s_httpd"}  = 1 if ($thorn =~ /httpd$/i);
 	}
 
 	# perform some checks
