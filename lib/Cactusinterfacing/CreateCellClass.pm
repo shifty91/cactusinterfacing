@@ -348,15 +348,17 @@ sub addRotateTimelevels
 
 		foreach my $name (@{$inf_ref->{$group}{"names"}}) {
 			for ($i = $timelevels - 1; $i > 1; --$i) {
-				my ($left, $right, $hood_new, $gfindex);
+				my ($left, $right, $hood_new, $gfindex, $var_idx);
 
+				$var_idx  = "vindex";
 				$gfindex  = getGFIndexFirst($dim, $index);
 				$hood_new = "(&hoodNew.var_"         . $name . ("_p" x ($i - 1). "())");
-				$left     = "$hood_new" . "[$gfindex]";
+				$left     = "$hood_new" . "[$var_idx]";
 				# using macro here, it's just shorter
-				$right    = "$name" . ("_p" x ($i - 1)) . "[$gfindex]";
+				$right    = "$name" . ("_p" x ($i - 1)) . "[$var_idx]";
 
 				# save
+				push(@outdata, "int $var_idx = $gfindex;\n");
 				push(@outdata, "$left = $right;\n");
 				$pushed = 1;
 			}
