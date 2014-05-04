@@ -2,7 +2,7 @@
 ##
 ## CreateInititializerClass.pm
 ##
-## This module builds an initializer for LibGeoDecomp.
+## This module builds an initializer class for LibGeoDecomp.
 ##
 
 package Cactusinterfacing::CreateInitializerClass;

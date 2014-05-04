@@ -28,7 +28,7 @@ use Cactusinterfacing::ThornList qw(parseThornList);
 our @EXPORT_OK = qw(createLibgeodecompApp);
 
 #
-# Build the complete main.cpp.
+# Builds the complete main.cpp.
 #
 # param:
 #  - opt_ref   : ref to option hash
@@ -91,7 +91,7 @@ sub createMain
 }
 
 #
-# Build a runSimulation function.
+# Builds a runSimulation function.
 #
 # param:
 #  - opt_ref   : ref to options hash

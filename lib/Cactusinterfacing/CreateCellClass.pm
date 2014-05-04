@@ -55,12 +55,12 @@ sub getDimension
 	if ($dim == -1) {
 		$dim = util_input("Could not determine the dimension of Cactus Thorn. ".
 						  "Please specify");
-		_err("That is not a valid dimension!", __FILE__, __LINE__)
+		_err("This is not a valid dimension!", __FILE__, __LINE__)
 			if ($dim !~ /\d/ || $dim <= 0);
 	}
 	if ($dim > 4) {
 		_err("The Dimension of $dim is too big for LibGeoDecomp!",
-			__FILE__, __LINE__);
+			 __FILE__, __LINE__);
 	}
 
 	return $dim;
@@ -206,13 +206,13 @@ sub buildParameterMacros
 }
 
 #
-# Generates macros for LibGeoDecomps variables to have same code
+# Generates macros for LibGeoDecomp's variables to have same code
 # as Cactus has. An example:
 #   #define phi     &hoodNew[FixedCoord<0, 0, 0>()].var_phi
 #   #define phi_p   &hoodOld[FixedCoord<0, 0, 0>()].var_phi
 #   #define phi_p_p &hoodOld[FixedCoord<0, 0, 0>()].var_phi_p
 # Also generates undefs for these macros to avoid confusions with
-# other sources.
+# other source files.
 #
 # param:
 #  - val_ref  : ref to hash where macros will be stored
@@ -270,7 +270,7 @@ sub buildInfVarMacros
 }
 
 #
-# Builds cells static updateLineX function.
+# Builds cell's static updateLineX function.
 #
 # param:
 #  - val_ref: ref to value hash
@@ -378,7 +378,7 @@ sub addRotateTimelevels
 #
 # This function adjusts the loop indices
 # in the for loops. For updateLineX only one
-# line has to be updated, but the cactus code updates
+# line has to be updated, but the Cactus code updates
 # a n-dimensional cube. This is why the loop indices have
 # to be adjusted.
 #

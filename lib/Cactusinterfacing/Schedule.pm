@@ -142,7 +142,7 @@ sub getFunctionAt
 	# check if we found an appropriate function
 	if ($nfuncs <= 0) {
 		_warn("No function found at \U$timestep\E Timestep.", __FILE__,
-				__LINE__);
+			  __LINE__);
 		push(@func, "/** No function found at \U$timestep\E **/");
 		goto out;
 	} elsif ($nfuncs > 1) {
@@ -176,7 +176,7 @@ sub getFunctionAt
 	# at this point the scheduled function could not be found in
 	# any source file
 	_warn("The scheduled function could not be found. Check your make.code.defn.",
-			__FILE__, __LINE__);
+		  __FILE__, __LINE__);
 	push(@func, "/** No function found at \U$timestep\E **/");
 
  out:

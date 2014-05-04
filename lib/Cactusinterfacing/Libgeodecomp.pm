@@ -135,14 +135,14 @@ sub getCoord
 	# test dimension
 	if ($dim <= 0) {
 		_warn("Dimension ($dim) in getCoord() is not valid",
-				__FILE__, __LINE__);
+			  __FILE__, __LINE__);
 		goto out;
 	}
 
 	# test length of arr
 	if (@$arr_ref != $dim) {
 		_warn("Dimension does not fit to number of arguments in getCoord()",
-				__FILE__, __LINE__);
+			  __FILE__, __LINE__);
 		goto out;
 	}
 
@@ -157,7 +157,7 @@ sub getCoord
 		$ret .= ">()";
 	} else {
 		_warn("No valid coordinate type given in getCoord()",
-				__FILE__, __LINE__);
+			  __FILE__, __LINE__);
 		goto out;
 	}
 
@@ -232,7 +232,7 @@ sub getGFIndex
 	# test dimension
 	if ($dim <= 0) {
 		_warn("Dimension ($dim) in getCoord() is not valid",
-				__FILE__, __LINE__);
+			  __FILE__, __LINE__);
 		goto out;
 	}
 

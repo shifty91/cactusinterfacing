@@ -4,7 +4,7 @@
 ##
 ## This module has utilities for generating a class which contains all
 ## static variables (interface/parameter). This is needed for running
-## the LibGeoDecomp application on GPUs.
+## the LibGeoDecomp application e.g. on GPUs.
 ##
 
 package Cactusinterfacing::CreateStaticDataClass;
@@ -65,7 +65,7 @@ sub buildInterfaceStrings
 				$past_name = $name . ("_p" x $i);
 
 				# type name[size];
-				push(@def, "$vtype $past_name" . "[". "$size". "];");
+				push(@def, "$vtype $past_name" . "[" . "$size" . "];");
 			}
 		}
 	}
