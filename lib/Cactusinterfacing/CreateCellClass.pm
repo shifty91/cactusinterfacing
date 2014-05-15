@@ -431,11 +431,11 @@ sub adjustUpdateLine
 				$replace = !$type ? "for ($index = 0; $index < (indexEnd - hoodOld.index()); ++$index)" :
 					"for ($type $index = 0; $index < (indexEnd - hoodOld.index()); ++$index)";
 			}
-			$lbcopy =~ s/\Q$for/$replace/;
+			$lbcopy =~ s/\Q$for\E/$replace/;
 		}
 
 		# final replacement
-		$codestr =~ s/\Q$loopblock/$lbcopy/;
+		$codestr =~ s/\Q$loopblock\E/$lbcopy/;
 	}
 
  out:
