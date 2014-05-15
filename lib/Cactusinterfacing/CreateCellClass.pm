@@ -295,7 +295,7 @@ sub buildUpdateLineXFunction
 	$code_str = join("\n", @indata);
 
 	push(@outdata, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
-	push(@outdata, $tab."static void updateLineX(ACCESSOR1 hoodOld, int *indexOld, int indexEnd, ACCESSOR2 hoodNew, int* /* indexNew */, unsigned /* nanoStep */)\n");
+	push(@outdata, $tab."static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)\n");
 	push(@outdata, $tab."{\n");
 	push(@outdata, "$code_str\n");
 	push(@outdata, $tab."}\n");
@@ -333,7 +333,7 @@ sub addRotateTimelevels
 	push(@outdata, "// rotate timelevels");
 
 	# start for loop
-	push(@outdata, "for (int $index = 0; $index < (indexEnd - *indexOld); ++$index) {");
+	push(@outdata, "for (int $index = 0; $index < (indexEnd - hoodOld.index()); ++$index) {");
 
 	foreach my $group (keys %{$inf_ref}) {
 		my ($gtype, $timelevels);
@@ -428,8 +428,8 @@ sub adjustUpdateLine
 				$replace = !$type ? "for ($index = 0; $index < 1; ++$index)" :
 					"for ($type $index = 0; $index < 1; ++$index)";
 			} else {
-				$replace = !$type ? "for ($index = 0; $index < (indexEnd - *indexOld); ++$index)" :
-					"for ($type $index = 0; $index < (indexEnd - *indexOld); ++$index)";
+				$replace = !$type ? "for ($index = 0; $index < (indexEnd - hoodOld.index()); ++$index)" :
+					"for ($type $index = 0; $index < (indexEnd - hoodOld.index()); ++$index)";
 			}
 			$lbcopy =~ s/\Q$for/$replace/;
 		}
