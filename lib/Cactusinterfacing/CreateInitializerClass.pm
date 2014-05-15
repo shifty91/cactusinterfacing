@@ -445,7 +445,7 @@ sub buildXYZFunction
 		push(@outdata, $tab.$tab.$tab.$tab."vindex = (i + iend * j);\n");
 		push(@outdata, $tab.$tab.$tab.$tab."x[vindex] = X; y[vindex] = Y;\n");
 		push(@outdata, $tab.$tab.$tab."}\n");
-		push(@outdata, $tab.$tab.$tab."X = cctkGH->cctk_origin_space()[0];\n");
+		push(@outdata, $tab.$tab.$tab."X = cctkGH->cctk_origin_space()[0]+cctkGH->cctk_delta_space()[0]*cctkGH->cctk_lbnd()[0];\n");
 		push(@outdata, $tab.$tab."}\n");
 	} elsif ($dim == 3) {
 		push(@outdata, $tab.$tab."int a = cctkGH->cctk_lsh()[0];\n");
@@ -468,9 +468,9 @@ sub buildXYZFunction
 		push(@outdata, $tab.$tab.$tab.$tab.$tab."vindex = (i + iend * (j + jend * k));\n");
 		push(@outdata, $tab.$tab.$tab.$tab.$tab."x[vindex] = X; y[vindex] = Y; z[vindex] = Z;\n");
 		push(@outdata, $tab.$tab.$tab.$tab."}\n");
-		push(@outdata, $tab.$tab.$tab.$tab."X = cctkGH->cctk_origin_space()[0];\n");
+		push(@outdata, $tab.$tab.$tab.$tab."X = cctkGH->cctk_origin_space()[0]+cctkGH->cctk_delta_space()[0]*cctkGH->cctk_lbnd()[0];\n");
 		push(@outdata, $tab.$tab.$tab."}\n");
-		push(@outdata, $tab.$tab.$tab."Y = cctkGH->cctk_origin_space()[1];\n");
+		push(@outdata, $tab.$tab.$tab."Y = cctkGH->cctk_origin_space()[1]+cctkGH->cctk_delta_space()[1]*cctkGH->cctk_lbnd()[1];\n");
 		push(@outdata, $tab.$tab."}\n");
 	} else {
 		_err("Dimension $dim is too high!", __FILE__, __LINE__);
