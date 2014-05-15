@@ -31,22 +31,23 @@ our @EXPORT_OK = qw(createLibgeodecompApp);
 # Builds the complete main.cpp.
 #
 # param:
-#  - opt_ref   : ref to option hash
-#  - sel_ref   : ref to selector hash
-#  - init_class: name of init class
-#  - cell_class: name of cell class
-#  - out_ref   : ref to an array where to store the complete main.cpp
+#  - opt_ref : ref to option hash
+#  - sel_ref : ref to selector hash
+#  - init_ref: ref to init hash
+#  - cell_ref: ref to cell hash
+#  - out_ref : ref to an array where to store the complete main.cpp
 #
 # return:
 #  - none, main() will be stored in out_ref
 #
 sub createMain
 {
-	my ($opt_ref, $sel_ref, $init_class, $cell_class, $out_ref) = @_;
-	my ($mpi);
+	my ($opt_ref, $sel_ref, $init_ref, $cell_ref, $out_ref) = @_;
+	my ($mpi, $cell_class);
 
 	# init
-	$mpi = $opt_ref->{"mpi"};
+	$mpi        = $opt_ref->{"mpi"};
+	$cell_class = $cell_ref->{"class_name"};
 
 	# build main.cpp
 	push(@$out_ref, "#include <iostream>\n");
@@ -67,7 +68,7 @@ sub createMain
 	push(@$out_ref, $tab."delete ".$cell_class."::staticData.cctkGH;\n");
 	push(@$out_ref, "}\n");
 	push(@$out_ref, "\n");
-	createRunSimulation($opt_ref, $sel_ref, $init_class, $cell_class, $out_ref);
+	createRunSimulation($opt_ref, $sel_ref, $init_ref, $cell_ref, $out_ref);
 	push(@$out_ref, "\n");
 	push(@$out_ref, "int main(int argc, char** argv)\n");
 	push(@$out_ref, "{\n");
@@ -94,22 +95,25 @@ sub createMain
 # Builds a runSimulation function.
 #
 # param:
-#  - opt_ref   : ref to options hash
-#  - sel_ref   : ref to selector hash
-#  - init_class: name of init class
-#  - cell_class: name of cell class
-#  - out_ref   : ref to store runSimulation function
+#  - opt_ref : ref to options hash
+#  - sel_ref : ref to selector hash
+#  - init_ref: ref to init hash
+#  - cell_ref: ref to cell hash
+#  - out_ref : ref to store runSimulation function
 #
 # return:
 #  - none, runSimulation function will be stored in out_ref
 #
 sub createRunSimulation
 {
-	my ($opt_ref, $sel_ref, $init_class, $cell_class, $out_ref) = @_;
-	my ($mpi, $static_pointer);
+	my ($opt_ref, $sel_ref, $init_ref, $cell_ref, $out_ref) = @_;
+	my ($mpi, $dim, $init_class, $cell_class, $static_pointer);
 
 	# init
 	$mpi            = $opt_ref->{"mpi"};
+	$dim            = $cell_ref->{"dim"};
+	$init_class     = $init_ref->{"class_name"};
+	$cell_class     = $cell_ref->{"class_name"};
 	$static_pointer = "&" . $cell_class . "::staticData";
 
 	push(@$out_ref, "static void runSimulation(const char *paramFile)\n");
@@ -125,15 +129,20 @@ sub createRunSimulation
 	push(@$out_ref, $tab."$init_class *init = new $init_class(parser.itMax());\n");
 	push(@$out_ref, $tab."CctkSteerer *steerer = new CctkSteerer($static_pointer);\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."SerialSimulator<$cell_class> sim(init);\n");
+
+	# switch simulator
+	if ($mpi) {
+		push(@$out_ref, $tab."HiParSimulator::HiParSimulator<$cell_class, RecursiveBisectionPartition<$dim> > sim(init);\n");
+	} else {
+		push(@$out_ref, $tab."SerialSimulator<$cell_class> sim(init);\n");
+	}
 
 	# first add a tracing writer for every simulation
 	if (!$mpi) {
 		push(@$out_ref, $tab."sim.addWriter(new TracingWriter<$cell_class>(outputFrequency, init->maxSteps()));\n");
 	} else {
-		push(@$out_ref, $tab."if (MPILayer().rank() == 0) {\n");
+		push(@$out_ref, $tab."if (MPILayer().rank() == 0)\n");
 		push(@$out_ref, $tab.$tab."sim.addWriter(new TracingWriter<$cell_class>(outputFrequency, init->maxSteps()));\n");
-		push(@$out_ref, $tab."}\n");
 	}
 	# as a standard add a bov writer for each variable
 	# use SerialBovWriter for non MPI code and BoVWriter for MPI code
@@ -329,7 +338,7 @@ sub setupIncludeDir
 sub createLibgeodecompApp
 {
 	my ($config_ref) = @_;
-	my ($outputdir, $init_class, $cell_class);
+	my ($outputdir);
 	my (%option, %thorninfo);
 	my (%cell, %init, %selector, @main, @make, @cctksteerer);
 
@@ -356,12 +365,8 @@ sub createLibgeodecompApp
 	buildCctkSteerer($cell{"class_name"}, $cell{"static_data_class"}{"class_name"},
 					 \@cctksteerer);
 
-	# get class names
-	$init_class = $init{"class_name"};
-	$cell_class = $cell{"class_name"};
-
 	# build main()
-	createMain(\%option, \%selector, $init_class, $cell_class, \@main);
+	createMain(\%option, \%selector, \%init, \%cell, \@main);
 
 	# write main, cell, init, selectors, static data class and steerer
 	util_writeFile(\@main,                 $outputdir."/main.cpp");
