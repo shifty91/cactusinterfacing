@@ -115,7 +115,7 @@ sub createLibgeodecompMakefile
 	push(@$out_ref, "CXXFLAGS := $cxxflags\n");
 	push(@$out_ref, "LDFLAGS  := $ldflags\n");
 	push(@$out_ref, "OBJDIR   := build\n");
-	push(@$out_ref, "SOURCES  := \$(shell find . -name \"*.cpp\" -type f -print)\n");
+	push(@$out_ref, "SOURCES  := \$(shell find * -name \"*.cpp\" -type f -print)\n");
 	push(@$out_ref, "OBJECTS  := \$(SOURCES:%.cpp=\$(OBJDIR)/%.o)\n");
 	push(@$out_ref, "DEPS     := \$(OBJECTS:\$(OBJDIR)/%.o=\$(OBJDIR)/%.d)\n");
 	push(@$out_ref, "PROG     := $name\n");
@@ -128,12 +128,12 @@ sub createLibgeodecompMakefile
 	push(@$out_ref, "\t\@\$(LD) -o \$@ \$^ \$(LDFLAGS)\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "\$(OBJDIR)/%.o: %.cpp\n");
-	push(@$out_ref, "\t\@if ! [ -d \$(OBJDIR) ]; then mkdir -p \$(OBJDIR); fi\n");
+	push(@$out_ref, "\t\@if ! [ -d \$(OBJDIR) ] ; then mkdir -p \$(OBJDIR) ; fi\n");
 	push(@$out_ref, "\t\@echo \"CXX\t\t\$@\"\n");
 	push(@$out_ref, "\t\@\$(CXX) \$(CXXFLAGS) -c -o \$@ \$<\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "\$(OBJDIR)/%.d: %.cpp\n");
-	push(@$out_ref, "\t\@if ! [ -d \$(OBJDIR) ]; then mkdir -p \$(OBJDIR); fi\n");
+	push(@$out_ref, "\t\@if ! [ -d \$(OBJDIR) ] ; then mkdir -p \$(OBJDIR) ; fi\n");
 	push(@$out_ref, "\t\@echo \"DEP\t\t\$@\"\n");
 	push(@$out_ref, "\t\@\$(CXX) \$(CXXFLAGS) -MM -MF \$@ -MT \$(OBJDIR)/\$*.o \$<\n");
 	push(@$out_ref, "\n");
