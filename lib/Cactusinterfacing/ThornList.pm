@@ -268,6 +268,8 @@ sub parseThornList
 	getThorns($config_ref->{"config_dir"}, \@thorns, $thorninfo_ref);
 	# get options
 	getOptions(\@thorns, $option_ref);
+	# check if mpi is forced
+	$option_ref->{"mpi"} = 1 if ($config_ref->{"force_mpi"});
 
 	return;
 }

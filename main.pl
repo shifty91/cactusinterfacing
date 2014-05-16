@@ -34,7 +34,7 @@ my (@configs, $configdir);
 my (@thorns);
 my (%config);
 # options
-my ($help, $config, $evol_thorn, $init_thorn, $cctk_home, $outputdir);
+my ($help, $config, $evol_thorn, $init_thorn, $cctk_home, $outputdir, $force_mpi);
 
 #
 # Prints usage and exits with success.
@@ -57,6 +57,7 @@ sub print_usage
 	print "\t--initthorn, -i\t\tinitialization thorn\n";
 	print "\t--cactushome\t\tdirectory to Cactus Home\n";
 	print "\t--outputdir, -o\t\toutput directory\n";
+	print "\t--force_mpi, -f\t\tbuild with MPI even if Cactus is build without\n";
 
 	exit 0;
 }
@@ -77,6 +78,7 @@ sub get_args
 	$cctk_home = $ENV{"CCTK_HOME"};
 
 	GetOptions("help"         => \$help,
+			   "force_mpi"    => \$force_mpi,
 			   "config=s"     => \$config,
 			   "evolthorn=s"  => \$evol_thorn,
 			   "initthorn=s"  => \$init_thorn,
@@ -194,6 +196,7 @@ $outputdir = "." unless ($outputdir);
 # build config hash
 # this hash includes all necassary information about
 # paths and thorns
+$config{"force_mpi"}      = $force_mpi;
 $config{"cctk_home"}      = $cctk_home;
 $config{"config"}         = $config;
 $config{"config_dir"}     = $configdir;
