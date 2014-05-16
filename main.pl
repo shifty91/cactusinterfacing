@@ -72,8 +72,8 @@ sub print_usage
 #
 sub get_args
 {
-	# the cactus home directory can be specified by an environment variable
-	# called CCTK_HOME
+	# The Cactus home directory can be specified by an environment variable
+	# called CCTK_HOME.
 	$cctk_home = $ENV{"CCTK_HOME"};
 
 	GetOptions("help"         => \$help,
@@ -136,21 +136,21 @@ sub get_thorns
 # and go :)
 get_args();
 
-# need help? no problem
+# Need help? No problem
 print_usage() if ($help);
 
 vprint("Transforming a Cactus configuration into a LibGeoDecomp application.");
 
-# get cactus directory
+# get Cactus directory
 $cctk_home = util_input("Specify the Cactus Home directory (CCTK_HOME)")
-	unless (defined $cctk_home);
+	unless ($cctk_home);
 
 # test it
 _err("Your specified Cactus Home directory does not exist!", __FILE__, __LINE__)
 	unless (-d $cctk_home);
 
 # get configs
-unless (defined $config) {
+unless ($config) {
 	# get configs in configdir
 	util_readDir("$cctk_home/configs", \@configs);
 
@@ -158,19 +158,19 @@ unless (defined $config) {
 	if (@configs > 1) {
 		$config = util_choose("Choose a Cactus configuration to build LibGeoDecomp application for", \@configs);
 	} elsif (@configs == 0) {
-		_err("You have to build a configuration first.\n".
+		_err("You have to build a configuration first.\n" .
 			 "Therefore run `gmake <configname>-config` in your Cactus Home directory!",
 			 __FILE__, __LINE__);
 	} else {
 		$config = $configs[0];
 	}
 }
-$configdir = $cctk_home."/configs/".$config;
+$configdir = $cctk_home . "/configs/" . $config;
 
 # get thorns
 get_thorns(\@thorns, $configdir);
 
-unless (defined $evol_thorn) {
+unless ($evol_thorn) {
 	if (@thorns > 1) {
 		# choose evol thorn
 		$evol_thorn = util_choose("Choose evolution Thorn", \@thorns);
@@ -179,7 +179,7 @@ unless (defined $evol_thorn) {
 	}
 }
 
-unless (defined $init_thorn) {
+unless ($init_thorn) {
 	if (@thorns > 1) {
 		# choose init thorn
 		$init_thorn = util_choose("Choose intialization Thorn", \@thorns);
@@ -188,11 +188,8 @@ unless (defined $init_thorn) {
 	}
 }
 
-# get output directory
-unless (defined $outputdir) {
-	# using current directory as default
-	$outputdir = ".";
-}
+# using current directory as default, if not set
+$outputdir = "." unless ($outputdir);
 
 # build config hash
 # this hash includes all necassary information about
