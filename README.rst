@@ -41,12 +41,10 @@ installed. An example of building LibGeoDecomp is shown below::
   $ cmake ..
   $ make -j8
   $ make test
-  $ sudo make install
-  $ sudo ldconfig
+  $ make install
 
-The last command updates the linker cache to find libgeodecomp.so as a new
-library on the system. For further information on building and using LibGeoDecomp,
-please refer to http://www.libgeodecomp.org/.
+For further information on building and using LibGeoDecomp,
+please refer to http://www.libgeodecomp.org/documentation.html.
 
 2. About
 ========
