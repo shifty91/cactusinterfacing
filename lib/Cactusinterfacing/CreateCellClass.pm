@@ -492,9 +492,9 @@ sub buildCellHeader
 	push(@$out_ref, "\n");
 	# check here if there are cell vars for avoiding build failures
 	if (!$ncellvars) {
-		push(@$out_ref, $tab."$class() {}\n");
+		push(@$out_ref, $tab."explicit $class() {}\n");
 	} else {
-		push(@$out_ref, $tab."$class($val_ref->{\"cell_params\"}) :\n");
+		push(@$out_ref, $tab."explicit $class($val_ref->{\"cell_params\"}) :\n");
 		push(@$out_ref, $tab.$tab."$val_ref->{\"cell_init_params\"}\n");
 		push(@$out_ref, $tab."{}\n");
 	}

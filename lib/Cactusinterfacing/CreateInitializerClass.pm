@@ -344,6 +344,7 @@ sub buildConstructor
 	$dim        = $val_ref->{"dim"};
 	$class      = $val_ref->{"class_name"};
 	$cell_class = $val_ref->{"cell_class_name"};
+
 	# setup grid size in apprioriate dimension
 	for ($i = 0; $i < $dim; ++$i) {
 		push(@grid_size, "cctkGH->cctk_gsh()[$i]");
@@ -351,7 +352,7 @@ sub buildConstructor
 	$size_coord = getCoord("coord", $dim, \@grid_size);
 
 	# itMax contains the steps to perform
-	push(@outdata, $tab."$class(const unsigned& itMax) :\n");
+	push(@outdata, $tab."explicit $class(const unsigned& itMax) :\n");
 	push(@outdata, $tab.$tab."SimpleInitializer<$cell_class>($size_coord, itMax),\n");
 	push(@outdata, $tab.$tab."x(0), y(0), z(0)\n");
 	push(@outdata, $tab."{}\n");
@@ -582,10 +583,12 @@ sub buildGridFunction
 sub buildInitHeader
 {
 	my ($val_ref, $out_ref) = @_;
-	my ($dim);
+	my ($dim, $init_class, $cell_class);
 
 	# init
-	$dim = $val_ref->{"dim"};
+	$dim        = $val_ref->{"dim"};
+	$init_class = $val_ref->{"class_name"};
+	$cell_class = $val_ref->{"cell_class_name"};
 
 	# go
 	push(@$out_ref, "#ifndef _INIT_H_\n");
@@ -598,7 +601,7 @@ sub buildInitHeader
 	push(@$out_ref, "\n");
 	push(@$out_ref, "using namespace LibGeoDecomp;\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "class $val_ref->{\"class_name\"} : public SimpleInitializer<$val_ref->{\"cell_class_name\"}>\n");
+	push(@$out_ref, "class $init_class : public SimpleInitializer<$cell_class>\n");
 	push(@$out_ref, "{\n");
 	push(@$out_ref, "public:\n");
 	push(@$out_ref, "$val_ref->{\"constructor\"}");
@@ -609,7 +612,7 @@ sub buildInitHeader
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"cctk_func\"}");
 	push(@$out_ref, "\n");
-	push(@$out_ref, $tab."virtual void grid(GridBase<$val_ref->{\"cell_class_name\"}, $dim>*);\n");
+	push(@$out_ref, $tab."virtual void grid(GridBase<$cell_class, $dim>*);\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{'param_def'}\n");
 	push(@$out_ref, $tab."// cactus grid hierarchy\n");
