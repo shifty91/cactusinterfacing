@@ -44,20 +44,20 @@ sub getScheduleData
 	@schedule_data   = parse_schedule_ccl($thorn, @indata);
 	util_arrayToHash(\@schedule_data, \%data);
 
-	$nblocks = $data{"\U$thorn n_blocks"};
+	$nblocks = $data{"\U$thorn n_blocks\E"};
 
 	for ($i = 0; $i < $nblocks; $i++) {
 		# only functions
-		next if ($data{"\U$thorn block_$i type"} ne "FUNCTION");
+		next if ($data{"\U$thorn block_$i type\E"} ne "FUNCTION");
 		# only functions that sync someting
 		#next if ($data{"\U$thorn block_$i sync"} eq "");
 		# only functions written in C/C++, Fortran is not supported
-		next if ($data{"\U$thorn block_$i lang"} ne "C");
+		next if ($data{"\U$thorn block_$i lang\E"} ne "C");
 
-		if ($data{"\U$thorn block_$i where"} eq "CCTK_EVOL") {
-			push(@evol_funcs, $data{"\U$thorn block_$i name"});
-		} elsif ($data{"\U$thorn block_$i where"} eq "CCTK_INITIAL") {
-			push(@init_funcs, $data{"\U$thorn block_$i name"});
+		if ($data{"\U$thorn block_$i where\E"} eq "CCTK_EVOL") {
+			push(@evol_funcs, $data{"\U$thorn block_$i name\E"});
+		} elsif ($data{"\U$thorn block_$i where\E"} eq "CCTK_INITIAL") {
+			push(@init_funcs, $data{"\U$thorn block_$i name\E"});
 		}
 	}
 
