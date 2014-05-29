@@ -22,8 +22,9 @@ our @EXPORT_OK = qw(getScheduleData getEvolFunction getInitFunction);
 #
 # Parse the schedule.ccl.
 # Store important information into a hash, including:
-#  - methods at CCTK_INITIAL
-#  - methods at CCTK_EVOL
+#  - methods at CCTK_INITIAL and CCTK_EVOL
+#  - synonyms
+#  - after and before information
 #
 # param:
 #  - thorndir: directory of thorn
@@ -36,34 +37,42 @@ our @EXPORT_OK = qw(getScheduleData getEvolFunction getInitFunction);
 sub getScheduleData
 {
 	my ($thorndir, $thorn, $out_ref) = @_;
-	my (@indata, @schedule_data, %data, @evol_funcs, @init_funcs);
+	my (@indata, @schedule_data, %data);
 	my ($i, $nblocks);
 
 	# parse schedule.ccl
-	@indata          = read_file("$thorndir/schedule.ccl");
-	@schedule_data   = parse_schedule_ccl($thorn, @indata);
+	@indata        = read_file("$thorndir/schedule.ccl");
+	@schedule_data = parse_schedule_ccl($thorn, @indata);
 	util_arrayToHash(\@schedule_data, \%data);
 
 	$nblocks = $data{"\U$thorn n_blocks\E"};
 
-	for ($i = 0; $i < $nblocks; $i++) {
+	for ($i = 0; $i < $nblocks; ++$i) {
+		my ($name, $type, $lang, $after, $before, $where, $as);
+
+		# init data
+		$name   = $data{"\U$thorn block_$i name\E"};
+		$type   = $data{"\U$thorn block_$i type\E"};
+		$lang   = $data{"\U$thorn block_$i lang\E"};
+		$after  = $data{"\U$thorn block_$i after\E"};
+		$before = $data{"\U$thorn block_$i before\E"};
+		$where  = $data{"\U$thorn block_$i where\E"};
+		$as     = $data{"\U$thorn block_$i as\E"};
+
 		# only functions
-		next if ($data{"\U$thorn block_$i type\E"} ne "FUNCTION");
-		# only functions that sync someting
-		#next if ($data{"\U$thorn block_$i sync"} eq "");
+		next unless ($type =~ /FUNCTION/i);
 		# only functions written in C/C++, Fortran is not supported
-		next if ($data{"\U$thorn block_$i lang\E"} ne "C");
+		next unless ($lang =~ /C/i);
+		# at the moment only functions at CCTK_EVOL and CCTK_INITIAL timestep
+		# are used so far
+		next unless ($where =~ /CCTK_EVOL/i || $where =~ /CCTK_INITIAL/i);
 
-		if ($data{"\U$thorn block_$i where\E"} eq "CCTK_EVOL") {
-			push(@evol_funcs, $data{"\U$thorn block_$i name\E"});
-		} elsif ($data{"\U$thorn block_$i where\E"} eq "CCTK_INITIAL") {
-			push(@init_funcs, $data{"\U$thorn block_$i name\E"});
-		}
+		# store important information, assuming the function name as unique
+		$out_ref->{$name}{"as"}       = $as;
+		$out_ref->{$name}{"after"}    = $after;
+		$out_ref->{$name}{"before"}   = $before;
+		$out_ref->{$name}{"timestep"} = "\U$where\E";
 	}
-
-	# store data
-	$out_ref->{"CCTK_EVOL"}    = \@evol_funcs;
-	$out_ref->{"CCTK_INITIAL"} = \@init_funcs;
 
 	return;
 }
@@ -130,28 +139,36 @@ sub getInitFunction
 sub getFunctionAt
 {
 	my ($thorndir, $thorn, $timestep, $val_ref) = @_;
-	my (%schedule_data);
-	my ($func, $nfuncs);
-	my (@sources, @func);
+	my (%schedule_data, @functions, @sources, @code_func, $func, $nfuncs);
+
+	# prepare arguments
+	$timestep = "\U$timestep\E";
 
 	# parse schedule.ccl
 	getScheduleData($thorndir, $thorn, \%schedule_data);
+
+	# get an array of functions at the specific timestep
+	foreach my $function (keys %schedule_data) {
+		next if ($schedule_data{$function}{"timestep"} ne $timestep);
+		push(@functions, $function);
+	}
+
 	# number of functions found
-	$nfuncs = @{$schedule_data{"\U$timestep\E"}};
+	$nfuncs = @functions;
 
 	# check if we found an appropriate function
 	if ($nfuncs <= 0) {
 		_warn("No function found at \U$timestep\E Timestep.", __FILE__,
 			  __LINE__);
-		push(@func, "/** No function found at \U$timestep\E **/");
+		push(@code_func, "/** No function found at \U$timestep\E **/");
 		goto out;
 	} elsif ($nfuncs > 1) {
 		# user has to choose one function
 		$func = util_choose("$nfuncs functions found at \U$timestep\E Timestep." .
-							" Choose one", $schedule_data{"\U$timestep\E"});
+							" Choose one", \@functions);
 	} else {
 		# only one function found, take this one
-		$func = $schedule_data{"\U$timestep\E"}[0];
+		$func = $functions[0];
 	}
 
 	# search in source files to find this function
@@ -162,26 +179,26 @@ sub getFunctionAt
 	if (@sources == 0) {
 		_warn("Could not find any source files. Check your make.code.defn.",
 			  __FILE__, __LINE__);
-		push(@func, "/** No sources found! **/");
+		push(@code_func, "/** No sources found! **/");
 		goto out;
 	}
 
 	foreach my $source (@sources) {
-		util_getFunction($source, $func, \@func);
+		util_getFunction($source, $func, \@code_func);
 
 		# lets see, if function was found
-		goto out if (@func > 0);
+		goto out if (@code_func > 0);
 	}
 
 	# at this point the scheduled function could not be found in
 	# any source file
 	_warn("The scheduled function could not be found. Check your make.code.defn.",
 		  __FILE__, __LINE__);
-	push(@func, "/** No function found at \U$timestep\E **/");
+	push(@code_func, "/** No function found at \U$timestep\E **/");
 
  out:
 	# save
-	$val_ref->{"\L$timestep\E_arr"} = \@func;
+	$val_ref->{"\L$timestep\E_arr"} = \@code_func;
 
 	return;
 }
