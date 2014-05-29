@@ -182,7 +182,7 @@ sub util_tidySrcDir
 #  - arr_ref: ref of array where the answers are stored
 #
 # return:
-#  - answer given by user (number)
+#  - answer given by user (value)
 #
 sub util_choose
 {
@@ -197,10 +197,11 @@ sub util_choose
 
 	print "Choice: ";
 	$answer = <STDIN>;
-	chomp $answer;
+	$answer =~ s/^\s*//g;
+	$answer =~ s/\s*$//g;
 
 	_err("\"$answer\" is not a valid choice!", __FILE__, __LINE__)
-		if ($answer !~ /\d+/ || $answer >= $i);
+		if ($answer !~ /^\d+$/ || $answer >= $i);
 
 	return $arr_ref->[$answer];
 }
