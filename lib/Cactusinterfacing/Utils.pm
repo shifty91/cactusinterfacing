@@ -40,7 +40,7 @@ our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings _err
                     _warn dbg info vprint util_writeFile util_mkdir util_trim
                     util_cp util_arrayToHash util_readFile util_input
 					util_indent util_getFunction util_choose util_readDir
-					util_tidySrcDir util_rmdir);
+					util_tidySrcDir util_rmdir util_choose_multi);
 
 #
 # Extract a function body from a given source file.
@@ -204,6 +204,48 @@ sub util_choose
 		if ($answer !~ /^\d+$/ || $answer >= $i);
 
 	return $arr_ref->[$answer];
+}
+
+#
+# Choose between answers stored in arr_ref.
+# User can choose multiple answers. Examples:
+# "Choice: " 0,1,2 or simply
+# "Choice: " 0
+#
+# param:
+#  - message: message to display
+#  - arr_ref: ref of array where the answers are stored
+#
+# return:
+#  - answers given by user in form of an array
+#
+sub util_choose_multi
+{
+	my ($message, $arr_ref) = @_;
+	my ($i, $answer, @token, @ret);
+
+	print $message . ":\n";
+
+	for ($i = 0; $i < @$arr_ref; $i++) {
+		print "  [$i] $arr_ref->[$i]\n";
+	}
+
+	print "Choice: ";
+	$answer = <STDIN>;
+	$answer =~ s/^\s*//g;
+	$answer =~ s/\s*$//g;
+
+	# parse user input
+	_err("\"$answer\" is not a valid choice!", __FILE__, __LINE__)
+		unless ($answer =~ /^(?:\d+,?)+$/);
+	@token = split ',', $answer;
+	foreach my $choice (@token) {
+		_err("\"$choice\" is not a valid choice!", __FILE__, __LINE__)
+			if ($choice !~ /\d+/ || $choice >= $i);
+		push(@ret, $arr_ref->[$choice]);
+	}
+
+	return @ret;
 }
 
 #
