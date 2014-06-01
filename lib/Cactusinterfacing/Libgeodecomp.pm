@@ -18,7 +18,7 @@ use Cactusinterfacing::Utils qw(_warn);
 # exports
 our @EXPORT_OK = qw(generateSoAMacro getCoord getGFIndex getCoordZero
 					getFixedCoordZero getGFIndexLast getGFIndexFirst
-					buildCctkSteerer);
+					buildCctkSteerer getBOVWriter);
 
 #
 # Generates SoA macro for LibGeoDecomp.
@@ -299,6 +299,51 @@ sub buildCctkSteerer
 	push(@$out_ref, "private:\n");
 	push(@$out_ref, $tab."$static_class *data;\n");
 	push(@$out_ref, "};\n");
+
+	return;
+}
+
+#
+# Generates BOV writer strings for LibGeoDecomp. Example:
+# "new BOVWriter<Cell>(Selector<Cell>(&Cell:var, "var"), "var", 1)"
+#
+# param:
+#  - inf_ref: ref to interface data hash
+#  - class  : name of cell class
+#  - type   : serial or normal (mpi related)
+#  - out_ref: ref to array where to store bov writer strings
+#  - freq   : output frequency
+#
+# return:
+#  - none, resulting bov writer strings will be stored in out_ref
+#
+sub getBOVWriter
+{
+	my ($inf_ref, $class, $type, $out_ref, $freq) = @_;
+
+	$freq  = $freq ? $freq : "outputFrequency";
+	$type  = "serial" unless ($type =~ /^serial$/i || $type =~ /^normal$/i);
+
+	foreach my $group (keys %{$inf_ref}) {
+		my ($gtype);
+
+		$gtype = $inf_ref->{$group}{"gtype"};
+
+		next if ($gtype =~ /^SCALAR$/i);
+		next if ($gtype =~ /^ARRAY$/i);
+
+		foreach my $name (@{$inf_ref->{$group}{"names"}}) {
+			my ($selector, $var, $writer);
+
+			$var      = "&" . $class . "::" . "var_" . $name;
+			$selector = "Selector<$class>($var, \"$name\")";
+			$writer   = "new BOVWriter<$class>($selector, \"$name\", $freq)"
+				if ($type =~ /^normal$/i);
+			$writer   = "new SerialBOVWriter<$class>($selector, \"$name\", $freq)"
+				if ($type =~ /^serial$/i);
+			push(@$out_ref, $writer);
+		}
+	}
 
 	return;
 }

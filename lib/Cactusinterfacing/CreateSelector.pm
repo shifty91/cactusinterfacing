@@ -5,6 +5,9 @@
 ## Contains routines to create selector classes for LibGeoDecomp Writers.
 ## Currently ASCII and BOV writer selectors are supported.
 ##
+## NOTE: This module is obsolete, since the LibGeoDecomp has a new
+##       interface to handle writer selectors.
+##
 
 package Cactusinterfacing::CreateSelector;
 

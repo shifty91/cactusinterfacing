@@ -20,8 +20,7 @@ use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir
 use Cactusinterfacing::Make qw(createLibgeodecompMakefile);
 use Cactusinterfacing::CreateCellClass qw(createCellClass);
 use Cactusinterfacing::CreateInitializerClass qw(createInitializerClass);
-use Cactusinterfacing::CreateSelector qw(createSelectors);
-use Cactusinterfacing::Libgeodecomp qw(buildCctkSteerer);
+use Cactusinterfacing::Libgeodecomp qw(buildCctkSteerer getBOVWriter);
 use Cactusinterfacing::ThornList qw(parseThornList);
 
 # exports
@@ -32,7 +31,7 @@ our @EXPORT_OK = qw(createLibgeodecompApp);
 #
 # param:
 #  - opt_ref : ref to option hash
-#  - sel_ref : ref to selector hash
+#  - bov_ref : ref to bov writer array
 #  - init_ref: ref to init hash
 #  - cell_ref: ref to cell hash
 #  - out_ref : ref to an array where to store the complete main.cpp
@@ -42,7 +41,7 @@ our @EXPORT_OK = qw(createLibgeodecompApp);
 #
 sub createMain
 {
-	my ($opt_ref, $sel_ref, $init_ref, $cell_ref, $out_ref) = @_;
+	my ($opt_ref, $bov_ref, $init_ref, $cell_ref, $out_ref) = @_;
 	my ($mpi, $cell_class);
 
 	# init
@@ -57,7 +56,6 @@ sub createMain
 	push(@$out_ref, "#include \"cell.h\"\n");
 	push(@$out_ref, "#include \"init.h\"\n");
 	push(@$out_ref, "#include \"parparser.h\"\n");
-	push(@$out_ref, "#include \"selectors.h\"\n");
 	push(@$out_ref, "#include \"cctksteerer.h\"\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "using namespace LibGeoDecomp;\n");
@@ -68,7 +66,7 @@ sub createMain
 	push(@$out_ref, $tab."delete ".$cell_class."::staticData.cctkGH;\n");
 	push(@$out_ref, "}\n");
 	push(@$out_ref, "\n");
-	createRunSimulation($opt_ref, $sel_ref, $init_ref, $cell_ref, $out_ref);
+	createRunSimulation($opt_ref, $bov_ref, $init_ref, $cell_ref, $out_ref);
 	push(@$out_ref, "\n");
 	push(@$out_ref, "int main(int argc, char** argv)\n");
 	push(@$out_ref, "{\n");
@@ -96,7 +94,7 @@ sub createMain
 #
 # param:
 #  - opt_ref : ref to options hash
-#  - sel_ref : ref to selector hash
+#  - bov_ref : ref to bov writer array
 #  - init_ref: ref to init hash
 #  - cell_ref: ref to cell hash
 #  - out_ref : ref to store runSimulation function
@@ -106,7 +104,7 @@ sub createMain
 #
 sub createRunSimulation
 {
-	my ($opt_ref, $sel_ref, $init_ref, $cell_ref, $out_ref) = @_;
+	my ($opt_ref, $bov_ref, $init_ref, $cell_ref, $out_ref) = @_;
 	my ($mpi, $dim, $init_class, $cell_class, $static_pointer);
 
 	# init
@@ -144,24 +142,11 @@ sub createRunSimulation
 		push(@$out_ref, $tab."if (MPILayer().rank() == 0)\n");
 		push(@$out_ref, $tab.$tab."sim.addWriter(new TracingWriter<$cell_class>(outputFrequency, init->maxSteps()));\n");
 	}
-	# as a standard add a bov writer for each variable
-	# use SerialBovWriter for non MPI code and BoVWriter for MPI code
-	for my $bovwriter (keys %{$sel_ref->{"bovwriter"}}) {
-		my ($writer, $name, $class);
 
-		# init
-		$name  = $sel_ref->{"bovwriter"}{$bovwriter}{"var_name"};
-		$class  = $bovwriter;
+	# add bov writers
+	push(@$out_ref, $tab."sim.addWriter($_);\n") for (@$bov_ref);
 
-		# for mpi using a bov writer else a serial bov writer
-		if ($mpi) {
-			$writer = $tab."sim.addWriter(new BOVWriter<$cell_class, $class>(\"$name\", outputFrequency));";
-		} else {
-			$writer = $tab."sim.addWriter(new SerialBOVWriter<$cell_class, $class>(\"$name\", outputFrequency));";
-		}
-
-		push(@$out_ref, $writer."\n");
-	}
+	# add steerer
 	push(@$out_ref, $tab."sim.addSteerer(steerer);\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."sim.run();\n");
@@ -338,17 +323,19 @@ sub setupIncludeDir
 sub createLibgeodecompApp
 {
 	my ($config_ref) = @_;
-	my ($outputdir);
+	my ($outputdir, $mpi, $writer_type);
 	my (%option, %thorninfo);
-	my (%cell, %init, %selector, @main, @make, @cctksteerer);
+	my (%cell, %init, @main, @make, @cctksteerer, @bovwriter);
 
 	# first of check configuration
 	_err("Configuration is not valid. Check Config.pm", __FILE__, __LINE__)
 		unless (checkConfiguration());
 
 	# init
-	$outputdir = $config_ref->{"outputdir"}."/".$config_ref->{"config"};
 	parseThornList($config_ref, \%thorninfo, \%option);
+	$outputdir   = $config_ref->{"outputdir"} . "/" . $config_ref->{"config"};
+	$mpi         = $option{"mpi"};
+	$writer_type = $mpi ? "normal" : "serial";
 
 	# create directory where to store code, delete it first
 	util_rmdir($outputdir) if     (-d $outputdir);
@@ -358,15 +345,15 @@ sub createLibgeodecompApp
 	createLibgeodecompMakefile($config_ref, \%option, \@make);
 	util_writeFile(\@make, $outputdir."/Makefile");
 
-	# get cell, init, selectors
+	# get cell, init, writers
 	createCellClass($config_ref, \%thorninfo, \%cell);
 	createInitializerClass($config_ref, \%thorninfo, \%cell, \%init);
-	createSelectors($cell{"inf_data"}, $cell{"class_name"}, \%selector);
 	buildCctkSteerer($cell{"class_name"}, $cell{"static_data_class"}{"class_name"},
 					 \@cctksteerer);
+	getBOVWriter($cell{"inf_data"}, $cell{"class_name"}, $writer_type, \@bovwriter);
 
 	# build main()
-	createMain(\%option, \%selector, \%init, \%cell, \@main);
+	createMain(\%option, \@bovwriter, \%init, \%cell, \@main);
 
 	# write main, cell, init, selectors, static data class and steerer
 	util_writeFile(\@main,                 $outputdir."/main.cpp");
@@ -374,7 +361,6 @@ sub createLibgeodecompApp
 	util_writeFile($cell{"cellh"},         $outputdir."/cell.h");
 	util_writeFile($init{"initcpp"},       $outputdir."/init.cpp");
 	util_writeFile($init{"inith"},         $outputdir."/init.h");
-	util_writeFile($selector{"selectorh"}, $outputdir."/selectors.h");
 	util_writeFile($cell{"static_data_class"}{"statich"}, $outputdir."/staticdata.h");
 	util_writeFile(\@cctksteerer,          $outputdir."/cctksteerer.h");
 
