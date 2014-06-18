@@ -570,7 +570,6 @@ sub initValueHash
 	$val_ref->{"dim"}               = 0;
 	$val_ref->{"class_name"}        = "";
 	$val_ref->{"cctk_evol_arr"}     = ();
-	$val_ref->{"cctk_evol"}         = "";
 	$val_ref->{"update_linex"}      = "";
 	$val_ref->{"inf_vars"}          = "";
 	$val_ref->{"cell_params"}       = "";
@@ -604,7 +603,6 @@ sub initValueHash
 #    - dim              : dimension of code (2D/3D/4D)
 #    - class_name       : name of cell class e.g. "Cell"
 #    - cctk_evol_arr    : array of evol_func
-#    - cctk_evol        : string of evol function
 #    - update_linex     : string of update line function
 #    - inf_vars         : all interface variables definitions
 #    - cell_params      : parameters for constructor
