@@ -346,7 +346,7 @@ sub createLibgeodecompApp
 	util_writeFile(\@make, $outputdir."/Makefile");
 
 	# get cell, init, writers
-	createCellClass($config_ref, \%thorninfo, \%cell);
+	createCellClass($config_ref, \%thorninfo, \%option, \%cell);
 	createInitializerClass($config_ref, \%thorninfo, \%cell, \%init);
 	buildCctkSteerer($cell{"class_name"}, $cell{"static_data_class"}{"class_name"},
 					 \@cctksteerer);

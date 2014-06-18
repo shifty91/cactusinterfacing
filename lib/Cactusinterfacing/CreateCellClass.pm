@@ -449,6 +449,7 @@ sub adjustUpdateLine
 #
 # param:
 #  - val_ref: ref to value hash
+#  - opt_ref: ref to options hash
 #  - out_ref: ref where to store cell header
 #
 # return:
@@ -456,14 +457,15 @@ sub adjustUpdateLine
 #
 sub buildCellHeader
 {
-	my ($val_ref, $out_ref) = @_;
-	my ($dim, $class, $static_class, $ncellvars);
+	my ($val_ref, $opt_ref, $out_ref) = @_;
+	my ($dim, $class, $static_class, $ncellvars, $mpi);
 
 	# init
 	$dim          = $val_ref->{"dim"};
 	$class        = $val_ref->{"class_name"};
 	$static_class = $val_ref->{"static_class_name"};
 	$ncellvars    = $val_ref->{"cell_params"} eq "" ? 0 : 1;
+	$mpi          = $opt_ref->{"mpi"};
 
 	# all template related code goes into the header
 	push(@$out_ref, "#ifndef _CELL_H_\n");
@@ -485,6 +487,8 @@ sub buildCellHeader
 	push(@$out_ref, $tab.$tab."public APITraits::HasSoA,\n");
 	# for cactus code using updateLineX which should make things a bit faster
 	push(@$out_ref, $tab.$tab."public APITraits::HasUpdateLineX,\n");
+	push(@$out_ref, $tab.$tab."public APITraits::HasOpaqueMPIDataType<$class>,\n")
+		if ($mpi);
 	push(@$out_ref, $tab.$tab."public APITraits::HasStencil<Stencils::Moore<$dim, $ghostzone_width> >,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::Has"."$topology"."Topology<$dim>,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasStaticData<$static_class>\n");
@@ -505,6 +509,7 @@ sub buildCellHeader
 	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."// class for static data\n");
 	push(@$out_ref, $tab."static $static_class staticData;\n");
+	push(@$out_ref, $tab."static MPI_Datatype MPIDataType;\n") if ($mpi);
 	push(@$out_ref, "};\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"soa_macro\"}\n");
@@ -521,6 +526,7 @@ sub buildCellHeader
 #
 # param:
 #  - val_ref: ref to value hash
+#  - opt_ref: ref to options hash
 #  - out_ref: ref where to store cell cpp
 #
 # return:
@@ -528,17 +534,20 @@ sub buildCellHeader
 #
 sub buildCellCpp
 {
-	my ($val_ref, $out_ref) = @_;
-	my ($static_class, $class);
+	my ($val_ref, $opt_ref, $out_ref) = @_;
+	my ($static_class, $class, $mpi);
 
 	# init
 	$static_class = $val_ref->{"static_class_name"};
 	$class        = $val_ref->{"class_name"};
+	$mpi          = $opt_ref->{"mpi"};
 
 	# init staticData of cell class
 	push(@$out_ref, "#include \"cell.h\"\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "$static_class $class"."::staticData;\n");
+	push(@$out_ref, "$static_class $class" . "::staticData;\n");
+	push(@$out_ref, "MPI_Datatype $class" . "::MPIDataType = MPI_DATATYPE_NULL;\n")
+		if ($mpi);
 	push(@$out_ref, "\n");
 
 	return;
@@ -582,6 +591,7 @@ sub initValueHash
 # param:
 #  - config_ref   : ref to config hash
 #  - thorninfo_ref: ref to thorninfo hash
+#  - option_ref   : ref to options hash
 #  - out_ref      : ref to store cellh, cellcpp, param_macro, etc.
 #
 # return:
@@ -604,7 +614,7 @@ sub initValueHash
 #
 sub createCellClass
 {
-	my ($config_ref, $thorninfo_ref, $out_ref) = @_;
+	my ($config_ref, $thorninfo_ref, $option_ref, $out_ref) = @_;
 	my ($thorndir, $thorn, $arrangement, $impl, $class);
 	my (@cellh, @cellcpp);
 	my (@param_macro, @special_macros, @special_macros_undef);
@@ -650,8 +660,8 @@ sub createCellClass
 	$values{"static_class_name"} = $static{"class_name"};
 
 	# build final files
-	buildCellHeader(\%values, \@cellh);
-	buildCellCpp(\%values, \@cellcpp);
+	buildCellHeader(\%values, $option_ref, \@cellh);
+	buildCellCpp(\%values, $option_ref, \@cellcpp);
 
 	# prepare hash
 	$out_ref->{"cellh"}                = \@cellh;
