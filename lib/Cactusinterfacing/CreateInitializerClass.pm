@@ -727,7 +727,7 @@ sub createInitializerClass
 {
 	my ($config_ref, $thorninfo_ref, $cell_ref, $out_ref) = @_;
 	my ($init_ar, $cell_ar, $thorndir, $thorn, $arrangement, $impl, $class);
-	my (@inith, @initcpp);
+	my (@inith, @initcpp, @init_func);
 	my (@param_macro, @special_macros);
 	my (%param_data, %values);
 
@@ -753,7 +753,8 @@ sub createInitializerClass
 	generateParameterMacro(\%param_data, $thorn, $impl, $class, "", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_INITIAL-Timestep
-	getInitFunction($thorndir, $thorn, \%values);
+	getInitFunction($thorndir, $thorn, \@init_func);
+	$values{"cctk_initial_arr"} = \@init_func;
 
 	# build init specific special macros
 	buildSpecialMacros(\%values, $cell_ref->{"inf_data"}, \@special_macros);

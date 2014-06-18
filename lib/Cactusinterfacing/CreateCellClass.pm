@@ -614,7 +614,7 @@ sub createCellClass
 {
 	my ($config_ref, $thorninfo_ref, $option_ref, $out_ref) = @_;
 	my ($thorndir, $thorn, $arrangement, $impl, $class);
-	my (@cellh, @cellcpp);
+	my (@cellh, @cellcpp, @evol_func);
 	my (@param_macro, @special_macros, @special_macros_undef);
 	my (%inf_data, %param_data, %static, %values);
 
@@ -632,7 +632,8 @@ sub createCellClass
 	generateParameterMacro(\%param_data, $thorn, $impl, $class, "staticData.", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_Evol-Timestep
-	getEvolFunction($thorndir, $thorn, \%values);
+	getEvolFunction($thorndir, $thorn, \@evol_func);
+	$values{"cctk_evol_arr"} = \@evol_func;
 
 	# parse interface.ccl to get vars
 	getInterfaceVars($config_ref->{"arr_dir"}, $config_ref->{"evol_thorn_arr"},

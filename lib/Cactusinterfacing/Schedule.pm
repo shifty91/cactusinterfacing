@@ -14,12 +14,13 @@ use Data::Dumper;
 use Storable 'dclone';
 use Cactusinterfacing::Config qw($debug);
 use Cactusinterfacing::Utils qw(read_file util_arrayToHash util_getFunction
-								util_indent _warn util_choose);
+								util_indent _warn util_choose util_choose_multi);
 use Cactusinterfacing::Make qw(getSources);
 use Cactusinterfacing::ScheduleParser qw(parse_schedule_ccl);
 
 # exports
-our @EXPORT_OK = qw(getScheduleData getEvolFunction getInitFunction);
+our @EXPORT_OK = qw(getScheduleData getEvolFunction getEvolFunctions
+					getInitFunction getInitFunctions);
 
 #
 # Parse the schedule.ccl.
@@ -80,68 +81,113 @@ sub getScheduleData
 }
 
 #
-# Wrapper function for getFunctionAt.
+# Wrapper function for getFunctionsAt.
 # Cactus timestep is CCTK_EVOL to get the evolution function.
 #
 # param:
 #  - thorndir: directory of thorn
 #  - thorn   : name of thorn
-#  - val_ref : ref to value hash
+#  - out_ref : ref to array where to store function
 #
 # return:
-#  - none, stores array of evol function into value hash, key
-#    is "cctk_evol_arr"
+#  - none, function will be store in out_ref
 #
 sub getEvolFunction
 {
-	my ($thorndir, $thorn, $val_ref) = @_;
+	my ($thorndir, $thorn, $out_ref) = @_;
+	my (@funcs);
 
-	getFunctionAt($thorndir, $thorn, "CCTK_EVOL", $val_ref);
+	getFunctionsAt($thorndir, $thorn, "CCTK_EVOL", "single", \@funcs);
+	@$out_ref = @{$funcs[0]};
 
 	return;
 }
 
 #
-# Wrapper function for getFunctionAt.
+# Wrapper function for getFunctionsAt.
+# Cactus timestep is CCTK_EVOL to get the evolution functions.
+#
+# param:
+#  - thorndir: directory of thorn
+#  - thorn   : name of thorn
+#  - out_ref : ref to array where to store functions
+#
+# return:
+#  - none, functions will be store in out_ref
+#
+sub getEvolFunctions
+{
+	my ($thorndir, $thorn, $out_ref) = @_;
+
+	getFunctionsAt($thorndir, $thorn, "CCTK_EVOL", "multi", $out_ref);
+
+	return;
+}
+
+#
+# Wrapper function for getFunctionsAt.
 # Cactus timestep is CCTK_INITIAL to get the init function.
 #
 # param:
 #  - thorndir: directory of thorn
 #  - thorn   : name of thorn
-#  - val_ref : ref to value hash
+#  - out_ref : ref to array where to store functions
 #
 # return:
-#  - none, stores array of init function into value hash, key
-#    is "cctk_initial_arr"
+#  - none, function will be store in out_ref
 #
 sub getInitFunction
 {
-	my ($thorndir, $thorn, $val_ref) = @_;
+	my ($thorndir, $thorn, $out_ref) = @_;
+	my (@funcs);
 
-	getFunctionAt($thorndir, $thorn, "CCTK_INITIAL", $val_ref);
+	getFunctionsAt($thorndir, $thorn, "CCTK_INITIAL", "single", \@funcs);
+	@$out_ref = @{$funcs[0]};
 
 	return;
 }
 
 #
-# Gatheres a function at a specific cactus timestep.
+# Wrapper function for getFunctionsAt.
+# Cactus timestep is CCTK_INITIAL to get the init functions.
+#
+# param:
+#  - thorndir: directory of thorn
+#  - thorn   : name of thorn
+#  - out_ref : ref to array where to store functions
+#
+# return:
+#  - none, functions will be store in out_ref
+#
+sub getInitFunctions
+{
+	my ($thorndir, $thorn, $out_ref) = @_;
+
+	getFunctionsAt($thorndir, $thorn, "CCTK_INITIAL", "multi", $out_ref);
+
+	return;
+}
+
+#
+# Gatheres functions at a specific cactus timestep.
 # This function searches through all source files of the
-# given thorn to find the searched function.
+# given thorn to find the searched functions.
 #
 # param:
 #  - thorndir: directory of thorn
 #  - thorn   : name of thorn
 #  - timestep: cactus timestep (e.g. CCTK_EVOL for evolution)
-#  - val_ref : ref to value hash
+#  - type    : maybe "single" or "multi" to indicate whether to get one
+#              or multiple functions
+#  - out_ref : ref to array where to store function(s)
 #
 # return:
-#  - none, stores array of function into value hash, key
-#    is "$timestep_arr"
+#  - none, function(s) will be stored in out_ref
 #
-sub getFunctionAt
+sub getFunctionsAt
 {
-	my ($thorndir, $thorn, $timestep, $val_ref) = @_;
-	my (%schedule_data, %nodes, @functions, @sources, @code_func, $func, $nfuncs);
+	my ($thorndir, $thorn, $timestep, $type, $out_ref) = @_;
+	my (%schedule_data, %nodes, @functions, @sources, $nfuncs);
 
 	# prepare arguments
 	$timestep = "\U$timestep\E";
@@ -160,45 +206,85 @@ sub getFunctionAt
 	if ($nfuncs <= 0) {
 		_warn("No function found at \U$timestep\E Timestep.", __FILE__,
 			  __LINE__);
-		push(@code_func, "/** No function found at \U$timestep\E **/");
-		goto out;
+		goto fail;
 	} elsif ($nfuncs > 1) {
-		# user has to choose one function
-		$func = util_choose("$nfuncs functions found at \U$timestep\E Timestep." .
-							" Choose one", \@functions);
-	} else {
-		# only one function found, take this one
-		$func = $functions[0];
+		# user has to choose functions
+		chooseFunctions($type, $timestep, \@functions);
 	}
 
-	# search in source files to find this function
+	# search in source files to find the functions
 	# just have a look at make.code.defn
-	getSources($thorndir."/src", \@sources);
+	getSources($thorndir . "/src", \@sources);
 
 	# check if some sources where found
 	if (@sources == 0) {
 		_warn("Could not find any source files. Check your make.code.defn.",
 			  __FILE__, __LINE__);
-		push(@code_func, "/** No sources found! **/");
-		goto out;
+		goto fail;
 	}
 
-	foreach my $source (@sources) {
-		util_getFunction($source, $func, \@code_func);
+	# get functions
+	foreach my $func (@functions) {
+		my (@code_func, $found);
 
-		# lets see, if function was found
-		goto out if (@code_func > 0);
+		$found = 0;
+		foreach my $source (@sources) {
+			util_getFunction($source, $func, \@code_func);
+
+			# lets see, if function was found
+			if (@code_func > 0) {
+				push(@$out_ref, \@code_func);
+				$found = 1;
+				last;
+			}
+		}
+
+		if (!$found) {
+			# the scheduled function could not be found in any source file
+			_warn("The scheduled function could not be found. Check your make.code.defn.",
+				  __FILE__, __LINE__);
+			push(@$out_ref, [ "/** No function found at \U$timestep\E **/" ]);
+		}
 	}
 
-	# at this point the scheduled function could not be found in
-	# any source file
-	_warn("The scheduled function could not be found. Check your make.code.defn.",
-		  __FILE__, __LINE__);
-	push(@code_func, "/** No function found at \U$timestep\E **/");
+	return;
 
- out:
-	# save
-	$val_ref->{"\L$timestep\E_arr"} = \@code_func;
+ fail:
+	# no function found
+	push(@$out_ref, [ "/** No function found at \U$timestep\E or no source files found **/" ]);
+
+	return;
+}
+
+#
+# This function chooses one or more functions depending on type.
+#
+# param:
+#  - type    : "single" or "multi"
+#  - timestep: timestep of functions
+#  - func_ref: ref to function names array
+#
+# return:
+#  - none, choosed functions will be stored in func_ref
+#
+sub chooseFunctions
+{
+	my ($type, $timestep, $func_ref) = @_;
+	my ($nfuncs);
+
+	$type   = "single" unless ($type || $type =~ /^single$/i || $type =~ /^multi$/i);
+	$nfuncs = @$func_ref;
+
+	if ($type =~ /^single$/i) {
+		my ($function);
+
+		$function = util_choose("$nfuncs functions found at \U$timestep\E Timestep.".
+								" Choose one", $func_ref);
+		@$func_ref = ( $function );
+	} else {
+		@$func_ref = util_choose_multi("$nfuncs functions found at \U$timestep\E Timestep.".
+									   " Choose some", $func_ref);
+	}
 
 	return;
 }
