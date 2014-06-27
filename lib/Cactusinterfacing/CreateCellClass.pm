@@ -273,26 +273,27 @@ sub buildInfVarMacros
 # Builds cell's static updateLineX function.
 #
 # param:
-#  - val_ref: ref to value hash
-#  - inf_ref: ref to interface data
+#  - evol_ref: ref to array where lines of evolution function are stored
+#  - val_ref : ref to value data hash
+#  - inf_ref : ref to interface data hash
 #
 # return:
 #  - none, stores string of update function into value hash, key "update_linex"
 #
 sub buildUpdateLineXFunction
 {
-	my ($val_ref, $inf_ref) = @_;
-	my (@outdata, @indata, $code_str);
+	my ($evol_ref, $val_ref, $inf_ref) = @_;
+	my (@outdata, @merged_evol, $code_str);
 
 	# adjust evol function for updateLine
-	adjustUpdateLine($inf_ref, $val_ref, \@indata);
+	adjustUpdateLine($inf_ref, $val_ref, $evol_ref);
 	# add rotating timelevels
-	addRotateTimelevels($inf_ref, $val_ref, \@indata);
+	addRotateTimelevels($inf_ref, $val_ref, $evol_ref);
 	# indent function
-	util_indent(\@indata, 2);
+	util_indent($evol_ref, 2);
 
 	# build code string
-	$code_str = join("\n", @indata);
+	$code_str = join("\n", @$evol_ref);
 
 	push(@outdata, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
 	push(@outdata, $tab."static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)\n");
@@ -387,23 +388,23 @@ sub addRotateTimelevels
 # params:
 #  - inf_ref : ref to interface data hash
 #  - val_ref : ref to values hash
-#  - out_ref : ref to array where to store adjusted function
+#  - evol_ref: ref to array of evol function
 #
 # return:
-#  - none, array is stored into out_ref
+#  - none, evol_ref is modified
 #
 sub adjustUpdateLine
 {
-	my ($inf_ref, $val_ref, $out_ref) = @_;
+	my ($inf_ref, $val_ref, $evol_ref) = @_;
 	my ($codestr, $dim);
 	my (@blocks, $lbcopy, $i);
 
 	# init
-	$codestr = join("\n", @{$val_ref->{"cctk_evol_arr"}});
+	$codestr = join("\n", @$evol_ref);
 	$dim     = $val_ref->{"dim"};
 
 	# check for empty evol func
-	goto out if (scalar @{$val_ref->{"cctk_evol_arr"}} <= 1);
+	goto out if (scalar @$evol_ref <= 1);
 
 	# find for loops and adjust indices in the following way:
 	#  - for (int i = x; i < gridSize(); i++) => for (int i = 0; i < 1; ++i)
@@ -439,7 +440,7 @@ sub adjustUpdateLine
 	}
 
  out:
-	push(@$out_ref, split("\n", $codestr));
+	@$evol_ref = split "\n", $codestr;
 
 	return;
 }
@@ -569,7 +570,6 @@ sub initValueHash
 
 	$val_ref->{"dim"}               = 0;
 	$val_ref->{"class_name"}        = "";
-	$val_ref->{"cctk_evol_arr"}     = ();
 	$val_ref->{"update_linex"}      = "";
 	$val_ref->{"inf_vars"}          = "";
 	$val_ref->{"cell_params"}       = "";
@@ -599,10 +599,9 @@ sub initValueHash
 #    class_name
 #
 # documentation:
-#  - all relevant and computed values will be stored in values hash:
+#  - all relevant and computed values for cell.h will be stored in values hash:
 #    - dim              : dimension of code (2D/3D/4D)
 #    - class_name       : name of cell class e.g. "Cell"
-#    - cctk_evol_arr    : array of evol_func
 #    - update_linex     : string of update line function
 #    - inf_vars         : all interface variables definitions
 #    - cell_params      : parameters for constructor
@@ -633,7 +632,6 @@ sub createCellClass
 
 	# parse schedule.ccl to get function at CCTK_Evol-Timestep
 	getEvolFunction($thorndir, $thorn, \@evol_func);
-	$values{"cctk_evol_arr"} = \@evol_func;
 
 	# parse interface.ccl to get vars
 	getInterfaceVars($config_ref->{"arr_dir"}, $config_ref->{"evol_thorn_arr"},
@@ -651,7 +649,7 @@ sub createCellClass
 					   \@special_macros_undef);
 
 	# build updateLineX function
-	buildUpdateLineXFunction(\%values, \%inf_data);
+	buildUpdateLineXFunction(\@evol_func, \%values, \%inf_data);
 
 	# generate a class holding all static data
 	# this is needed for having static data in a LibGeoDecomp cell class
