@@ -532,14 +532,15 @@ sub buildCctkGHFunction
 # Builds grid function. This function sets up the initial grid.
 #
 # param:
-#  - val_ref: ref to values hash
+#  - init_ref: ref to array where the cctk initial function is stored
+#  - val_ref : ref to values hash
 #
 # return:
 #  - none, function string will be stored in val_ref with key "grid_func"
 #
 sub buildGridFunction
 {
-	my ($val_ref) = @_;
+	my ($init_ref, $val_ref) = @_;
 	my (@outdata, $code_str, $dim, $init_class, $cell_class, $decl);
 
 	# init
@@ -549,10 +550,10 @@ sub buildGridFunction
 	$decl       = $val_ref->{"objects_decl"};
 
 	# indent function
-	util_indent($val_ref->{"cctk_initial_arr"}, 1);
+	util_indent($init_ref, 1);
 
 	# build code string
-	$code_str = join("\n", @{$val_ref->{"cctk_initial_arr"}});
+	$code_str = join("\n", @$init_ref);
 
 	push(@outdata, "void $init_class"."::"."grid(GridBase<$cell_class, $dim> *target)\n");
 	push(@outdata, "{\n");
@@ -698,7 +699,6 @@ sub initValueHash
 	$val_ref->{"dim"}              = 0;
 	$val_ref->{"class_name"}       = "";
 	$val_ref->{"cell_class_name"}  = "";
-	$val_ref->{"cctk_initial_arr"} = ();
 	$val_ref->{"param_def"}        = "";
 	$val_ref->{"param_init"}       = "";
 	$val_ref->{"constructor"}      = "";
@@ -706,6 +706,7 @@ sub initValueHash
 	$val_ref->{"objects_decl"}     = "";
 	$val_ref->{"xyz_func"}         = "";
 	$val_ref->{"cctk_func"}        = "";
+	$val_ref->{"grid_func"}        = "";
 
 	return;
 }
@@ -735,7 +736,7 @@ sub createInitializerClass
 	initValueHash(\%values);
 	$init_ar                   = $config_ref->{"init_thorn_arr"};
 	$cell_ar                   = $config_ref->{"evol_thorn_arr"};
-	$thorndir                  = $config_ref->{"arr_dir"}."/".$init_ar;
+	$thorndir                  = $config_ref->{"arr_dir"} . "/" . $init_ar;
 	$thorn                     = $config_ref->{"init_thorn"};
 	$arrangement               = $config_ref->{"init_arr"};
 	$impl                      = $thorninfo_ref->{$init_ar}[0];
@@ -754,13 +755,12 @@ sub createInitializerClass
 
 	# parse schedule.ccl to get function at CCTK_INITIAL-Timestep
 	getInitFunction($thorndir, $thorn, \@init_func);
-	$values{"cctk_initial_arr"} = \@init_func;
 
 	# build init specific special macros
 	buildSpecialMacros(\%values, $cell_ref->{"inf_data"}, \@special_macros);
 
 	# build grid, setupXYZ and setupCctkGH function as well as (de|con)structor
-	buildGridFunction(\%values);
+	buildGridFunction(\@init_func, \%values);
 	buildXYZFunction(\%values);
 	buildCctkGHFunction(\%values);
 	buildConstructor(\%values);
