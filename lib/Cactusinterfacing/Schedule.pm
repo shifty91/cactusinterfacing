@@ -19,7 +19,7 @@ use Cactusinterfacing::Make qw(getSources);
 use Cactusinterfacing::ScheduleParser qw(parse_schedule_ccl);
 
 # exports
-our @EXPORT_OK = qw(getScheduleData getEvolFunction getEvolFunctions
+our @EXPORT_OK = qw(getEvolFunction getEvolFunctions
 					getInitFunction getInitFunctions);
 
 #
