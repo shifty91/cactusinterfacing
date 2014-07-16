@@ -10,7 +10,6 @@ package Cactusinterfacing::ThornList;
 
 use strict;
 use warnings;
-use Data::Dumper;
 use Exporter 'import';
 use Cactusinterfacing::Utils qw(util_readFile _err _warn);
 

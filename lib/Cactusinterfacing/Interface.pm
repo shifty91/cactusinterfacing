@@ -10,7 +10,6 @@ package Cactusinterfacing::Interface;
 use strict;
 use warnings;
 use Exporter 'import';
-use Data::Dumper;
 use Cactusinterfacing::Config qw($scalar);
 use Cactusinterfacing::Utils qw(read_file util_indent _warn _err);
 use Cactusinterfacing::InterfaceParser qw(parse_interface_ccl);

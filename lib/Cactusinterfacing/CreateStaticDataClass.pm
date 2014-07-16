@@ -11,7 +11,6 @@ package Cactusinterfacing::CreateStaticDataClass;
 
 use strict;
 use warnings;
-use Data::Dumper;
 use Exporter 'import';
 use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Utils qw(util_indent);

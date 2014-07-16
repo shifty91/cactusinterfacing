@@ -17,7 +17,6 @@ The following requirements have to be met, otherwise it won't compile/work:
     - Perl modules
         - Exporter
         - FindBin
-        - Data::Dumper
         - File::Copy
         - File::Path
         - File::Which

@@ -10,7 +10,6 @@ package Cactusinterfacing::CreateInitializerClass;
 use strict;
 use warnings;
 use Exporter 'import';
-use Data::Dumper;
 use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);

@@ -11,7 +11,6 @@ package Cactusinterfacing::Make;
 use strict;
 use warnings;
 use Exporter 'import';
-use Data::Dumper;
 use Cactusinterfacing::Config qw($debug);
 use Cactusinterfacing::Utils qw(util_readFile _warn);
 

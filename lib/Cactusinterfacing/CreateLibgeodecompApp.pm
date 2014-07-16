@@ -13,7 +13,6 @@ use strict;
 use warnings;
 use Exporter 'import';
 use FindBin qw($RealBin);
-use Data::Dumper;
 use Cactusinterfacing::Config qw($tab $ghostzone_width checkConfiguration);
 use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir
 								util_tidySrcDir _err util_rmdir);

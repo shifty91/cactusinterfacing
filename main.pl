@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-
+#
 # Cactusinterfacing
 # main.pl -- gathers information and creates LibGeoDecomp application
 # Copyright (C) 2013 Kurt Kanzenbach <kurt@kmk-computers.de>
@@ -23,7 +23,6 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/lib";
-use Data::Dumper;
 use Getopt::Long;
 use Cactusinterfacing::CreateLibgeodecompApp qw(createLibgeodecompApp);
 use Cactusinterfacing::Utils qw(util_readDir util_readFile util_choose

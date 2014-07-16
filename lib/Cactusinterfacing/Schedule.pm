@@ -10,7 +10,6 @@ package Cactusinterfacing::Schedule;
 use strict;
 use warnings;
 use Exporter 'import';
-use Data::Dumper;
 use Storable 'dclone';
 use Cactusinterfacing::Config qw($debug);
 use Cactusinterfacing::Utils qw(read_file util_arrayToHash util_getFunction

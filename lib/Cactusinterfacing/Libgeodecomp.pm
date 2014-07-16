@@ -11,7 +11,6 @@ package Cactusinterfacing::Libgeodecomp;
 use strict;
 use warnings;
 use Exporter 'import';
-use Data::Dumper;
 use Cactusinterfacing::Config qw($debug $tab);
 use Cactusinterfacing::Utils qw(_warn);
 

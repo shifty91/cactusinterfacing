@@ -10,7 +10,6 @@ package Cactusinterfacing::CreateCellClass;
 use strict;
 use warnings;
 use Exporter 'import';
-use Data::Dumper;
 use Cactusinterfacing::Config qw($tab $ghostzone_width $topology);
 use Cactusinterfacing::Utils qw(util_indent util_input _err _warn);
 use Cactusinterfacing::Schedule qw(getEvolFunction);

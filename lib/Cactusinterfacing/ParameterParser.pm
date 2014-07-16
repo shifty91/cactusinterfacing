@@ -30,7 +30,6 @@ package Cactusinterfacing::ParameterParser;
 
 use strict;
 use warnings;
-use Data::Dumper;
 use Exporter 'import';
 use Cactusinterfacing::Utils qw(CST_error);
 

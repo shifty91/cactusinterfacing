@@ -10,7 +10,6 @@ package Cactusinterfacing::Parameter;
 use strict;
 use warnings;
 use Exporter 'import';
-use Data::Dumper;
 use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Utils qw(read_file util_arrayToHash util_indent);
 use Cactusinterfacing::ParameterParser qw(parse_param_ccl);
