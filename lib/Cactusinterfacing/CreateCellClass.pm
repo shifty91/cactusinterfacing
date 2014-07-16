@@ -12,7 +12,7 @@ use warnings;
 use Exporter 'import';
 use Cactusinterfacing::Config qw($tab $ghostzone_width $topology);
 use Cactusinterfacing::Utils qw(util_indent util_input _err _warn);
-use Cactusinterfacing::Schedule qw(getEvolFunction);
+use Cactusinterfacing::Schedule qw(getEvolFunctions);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
 use Cactusinterfacing::Interface qw(getInterfaceVars buildInterfaceStrings);
@@ -269,43 +269,110 @@ sub buildInfVarMacros
 }
 
 #
-# Builds cell's static updateLineX function.
+# Builds cell's static updateLineX function. If more than one function for
+# evolution is given, then every function will be build separately and just
+# called in updateLineX in given order.
 #
 # param:
-#  - evol_ref: ref to hash where evolution function is stored
+#  - evol_ref: ref to hash where evolution function(s) is/are stored
 #  - val_ref : ref to value data hash
 #  - inf_ref : ref to interface data hash
 #
 # return:
-#  - none, stores string of update function into value hash, key "update_linex"
+#  - none, stores string of updatelinex function into value hash, key "update_linex",
+#    and if there are more evolution functions then they will be stored as array of
+#    strings in value hash, key "evol_funcs"
 #
-sub buildUpdateLineXFunction
+sub buildUpdateFunctions
 {
 	my ($evol_ref, $val_ref, $inf_ref) = @_;
-	my (@outdata, $code_str, $func, $func_ref);
+	my (@keys);
 
-	# get function
-	$func     = (keys %{$evol_ref})[0];
-	$func_ref = $evol_ref->{$func}{"data"};
+	# init
+	@keys = keys %{$evol_ref};
 
-	# adjust evol function for updateLine
-	adjustUpdateLine($inf_ref, $val_ref, $func_ref);
-	# add rotating timelevels
-	addRotateTimelevels($inf_ref, $val_ref, $func_ref);
-	# indent function
-	util_indent($func_ref, 2);
+	# one function -> just build updateLineX
+	if (@keys == 1) {
+		my (@linex, $code_str, $func, $func_ref);
 
-	# build code string
-	$code_str = join("\n", @$func_ref);
+		# get function
+		$func     = $keys[0];
+		$func_ref = $evol_ref->{$func}{"data"};
 
-	push(@outdata, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
-	push(@outdata, $tab."static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)\n");
-	push(@outdata, $tab."{\n");
-	push(@outdata, "$code_str\n");
-	push(@outdata, $tab."}\n");
+		# adjust evol function for updateLine
+		adjustEvolutionFunction($inf_ref, $val_ref, $func_ref);
+		# add rotating timelevels
+		addRotateTimelevels($inf_ref, $val_ref, $func_ref);
+		# indent function
+		util_indent($func_ref, 2);
 
-	# build final string
-	$val_ref->{"update_linex"} = join("", @outdata);
+		# build code string
+		$code_str = join("\n", @$func_ref);
+
+		push(@linex, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
+		push(@linex, $tab."static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)\n");
+		push(@linex, $tab."{\n");
+		push(@linex, "$code_str\n");
+		push(@linex, $tab."}\n");
+
+		# build final string
+		$val_ref->{"update_linex"} = join("", @linex);
+	} elsif (@keys > 1) {
+		# more functions -> build and call them
+		my (@linex, @rotate);
+
+		# build each function
+		foreach my $func (@keys) {
+			my (@evol, $code_str, $func_ref);
+
+			# get function
+			$func_ref = $evol_ref->{$func}{"data"};
+
+			# adjust evol function for updateLine
+			adjustEvolutionFunction($inf_ref, $val_ref, $func_ref);
+			# indent function
+			util_indent($func_ref, 2);
+
+			# build code string
+			$code_str = join("\n", @$func_ref);
+
+			# build function
+			push(@evol, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
+			push(@evol, $tab."static void $func(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew)\n");
+			push(@evol, $tab."{\n");
+			push(@evol, "$code_str\n");
+			push(@evol, $tab."}\n");
+
+			# save evol function
+			push(@{$val_ref->{"evol_funcs"}}, join("", @evol));
+		}
+
+		# build rotateTimelevels
+		push(@rotate, $tab."template<typename ACCESSOR1, typename ACCESSOR2>");
+		push(@rotate, $tab."static void rotateTimelevels(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew)");
+		push(@rotate, $tab."{");
+		addRotateTimelevels($inf_ref, $val_ref, \@rotate);
+		push(@rotate, $tab."}");
+		push(@{$val_ref->{"evol_funcs"}}, join("\n", @rotate));
+
+		# build updateLineX
+		push(@linex, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
+		push(@linex, $tab."static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)\n");
+		push(@linex, $tab."{\n");
+		# call them
+		for my $func (@keys) {
+			push(@linex, $tab.$tab.$func."(hoodOld, indexEnd, hoodNew);\n");
+		}
+		push(@linex, $tab.$tab."rotateTimelevels(hoodOld, indexEnd, hoodNew);\n");
+		push(@linex, $tab."}\n");
+
+		# save it
+		$val_ref->{"update_linex"} = join("", @linex);
+	} else {
+		# this should never happen, since the schedule functions ensure that
+		# at least one function is returned, even if it's not valid
+		_err("No functions for building cell class found.", __FILE__, __LINE__);
+	}
 
 	return;
 }
@@ -334,10 +401,10 @@ sub addRotateTimelevels
 
 	# start with a comment
 	push(@outdata, "\n");
-	push(@outdata, "// rotate timelevels");
+	push(@outdata, "// rotate timelevels\n");
 
 	# start for loop
-	push(@outdata, "for (int $index = 0; $index < (indexEnd - hoodOld.index()); ++$index) {");
+	push(@outdata, "for (int $index = 0; $index < (indexEnd - hoodOld.index()); ++$index) {\n");
 
 	foreach my $group (keys %{$inf_ref}) {
 		my ($gtype, $timelevels);
@@ -370,7 +437,7 @@ sub addRotateTimelevels
 	}
 
 	# end foor loop
-	push(@outdata, "}");
+	push(@outdata, "}\n");
 
 	# indent
 	util_indent(\@outdata, 2);
@@ -396,7 +463,7 @@ sub addRotateTimelevels
 # return:
 #  - none, evol_ref is modified
 #
-sub adjustUpdateLine
+sub adjustEvolutionFunction
 {
 	my ($inf_ref, $val_ref, $evol_ref) = @_;
 	my ($codestr, $dim);
@@ -462,13 +529,14 @@ sub adjustUpdateLine
 sub buildCellHeader
 {
 	my ($val_ref, $opt_ref, $out_ref) = @_;
-	my ($dim, $class, $static_class, $ncellvars, $mpi);
+	my ($dim, $class, $static_class, $ncellvars, $nevolfuncs, $mpi);
 
 	# init
 	$dim          = $val_ref->{"dim"};
 	$class        = $val_ref->{"class_name"};
 	$static_class = $val_ref->{"static_class_name"};
 	$ncellvars    = $val_ref->{"cell_params"} eq "" ? 0 : 1;
+	$nevolfuncs   = $val_ref->{"evol_funcs"} ? 1 : 0;
 	$mpi          = $opt_ref->{"mpi"};
 
 	# all template related code goes into the header
@@ -485,6 +553,11 @@ sub buildCellHeader
 	push(@$out_ref, "\n");
 	push(@$out_ref, "class $class\n");
 	push(@$out_ref, "{\n");
+	if ($nevolfuncs) {
+		push(@$out_ref, "private:\n");
+		push(@$out_ref, $_."\n") for (@{$val_ref->{"evol_funcs"}});
+		push(@$out_ref, "\n");
+	}
 	push(@$out_ref, "public:\n");
 	push(@$out_ref, $tab."class API :\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasFixedCoordsOnlyUpdate,\n");
@@ -574,6 +647,7 @@ sub initValueHash
 	$val_ref->{"dim"}               = 0;
 	$val_ref->{"class_name"}        = "";
 	$val_ref->{"update_linex"}      = "";
+	$val_ref->{"evol_funcs"}        = ();
 	$val_ref->{"inf_vars"}          = "";
 	$val_ref->{"cell_params"}       = "";
 	$val_ref->{"cell_init_params"}  = "";
@@ -634,7 +708,7 @@ sub createCellClass
 	generateParameterMacro(\%param_data, $thorn, $impl, $class, "staticData.", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_Evol-Timestep
-	getEvolFunction($thorndir, $thorn, \%evol_func);
+	getEvolFunctions($thorndir, $thorn, \%evol_func);
 
 	# parse interface.ccl to get vars
 	getInterfaceVars($config_ref->{"arr_dir"}, $config_ref->{"evol_thorn_arr"},
@@ -652,7 +726,7 @@ sub createCellClass
 					   \@special_macros_undef);
 
 	# build updateLineX function
-	buildUpdateLineXFunction(\%evol_func, \%values, \%inf_data);
+	buildUpdateFunctions(\%evol_func, \%values, \%inf_data);
 
 	# generate a class holding all static data
 	# this is needed for having static data in a LibGeoDecomp cell class
