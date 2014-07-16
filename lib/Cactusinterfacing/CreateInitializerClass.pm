@@ -531,7 +531,7 @@ sub buildCctkGHFunction
 # Builds grid function. This function sets up the initial grid.
 #
 # param:
-#  - init_ref: ref to array where the cctk initial function is stored
+#  - init_ref: ref to hash where the cctk initial function is stored
 #  - val_ref : ref to values hash
 #
 # return:
@@ -541,18 +541,21 @@ sub buildGridFunction
 {
 	my ($init_ref, $val_ref) = @_;
 	my (@outdata, $code_str, $dim, $init_class, $cell_class, $decl);
+	my ($func, $func_ref);
 
 	# init
 	$dim        = $val_ref->{"dim"};
 	$init_class = $val_ref->{"class_name"};
 	$cell_class = $val_ref->{"cell_class_name"};
 	$decl       = $val_ref->{"objects_decl"};
+	$func       = (keys %{$init_ref})[0];
+	$func_ref   = $init_ref->{$func}{"data"};
 
 	# indent function
-	util_indent($init_ref, 1);
+	util_indent($func_ref, 1);
 
 	# build code string
-	$code_str = join("\n", @$init_ref);
+	$code_str = join("\n", @$func_ref);
 
 	push(@outdata, "void $init_class"."::"."grid(GridBase<$cell_class, $dim> *target)\n");
 	push(@outdata, "{\n");
@@ -727,9 +730,9 @@ sub createInitializerClass
 {
 	my ($config_ref, $thorninfo_ref, $cell_ref, $out_ref) = @_;
 	my ($init_ar, $cell_ar, $thorndir, $thorn, $arrangement, $impl, $class);
-	my (@inith, @initcpp, @init_func);
+	my (@inith, @initcpp);
 	my (@param_macro, @special_macros);
-	my (%param_data, %values);
+	my (%param_data, %values, %init_func);
 
 	# init
 	initValueHash(\%values);
@@ -753,13 +756,13 @@ sub createInitializerClass
 	generateParameterMacro(\%param_data, $thorn, $impl, $class, "", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_INITIAL-Timestep
-	getInitFunction($thorndir, $thorn, \@init_func);
+	getInitFunction($thorndir, $thorn, \%init_func);
 
 	# build init specific special macros
 	buildSpecialMacros(\%values, $cell_ref->{"inf_data"}, \@special_macros);
 
 	# build grid, setupXYZ and setupCctkGH function as well as (de|con)structor
-	buildGridFunction(\@init_func, \%values);
+	buildGridFunction(\%init_func, \%values);
 	buildXYZFunction(\%values);
 	buildCctkGHFunction(\%values);
 	buildConstructor(\%values);

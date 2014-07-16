@@ -272,7 +272,7 @@ sub buildInfVarMacros
 # Builds cell's static updateLineX function.
 #
 # param:
-#  - evol_ref: ref to array where lines of evolution function are stored
+#  - evol_ref: ref to hash where evolution function is stored
 #  - val_ref : ref to value data hash
 #  - inf_ref : ref to interface data hash
 #
@@ -282,17 +282,21 @@ sub buildInfVarMacros
 sub buildUpdateLineXFunction
 {
 	my ($evol_ref, $val_ref, $inf_ref) = @_;
-	my (@outdata, @merged_evol, $code_str);
+	my (@outdata, $code_str, $func, $func_ref);
+
+	# get function
+	$func     = (keys %{$evol_ref})[0];
+	$func_ref = $evol_ref->{$func}{"data"};
 
 	# adjust evol function for updateLine
-	adjustUpdateLine($inf_ref, $val_ref, $evol_ref);
+	adjustUpdateLine($inf_ref, $val_ref, $func_ref);
 	# add rotating timelevels
-	addRotateTimelevels($inf_ref, $val_ref, $evol_ref);
+	addRotateTimelevels($inf_ref, $val_ref, $func_ref);
 	# indent function
-	util_indent($evol_ref, 2);
+	util_indent($func_ref, 2);
 
 	# build code string
-	$code_str = join("\n", @$evol_ref);
+	$code_str = join("\n", @$func_ref);
 
 	push(@outdata, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
 	push(@outdata, $tab."static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)\n");
@@ -612,9 +616,9 @@ sub createCellClass
 {
 	my ($config_ref, $thorninfo_ref, $option_ref, $out_ref) = @_;
 	my ($thorndir, $thorn, $arrangement, $impl, $class);
-	my (@cellh, @cellcpp, @evol_func);
+	my (@cellh, @cellcpp);
 	my (@param_macro, @special_macros, @special_macros_undef);
-	my (%inf_data, %param_data, %static, %values);
+	my (%inf_data, %param_data, %static, %values, %evol_func);
 
 	# init
 	initValueHash(\%values);
@@ -630,7 +634,7 @@ sub createCellClass
 	generateParameterMacro(\%param_data, $thorn, $impl, $class, "staticData.", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_Evol-Timestep
-	getEvolFunction($thorndir, $thorn, \@evol_func);
+	getEvolFunction($thorndir, $thorn, \%evol_func);
 
 	# parse interface.ccl to get vars
 	getInterfaceVars($config_ref->{"arr_dir"}, $config_ref->{"evol_thorn_arr"},
@@ -648,7 +652,7 @@ sub createCellClass
 					   \@special_macros_undef);
 
 	# build updateLineX function
-	buildUpdateLineXFunction(\@evol_func, \%values, \%inf_data);
+	buildUpdateLineXFunction(\%evol_func, \%values, \%inf_data);
 
 	# generate a class holding all static data
 	# this is needed for having static data in a LibGeoDecomp cell class

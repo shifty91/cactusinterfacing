@@ -11,6 +11,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Storable 'dclone';
+use Tie::IxHash;
 use Cactusinterfacing::Config qw($debug);
 use Cactusinterfacing::Utils qw(read_file util_arrayToHash util_getFunction
 								util_indent _warn util_choose util_choose_multi);
@@ -86,7 +87,7 @@ sub getScheduleData
 # param:
 #  - thorndir: directory of thorn
 #  - thorn   : name of thorn
-#  - out_ref : ref to array where to store function
+#  - out_ref : ref to hash where to store function
 #
 # return:
 #  - none, function will be store in out_ref
@@ -94,10 +95,14 @@ sub getScheduleData
 sub getEvolFunction
 {
 	my ($thorndir, $thorn, $out_ref) = @_;
-	my (@funcs);
+	my (%funcs);
 
-	getFunctionsAt($thorndir, $thorn, "CCTK_EVOL", "single", \@funcs);
-	@$out_ref = @{$funcs[0]};
+	getFunctionsAt($thorndir, $thorn, "CCTK_EVOL", "single", \%funcs);
+
+	foreach my $key (keys %funcs) {
+		$out_ref->{$key} = $funcs{$key};
+		last;
+	}
 
 	return;
 }
@@ -109,7 +114,7 @@ sub getEvolFunction
 # param:
 #  - thorndir: directory of thorn
 #  - thorn   : name of thorn
-#  - out_ref : ref to array where to store functions
+#  - out_ref : ref to hash where to store functions
 #
 # return:
 #  - none, functions will be store in out_ref
@@ -130,7 +135,7 @@ sub getEvolFunctions
 # param:
 #  - thorndir: directory of thorn
 #  - thorn   : name of thorn
-#  - out_ref : ref to array where to store functions
+#  - out_ref : ref to hash where to store functions
 #
 # return:
 #  - none, function will be store in out_ref
@@ -138,10 +143,14 @@ sub getEvolFunctions
 sub getInitFunction
 {
 	my ($thorndir, $thorn, $out_ref) = @_;
-	my (@funcs);
+	my (%funcs);
 
-	getFunctionsAt($thorndir, $thorn, "CCTK_INITIAL", "single", \@funcs);
-	@$out_ref = @{$funcs[0]};
+	getFunctionsAt($thorndir, $thorn, "CCTK_INITIAL", "single", \%funcs);
+
+	foreach my $key (keys %funcs) {
+		$out_ref->{$key} = $funcs{$key};
+		last;
+	}
 
 	return;
 }
@@ -153,7 +162,7 @@ sub getInitFunction
 # param:
 #  - thorndir: directory of thorn
 #  - thorn   : name of thorn
-#  - out_ref : ref to array where to store functions
+#  - out_ref : ref to hash where to store functions
 #
 # return:
 #  - none, functions will be store in out_ref
@@ -178,7 +187,7 @@ sub getInitFunctions
 #  - timestep: cactus timestep (e.g. CCTK_EVOL for evolution)
 #  - type    : maybe "single" or "multi" to indicate whether to get one
 #              or multiple functions
-#  - out_ref : ref to array where to store function(s)
+#  - out_ref : ref to hash where to store function(s)
 #
 # return:
 #  - none, function(s) will be stored in out_ref
@@ -189,6 +198,7 @@ sub getFunctionsAt
 	my (%schedule_data, %nodes, @functions, @sources, $nfuncs);
 
 	# prepare arguments
+	tie %{$out_ref}, 'Tie::IxHash';
 	$timestep = "\U$timestep\E";
 
 	# parse schedule.ccl
@@ -232,7 +242,8 @@ sub getFunctionsAt
 
 			# lets see, if function was found
 			if (@code_func > 0) {
-				push(@$out_ref, \@code_func);
+				$out_ref->{$func}{"name"} = $func;
+				$out_ref->{$func}{"data"} = \@code_func;
 				$found = 1;
 				last;
 			}
@@ -242,7 +253,7 @@ sub getFunctionsAt
 			# the scheduled function could not be found in any source file
 			_warn("The scheduled function could not be found. Check your make.code.defn.",
 				  __FILE__, __LINE__);
-			push(@$out_ref, [ "/** No function found at \U$timestep\E **/" ]);
+			$out_ref->{$func}{"data"} = [ "/** No function found at \U$timestep\E **/" ];
 		}
 	}
 
@@ -250,7 +261,8 @@ sub getFunctionsAt
 
  fail:
 	# no function found
-	push(@$out_ref, [ "/** No function found at \U$timestep\E or no source files found **/" ]);
+	$out_ref->{"dummyFunction"}{"name"} = "dummyFunction";
+	$out_ref->{"dummyFunction"}{"data"} = [ "/** No function found at \U$timestep\E or no source files found **/" ];
 
 	return;
 }
