@@ -20,7 +20,8 @@ use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir
 use Cactusinterfacing::Make qw(createLibgeodecompMakefile);
 use Cactusinterfacing::CreateCellClass qw(createCellClass);
 use Cactusinterfacing::CreateInitializerClass qw(createInitializerClass);
-use Cactusinterfacing::Libgeodecomp qw(buildCctkSteerer getBOVWriter);
+use Cactusinterfacing::Libgeodecomp qw(buildCctkSteerer getBOVWriter
+									   getVisItWriter);
 use Cactusinterfacing::ThornList qw(parseThornList);
 
 # exports
@@ -30,18 +31,19 @@ our @EXPORT_OK = qw(createLibgeodecompApp);
 # Builds the complete main.cpp.
 #
 # param:
-#  - opt_ref : ref to option hash
-#  - bov_ref : ref to bov writer array
-#  - init_ref: ref to init hash
-#  - cell_ref: ref to cell hash
-#  - out_ref : ref to an array where to store the complete main.cpp
+#  - opt_ref  : ref to option hash
+#  - bov_ref  : ref to bov writer array
+#  - visit_ref: ref to visit writer array
+#  - init_ref : ref to init hash
+#  - cell_ref : ref to cell hash
+#  - out_ref  : ref to an array where to store the complete main.cpp
 #
 # return:
 #  - none, main() will be stored in out_ref
 #
 sub createMain
 {
-	my ($opt_ref, $bov_ref, $init_ref, $cell_ref, $out_ref) = @_;
+	my ($opt_ref, $bov_ref, $visit_ref, $init_ref, $cell_ref, $out_ref) = @_;
 	my ($mpi, $cell_class);
 
 	# init
@@ -66,7 +68,7 @@ sub createMain
 	push(@$out_ref, $tab."delete ".$cell_class."::staticData.cctkGH;\n");
 	push(@$out_ref, "}\n");
 	push(@$out_ref, "\n");
-	createRunSimulation($opt_ref, $bov_ref, $init_ref, $cell_ref, $out_ref);
+	createRunSimulation($opt_ref, $bov_ref, $visit_ref, $init_ref, $cell_ref, $out_ref);
 	push(@$out_ref, "\n");
 	push(@$out_ref, "int main(int argc, char** argv)\n");
 	push(@$out_ref, "{\n");
@@ -93,19 +95,20 @@ sub createMain
 # Builds a runSimulation function.
 #
 # param:
-#  - opt_ref : ref to options hash
-#  - bov_ref : ref to bov writer array
-#  - init_ref: ref to init hash
-#  - cell_ref: ref to cell hash
-#  - out_ref : ref to store runSimulation function
+#  - opt_ref  : ref to options hash
+#  - bov_ref  : ref to bov writer array
+#  - visit_ref: ref to visit writer array
+#  - init_ref : ref to init hash
+#  - cell_ref : ref to cell hash
+#  - out_ref  : ref to store runSimulation function
 #
 # return:
 #  - none, runSimulation function will be stored in out_ref
 #
 sub createRunSimulation
 {
-	my ($opt_ref, $bov_ref, $init_ref, $cell_ref, $out_ref) = @_;
-	my ($mpi, $dim, $init_class, $cell_class, $static_pointer);
+	my ($opt_ref, $bov_ref, $visit_ref, $init_ref, $cell_ref, $out_ref) = @_;
+	my ($mpi, $dim, $init_class, $cell_class, $static_pointer, $i);
 
 	# init
 	$mpi            = $opt_ref->{"mpi"};
@@ -145,6 +148,20 @@ sub createRunSimulation
 
 	# add bov writers
 	push(@$out_ref, $tab."sim.addWriter($_);\n") for (@$bov_ref);
+
+	# add visit writer
+	if (@$visit_ref && @$visit_ref > 0) {
+		my ($tab_offset);
+
+		$tab_offset = $mpi ? 2 : 1;
+
+		push(@$out_ref, "#ifdef LIBGEODECOMP_WITH_VISIT\n");
+		push(@$out_ref, $tab."if (MPILayer().rank() == 0) {\n") if ($mpi);
+		push(@$out_ref, $tab x $tab_offset.$_) for (@$visit_ref);
+		push(@$out_ref, $tab x $tab_offset."sim.addWriter(visItWriter);\n");
+		push(@$out_ref, $tab."}\n") if ($mpi);
+		push(@$out_ref, "#endif\n");
+	}
 
 	# add steerer
 	push(@$out_ref, $tab."sim.addSteerer(steerer);\n");
@@ -325,7 +342,7 @@ sub createLibgeodecompApp
 	my ($config_ref) = @_;
 	my ($outputdir, $mpi, $writer_type);
 	my (%option, %thorninfo);
-	my (%cell, %init, @main, @make, @cctksteerer, @bovwriter);
+	my (%cell, %init, @main, @make, @cctksteerer, @bovwriter, @visitwriter);
 
 	# first of check configuration
 	_err("Configuration is not valid. Check Config.pm", __FILE__, __LINE__)
@@ -351,9 +368,10 @@ sub createLibgeodecompApp
 	buildCctkSteerer($cell{"class_name"}, $cell{"static_data_class"}{"class_name"},
 					 \@cctksteerer);
 	getBOVWriter($cell{"inf_data"}, $cell{"class_name"}, $writer_type, \@bovwriter);
+	getVisItWriter($cell{"inf_data"}, $cell{"class_name"}, \@visitwriter);
 
 	# build main()
-	createMain(\%option, \@bovwriter, \%init, \%cell, \@main);
+	createMain(\%option, \@bovwriter, \@visitwriter, \%init, \%cell, \@main);
 
 	# write main, cell, init, selectors, static data class and steerer
 	util_writeFile(\@main,                 $outputdir."/main.cpp");

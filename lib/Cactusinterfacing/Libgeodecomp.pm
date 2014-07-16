@@ -18,7 +18,7 @@ use Cactusinterfacing::Utils qw(_warn);
 # exports
 our @EXPORT_OK = qw(generateSoAMacro getCoord getGFIndex getCoordZero
 					getFixedCoordZero getGFIndexLast getGFIndexFirst
-					buildCctkSteerer getBOVWriter);
+					buildCctkSteerer getBOVWriter getVisItWriter);
 
 #
 # Generates SoA macro for LibGeoDecomp.
@@ -321,8 +321,8 @@ sub getBOVWriter
 {
 	my ($inf_ref, $class, $type, $out_ref, $freq) = @_;
 
-	$freq  = $freq ? $freq : "outputFrequency";
-	$type  = "serial" unless ($type =~ /^serial$/i || $type =~ /^normal$/i);
+	$freq = $freq ? $freq : "outputFrequency";
+	$type = "serial" unless ($type =~ /^serial$/i || $type =~ /^normal$/i);
 
 	foreach my $group (keys %{$inf_ref}) {
 		my ($gtype);
@@ -344,6 +344,55 @@ sub getBOVWriter
 			push(@$out_ref, $writer);
 		}
 	}
+
+	return;
+}
+
+#
+# Generates VisIt writer strings for LibGeoDecomp. Example:
+# "VisItWriter<Cell> *visItWriter = new VisItWriter<Cell>("jacobi", 1);
+#  visItWriter->addVariable(&Cell::temp, "temperature");"
+#
+# param:
+#  - inf_ref: ref to interface data hash
+#  - class  : name of cell class
+#  - out_ref: ref to array where to store visit writer strings
+#  - freq   : output frequency
+#
+# return:
+#  - none, resulting visit writer strings will be stored in out_ref
+#
+sub getVisItWriter
+{
+	my ($inf_ref, $class, $out_ref, $freq) = @_;
+	my ($pushed);
+
+	$freq   = $freq ? $freq : "outputFrequency";
+	$pushed = 0;
+
+	# add a visit writer
+	push(@$out_ref, "VisItWriter<$class> *visItWriter = new VisItWriter<$class>(\"visit\", $freq);\n");
+
+	# add variables
+	foreach my $group (keys %{$inf_ref}) {
+		my ($gtype);
+
+		$gtype = $inf_ref->{$group}{"gtype"};
+
+		next if ($gtype =~ /^SCALAR$/i);
+		next if ($gtype =~ /^ARRAY$/i);
+
+		foreach my $name (@{$inf_ref->{$group}{"names"}}) {
+			my ($var, $add);
+
+			$var = "&" . $class . "::" . "var_" . $name;
+			$add = "visItWriter->addVariable($var, \"$name\");\n";
+			push(@$out_ref, $add);
+			$pushed = 1;
+		}
+	}
+
+	@$out_ref = () unless ($pushed);
 
 	return;
 }
