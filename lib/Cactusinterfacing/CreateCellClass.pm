@@ -423,7 +423,7 @@ sub addRotateTimelevels
 
 				$var_idx  = "vindex";
 				$gfindex  = getGFIndexFirst($dim, $index);
-				$hood_new = "(&hoodNew.var_"         . $name . ("_p" x ($i - 1). "())");
+				$hood_new = "(&hoodNew.var_" . $name . ("_p" x ($i - 1) . "())");
 				$left     = "$hood_new" . "[$var_idx]";
 				# using macro here, it's just shorter
 				$right    = "$name" . ("_p" x ($i - 1)) . "[$var_idx]";
