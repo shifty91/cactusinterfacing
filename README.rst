@@ -9,7 +9,7 @@ Automatic Cactus Interfacing
 The Coding Style follows the following directions:
     - indention with tabs
     - tabsize is 4
-    - style is linux
+    - style is Linux
 
 1. Requirements
 ===============
@@ -21,10 +21,12 @@ The following requirements have to be met, otherwise it won't compile/work:
         - File::Path
         - File::Which
         - Getopt::Long
-    - Boost Regex           (for perl like regex)
+        - Storable
+        - Tie::IxHash
+    - Boost Regex           (for Perl like regex)
     - LibGeoDecomp, installed on your system
     - Cactus
-    - optionally astyle for formatting auto generated code
+    - optionally Artistic Style for formatting auto generated code
 
 Perl should be installed on most systems by default. The exporter and
 data dumper modules, too.
