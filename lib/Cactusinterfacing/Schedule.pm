@@ -253,7 +253,7 @@ sub getFunctionsAt
 			# the scheduled function could not be found in any source file
 			_warn("The scheduled function could not be found. Check your make.code.defn.",
 				  __FILE__, __LINE__);
-			$out_ref->{$func}{"data"} = [ "/** No function found at \U$timestep\E **/" ];
+			$out_ref->{$func}{"data"} = [ "/** No function found at \U$timestep\E timestep **/" ];
 		}
 	}
 
@@ -262,7 +262,7 @@ sub getFunctionsAt
  fail:
 	# no function found
 	$out_ref->{"dummyFunction"}{"name"} = "dummyFunction";
-	$out_ref->{"dummyFunction"}{"data"} = [ "/** No function found at \U$timestep\E or no source files found **/" ];
+	$out_ref->{"dummyFunction"}{"data"} = [ "/** No function found at \U$timestep\E timestep or no source files found **/" ];
 
 	return;
 }
