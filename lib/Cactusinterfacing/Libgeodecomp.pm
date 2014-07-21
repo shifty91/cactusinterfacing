@@ -349,7 +349,7 @@ sub getBOVWriter
 
 #
 # Generates VisIt writer strings for LibGeoDecomp. Example:
-# "VisItWriter<Cell> *visItWriter = new VisItWriter<Cell>("jacobi", 1);
+# "visItWriter = new VisItWriter<Cell>("jacobi", 1);
 #  visItWriter->addVariable(&Cell::temp, "temperature");"
 #
 # param:
@@ -370,7 +370,7 @@ sub getVisItWriter
 	$pushed = 0;
 
 	# add a visit writer
-	push(@$out_ref, "VisItWriter<$class> *visItWriter = new VisItWriter<$class>(\"visit\", $freq);\n");
+	push(@$out_ref, "visItWriter = new VisItWriter<$class>(\"visit\", $freq);\n");
 
 	# add variables
 	foreach my $group (keys %{$inf_ref}) {

@@ -54,6 +54,7 @@ sub createMain
 	push(@$out_ref, "#include <libgeodecomp.h>\n");
 	push(@$out_ref, "#include <libgeodecomp/io/bovwriter.h>\n") if ($mpi);
 	push(@$out_ref, "#include <libgeodecomp/io/serialbovwriter.h>\n") if (!$mpi);
+	push(@$out_ref, "#include <libgeodecomp/io/visitwriter.h>\n");
 	push(@$out_ref, "#include \"cell.h\"\n");
 	push(@$out_ref, "#include \"init.h\"\n");
 	push(@$out_ref, "#include \"parparser.h\"\n");
@@ -155,10 +156,12 @@ sub createRunSimulation
 		$tab_offset = $mpi ? 2 : 1;
 
 		push(@$out_ref, "#ifdef LIBGEODECOMP_WITH_VISIT\n");
+		push(@$out_ref, $tab."VisItWriter<$cell_class> *visItWriter = 0;\n");
 		push(@$out_ref, $tab."if (MPILayer().rank() == 0) {\n") if ($mpi);
 		push(@$out_ref, $tab x $tab_offset.$_) for (@$visit_ref);
-		push(@$out_ref, $tab x $tab_offset."sim.addWriter(visItWriter);\n");
 		push(@$out_ref, $tab."}\n") if ($mpi);
+		push(@$out_ref, $tab."sim.addWriter(visItWriter);\n") if (!$mpi);
+		push(@$out_ref, $tab."sim.addWriter(new CollectingWriter<$cell_class>(visItWriter));\n") if ($mpi);
 		push(@$out_ref, "#endif\n");
 	}
 
