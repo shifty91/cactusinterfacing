@@ -47,7 +47,7 @@ my ($help, $config, $evol_thorn, $init_thorn, $cctk_home, $outputdir, $force_mpi
 sub print_usage
 {
 	select(STDERR);
-	$| = 1;
+	local $| = 1;
 	print "usage: main.pl [options]\n";
 	print "Options:\n";
 	print "\t--help, -h\t\tshow this help\n";
