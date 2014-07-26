@@ -82,10 +82,11 @@ sub isShared
 sub getInherits
 {
 	my ($ar_thorn, $info_ref, $inherits_ref) = @_;
-	my ($impl, $inherits, $friends, $shares) = @{$info_ref->{$ar_thorn}};
-	my (@values);
+	my ($impl, $inherits, $friends, $shares) =
+		@{$info_ref->{$ar_thorn}}{qw(impl inherits friends shares)};
+	my (@values, $hash_ref);
 
-	return if $inherits eq "";
+	return if ($inherits eq "");
 
 	@values = split(',', $inherits);
 	# remove whitespaces
@@ -94,8 +95,8 @@ sub getInherits
 
 	foreach my $val (@values) {
 		# get ar_thorn
-		foreach my $key (keys %$info_ref) {
-			if ($val =~ /^$info_ref->{$key}[0]$/i) {
+		foreach my $key (keys %{$info_ref}) {
+			if ($val =~ /^$info_ref->{$key}{"impl"}$/i) {
 				push(@$inherits_ref, $key);
 				getInherits($key, $info_ref, $inherits_ref);
 				last;
@@ -122,10 +123,11 @@ sub getInherits
 sub getFriends
 {
 	my ($ar_thorn, $info_ref, $friends_ref) = @_;
-	my ($impl, $inherits, $friends, $shares) = @{$info_ref->{$ar_thorn}};
+	my ($impl, $inherits, $friends, $shares) =
+		@{$info_ref->{$ar_thorn}}{qw(impl inherits friends shares)};
 	my (@values);
 
-	return if $friends eq "";
+	return if ($friends eq "");
 
 	@values = split(',', $friends);
 	# remove whitespaces
@@ -134,8 +136,8 @@ sub getFriends
 
 	foreach my $val (@values) {
 		# get ar_thorn
-		foreach my $key (keys %$info_ref) {
-			if ($val =~ /^$info_ref->{$key}[0]$/i) {
+		foreach my $key (keys %{$info_ref}) {
+			if ($val =~ /^$info_ref->{$key}{"impl"}$/i) {
 				push(@$friends_ref, $key);
 				getInherits($key, $info_ref, $friends_ref);
 				last;
@@ -158,7 +160,7 @@ sub getShares
 #
 # Gatheres information about thorns from ThornList and stores into
 # info reference where arrangement/thorn is the key.
-# The value is an array containing implementation, inherits, friends
+# The value is an hash containing implementation, inherits, friends
 # and shares.
 #
 # param:
@@ -183,14 +185,18 @@ sub getThorns
 		# skip empty lines
 		next if $line =~ /^\s*$/;
 
-		# expected format: arrangement/thorn # implements (inherits) [friend] {shares}
+		# expected format: arrangement/thorn # implements (inherits) [friends] {shares}
 		if ($line =~ /^(\w+\/\w+)\s*#\s*(\w+)\s*\(([\w,\- ]*)\)\s*\[([\w,\- ]*)\]\s*\{([\w,\- ]*)\}\s*$/) {
 			@options = ($2, $3, $4, $5);
 			push(@$thorns_ref, $1);
 			s/\s//g for (@options);
-			$info_ref->{$1} = \@options;
+			$info_ref->{$1}{"impl"}     = $options[0];
+			$info_ref->{$1}{"inherits"} = $options[1];
+			$info_ref->{$1}{"friends"}  = $options[2];
+			$info_ref->{$1}{"shares"}   = $options[3];
 		} else {
-			_err("Syntax error in $configdir/ThornList", __FILE__, __LINE__);
+			_err("Unexpected format found in $configdir/ThornList. Aborting now.",
+				 __FILE__, __LINE__);
 		}
 	}
 

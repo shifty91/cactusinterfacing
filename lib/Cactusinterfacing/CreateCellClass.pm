@@ -699,7 +699,7 @@ sub createCellClass
 	$thorndir             = $config_ref->{"arr_dir"}."/".$config_ref->{"evol_thorn_arr"};
 	$thorn                = $config_ref->{"evol_thorn"};
 	$arrangement          = $config_ref->{"evol_arr"};
-	$impl                 = $thorninfo_ref->{$config_ref->{"evol_thorn_arr"}}[0];
+	$impl                 = $thorninfo_ref->{$config_ref->{"evol_thorn_arr"}}{"impl"};
 	$class                = $thorn."_Cell";
 	$values{"class_name"} = $class;
 

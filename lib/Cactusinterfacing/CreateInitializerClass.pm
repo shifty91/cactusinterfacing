@@ -741,7 +741,7 @@ sub createInitializerClass
 	$thorndir                  = $config_ref->{"arr_dir"} . "/" . $init_ar;
 	$thorn                     = $config_ref->{"init_thorn"};
 	$arrangement               = $config_ref->{"init_arr"};
-	$impl                      = $thorninfo_ref->{$init_ar}[0];
+	$impl                      = $thorninfo_ref->{$init_ar}{"impl"};
 	$class                     = $thorn."_Initializer";
 	$values{"class_name"}      = $class;
 	$values{"cell_class_name"} = $cell_ref->{"class_name"};
