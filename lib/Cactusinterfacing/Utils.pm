@@ -588,12 +588,15 @@ sub CST_error {
 #  @hdesc Allows a \ to escape the end of a line.
 #  @endhistory
 #@@*/
+#
+# Adjusted to use my own error function and exit.
+#
 sub read_file {
 	my ($file) = @_;
 	my (@indata);
 	my ($fh, $line);
 
-	open($fh, "<", "$file") || die("Can't open $file\n");
+	open($fh, "<", "$file") || _err("Cannot open $file.", __FILE__, __LINE__);
 
 	$line = "";
 

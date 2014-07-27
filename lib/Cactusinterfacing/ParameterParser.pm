@@ -50,6 +50,9 @@ our @EXPORT_OK = qw(parse_param_ccl);
 #  Parses a param.ccl file and generates a database of the values.
 #  @enddesc
 #@@*/
+#
+# Adjusted to use my own error function and exit.
+#
 sub parse_param_ccl
 {
 	my ($thorn, @data) = @_;
@@ -219,8 +222,8 @@ m/^\s*(EXTENDS\s+|USES\s+)?(?:CCTK_)?(INT|REAL|BOOLEAN|KEYWORD|STRING)\s+([a-zA-
   #			  This message is already given above.
   #			  &CST_error(0, "Missing { at start of range block for parameter " .
   #						  "$variable pf thorn $thorn", '', __LINE__, __FILE__);
-						die
-'Internal error in parser: this line should never be reached.';
+						_err('Internal error in parser: this line should never be reached.',
+							 __FILE__, __LINE__);
 					}
 				} else {
 					$skip_range_block = 0;
