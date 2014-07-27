@@ -253,12 +253,18 @@ sub setupIncludeDir
 	my ($init_ref, $cell_ref, $config_ref, $outputdir) = @_;
 	my (@cell, @cell_undef, @init, @paramh);
 	my ($cell_name, $cell_undef_name, $init_name);
+	my ($first_init, $first_evol, %evol_thorn, %init_thorn);
 
 	# init
-	$cell_name       = "cctk_".$cell_ref->{"class_name"}.".h";
-	$cell_undef_name = "cctk_".$cell_ref->{"class_name"}."_undef.h";
-	$init_name       = "cctk_".$init_ref->{"class_name"}.".h";
+	$cell_name       = "cctk_" . $cell_ref->{"class_name"} . ".h";
+	$cell_undef_name = "cctk_" . $cell_ref->{"class_name"} . "_undef.h";
+	$init_name       = "cctk_" . $init_ref->{"class_name"} . ".h";
 	$outputdir      .= "/include";
+	$first_init      = (keys %{$config_ref->{"init_thorns"}})[0];
+	$first_evol      = (keys %{$config_ref->{"evol_thorns"}})[0];
+	%init_thorn      = %{$config_ref->{"init_thorns"}{$first_init}};
+	%evol_thorn      = %{$config_ref->{"evol_thorns"}{$first_evol}};
+
 
 	# create directory for cctk_ header files
 	util_mkdir($outputdir) unless (-d $outputdir);
@@ -301,18 +307,18 @@ sub setupIncludeDir
 	push(@init, "\n");
 	push(@init, "#endif /* _CCTK_\U$init_ref->{\"class_name\"}\E_H */\n");
 
-	# wite header
-	util_writeFile(\@paramh, $outputdir."/parameter.h");
-	util_writeFile(\@cell, $outputdir."/$cell_name");
-	util_writeFile(\@cell_undef, $outputdir."/$cell_undef_name");
-	util_writeFile(\@init, $outputdir."/$init_name");
+	# write header
+	util_writeFile(\@paramh,     $outputdir . "/parameter.h");
+	util_writeFile(\@cell,       $outputdir . "/$cell_name");
+	util_writeFile(\@cell_undef, $outputdir . "/$cell_undef_name");
+	util_writeFile(\@init,       $outputdir . "/$init_name");
 
 	# copy definethisthorns header
-	util_cp($config_ref->{"config_dir"}."/bindings/include/".
-			$config_ref->{"evol_thorn"}."/definethisthorn.h",
+	util_cp($config_ref->{"config_dir"} . "/bindings/include/".
+			$evol_thorn{"thorn"} . "/definethisthorn.h",
 			$outputdir."/definethisthorn_$cell_ref->{\"class_name\"}.h");
-	util_cp($config_ref->{"config_dir"}."/bindings/include/".
-			$config_ref->{"init_thorn"}."/definethisthorn.h",
+	util_cp($config_ref->{"config_dir"} . "/bindings/include/".
+			$init_thorn{"thorn"} . "/definethisthorn.h",
 			$outputdir."/definethisthorn_$init_ref->{\"class_name\"}.h");
 
 	return;

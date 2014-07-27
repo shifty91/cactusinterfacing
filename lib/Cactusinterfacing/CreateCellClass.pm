@@ -689,18 +689,26 @@ sub initValueHash
 sub createCellClass
 {
 	my ($config_ref, $thorninfo_ref, $option_ref, $out_ref) = @_;
-	my ($thorndir, $thorn, $arrangement, $impl, $class);
+	my ($thorndir, $thorn, $arrangement, $impl, $class, $first);
 	my (@cellh, @cellcpp);
 	my (@param_macro, @special_macros, @special_macros_undef);
-	my (%inf_data, %param_data, %static, %values, %evol_func);
+	# FIXME: rename %evol_func
+	my (%inf_data, %param_data, %static, %values, %evol_func, %evol_thorn);
+
+	# check thorns
+	_warn("Using more than one evolution thorn is not supported at the Moment. ".
+		  "Using the first one.", __FILE__, __LINE__)
+		if (keys %{$config_ref->{"evol_thorns"}} > 1);
 
 	# init
 	initValueHash(\%values);
-	$thorndir             = $config_ref->{"arr_dir"}."/".$config_ref->{"evol_thorn_arr"};
-	$thorn                = $config_ref->{"evol_thorn"};
-	$arrangement          = $config_ref->{"evol_arr"};
-	$impl                 = $thorninfo_ref->{$config_ref->{"evol_thorn_arr"}}{"impl"};
-	$class                = $thorn."_Cell";
+	$first                = (keys %{$config_ref->{"evol_thorns"}})[0];
+	%evol_thorn           = %{$config_ref->{"evol_thorns"}{$first}};
+	$thorndir             = $config_ref->{"arr_dir"} . "/" . $evol_thorn{"thorn_arr"};
+	$thorn                = $evol_thorn{"thorn"};
+	$arrangement          = $evol_thorn{"arr"};
+	$impl                 = $thorninfo_ref->{$evol_thorn{"thorn_arr"}}{"impl"};
+	$class                = $thorn . "_Cell";
 	$values{"class_name"} = $class;
 
 	# parse param.ccl to get parameters
@@ -711,7 +719,7 @@ sub createCellClass
 	getEvolFunctions($thorndir, $thorn, \%evol_func);
 
 	# parse interface.ccl to get vars
-	getInterfaceVars($config_ref->{"arr_dir"}, $config_ref->{"evol_thorn_arr"},
+	getInterfaceVars($config_ref->{"arr_dir"}, $evol_thorn{"thorn_arr"},
 					 $thorninfo_ref, \%inf_data);
 	buildInterfaceStrings(\%inf_data, \%values);
 

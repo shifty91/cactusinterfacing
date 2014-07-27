@@ -730,19 +730,29 @@ sub createInitializerClass
 {
 	my ($config_ref, $thorninfo_ref, $cell_ref, $out_ref) = @_;
 	my ($init_ar, $cell_ar, $thorndir, $thorn, $arrangement, $impl, $class);
+	my ($first_init, $first_evol, %evol_thorn, %init_thorn);
 	my (@inith, @initcpp);
 	my (@param_macro, @special_macros);
 	my (%param_data, %values, %init_func);
 
+	# check thorns
+	_warn("Using more than one intialization thorn is not supported at the Moment. ".
+		  "Using the first one.", __FILE__, __LINE__)
+		if (keys %{$config_ref->{"init_thorns"}} > 1);
+
 	# init
 	initValueHash(\%values);
-	$init_ar                   = $config_ref->{"init_thorn_arr"};
-	$cell_ar                   = $config_ref->{"evol_thorn_arr"};
+	$first_init                = (keys %{$config_ref->{"init_thorns"}})[0];
+	$first_evol                = (keys %{$config_ref->{"evol_thorns"}})[0];
+	%init_thorn                = %{$config_ref->{"init_thorns"}{$first_init}};
+	%evol_thorn                = %{$config_ref->{"evol_thorns"}{$first_evol}};
+	$init_ar                   = $init_thorn{"thorn_arr"};
+	$cell_ar                   = $evol_thorn{"thorn_arr"};
 	$thorndir                  = $config_ref->{"arr_dir"} . "/" . $init_ar;
-	$thorn                     = $config_ref->{"init_thorn"};
-	$arrangement               = $config_ref->{"init_arr"};
+	$thorn                     = $init_thorn{"thorn"};
+	$arrangement               = $init_thorn{"arr"};
 	$impl                      = $thorninfo_ref->{$init_ar}{"impl"};
-	$class                     = $thorn."_Initializer";
+	$class                     = $thorn . "_Initializer";
 	$values{"class_name"}      = $class;
 	$values{"cell_class_name"} = $cell_ref->{"class_name"};
 	$values{"dim"}             = $cell_ref->{"dim"};

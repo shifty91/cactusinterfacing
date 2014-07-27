@@ -2,7 +2,7 @@
 #
 # Cactusinterfacing
 # main.pl -- gathers information and creates LibGeoDecomp application
-# Copyright (C) 2013 Kurt Kanzenbach <kurt@kmk-computers.de>
+# Copyright (C) 2013, 2014 Kurt Kanzenbach <kurt@kmk-computers.de>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,17 +26,16 @@ use lib "$FindBin::RealBin/lib";
 use Getopt::Long;
 use Cactusinterfacing::CreateLibgeodecompApp qw(createLibgeodecompApp);
 use Cactusinterfacing::Utils qw(util_readDir util_readFile util_choose
-								util_input _err vprint);
+								util_input _err vprint util_choose_multi);
 
 # vars
-my (@configs, $configdir);
-my (@thorns);
-my (%config);
+my (@configs, $configdir, @thorns, %config);
 # options
-my ($help, $config, $evol_thorn, $init_thorn, $cctk_home, $outputdir, $force_mpi);
+my (@evol_thorns, @init_thorns, $input_evol_thorn, $input_init_thorn);
+my ($help, $config, $cctk_home, $outputdir, $force_mpi);
 
 #
-# Prints usage and exits with success.
+# Prints usage on stderr and exits with success.
 #
 # param:
 #  - none
@@ -44,7 +43,7 @@ my ($help, $config, $evol_thorn, $init_thorn, $cctk_home, $outputdir, $force_mpi
 # return:
 #  - none
 #
-sub print_usage
+sub printUsage
 {
 	select(STDERR);
 	local $| = 1;
@@ -70,7 +69,7 @@ sub print_usage
 # return:
 #  - none
 #
-sub get_args
+sub getArgs
 {
 	# The Cactus home directory can be specified by an environment variable
 	# called CCTK_HOME.
@@ -79,8 +78,8 @@ sub get_args
 	GetOptions("help"         => \$help,
 			   "force_mpi"    => \$force_mpi,
 			   "config=s"     => \$config,
-			   "evolthorn=s"  => \$evol_thorn,
-			   "initthorn=s"  => \$init_thorn,
+			   "evolthorn=s"  => \$input_evol_thorn,
+			   "initthorn=s"  => \$input_init_thorn,
 			   "cactushome=s" => \$cctk_home,
 			   "outputdir=s"  => \$outputdir) || print_usage();
 
@@ -97,7 +96,7 @@ sub get_args
 # return:
 #  - none, thorns will be stored in thorns_ref
 #
-sub get_thorns
+sub getThorns
 {
 	my ($thorns_ref, $configdir) = @_;
 	my (@lines);
@@ -134,11 +133,112 @@ sub get_thorns
 	return;
 }
 
+#
+# Parses the input strings for evol/init thorns.
+#
+# param:
+#  - evol_ref: ref to evol thorns array
+#  - init_ref: ref to init thorns array
+#
+# return:
+#  - none, results will be stored in (evol/init)_ref
+#
+sub parseThorns
+{
+	my ($evol_ref, $init_ref) = @_;
+
+	goto init unless ($input_evol_thorn);
+	foreach my $evol_thorn (split ',', $input_evol_thorn) {
+		$evol_thorn =~ s/^\s*//g;
+		$evol_thorn =~ s/\s*$//g;
+		push(@$evol_ref, $evol_thorn);
+	}
+
+ init:
+	return unless ($input_init_thorn);
+	foreach my $init_thorn (split ',', $input_init_thorn) {
+		$init_thorn =~ s/^\s*//g;
+		$init_thorn =~ s/\s*$//g;
+		push(@$init_ref, $init_thorn);
+	}
+
+	return;
+}
+
+#
+# This function checks whether the given thorns are valid
+# by comparing them to the ThornList and looking for weird
+# input.
+#
+# param:
+#  - thorn_ref: ref to all found thorns (except for stripped ones)
+#  - evol_ref : ref to evol thorns array
+#  - init_ref : ref to init thorns array
+#
+# return:
+#  - none, exits if something is wrong
+#
+sub checkThorns
+{
+	my ($thorn_ref, $evol_ref, $init_ref) = @_;
+	my (@merged);
+
+	push(@merged, @{$evol_ref});
+	push(@merged, @{$init_ref});
+
+	foreach my $input (@merged) {
+		_err("Given thorn \"\Q$input\E\" is not in ThornList.", __FILE__, __LINE__)
+			unless (grep { $input eq $_ } @{$thorn_ref});
+		_err("Given thorn \"\Q$input\E\" contains not valid characters.", __FILE__,
+			 __LINE__) if ($input =~ /[ \\*+--=\*\.&\^%\$@!#]+/);
+	}
+
+	return;
+}
+
+#
+# This functions builds the thorn hash for createLibGeoDecompApp.
+# Each hash consists of all thorns including name of thorn, arragements
+# and complete arragement/thorn.
+#
+# param:
+#  - config_ref: ref to config hash
+#  - evol_ref  : ref to evol thorns array
+#  - init_ref  : ref to init thorns array
+#
+# return:
+#  - none, hashes will be stored in config_ref, keys "evol_thorns" and "init_thorns"
+#
+sub buildThornHash
+{
+	my ($config_ref, $evol_ref, $init_ref) = @_;
+	my (%evol_thorns, %init_thorns);
+
+	foreach my $evol_thorn (@{$evol_ref}) {
+		my ($arr, $thorn) = $evol_thorn =~ /^(\w+)\/(\w+)$/;
+		$evol_thorns{$thorn}{"thorn"}     = $thorn;
+		$evol_thorns{$thorn}{"arr"}       = $arr;
+		$evol_thorns{$thorn}{"thorn_arr"} = $evol_thorn;
+	}
+
+	foreach my $init_thorn (@{$init_ref}) {
+		my ($arr, $thorn) = $init_thorn =~ /^(\w+)\/(\w+)$/;
+		$init_thorns{$thorn}{"thorn"}     = $thorn;
+		$init_thorns{$thorn}{"arr"}       = $arr;
+		$init_thorns{$thorn}{"thorn_arr"} = $init_thorn;
+	}
+
+	$config_ref->{"evol_thorns"} = \%evol_thorns;
+	$config_ref->{"init_thorns"} = \%init_thorns;
+
+	return;
+}
+
 # and go :)
-get_args();
+getArgs();
 
 # Need help? No problem
-print_usage() if ($help);
+printUsage() if ($help);
 
 vprint("Transforming a Cactus configuration into a LibGeoDecomp application.");
 
@@ -169,25 +269,31 @@ unless ($config) {
 $configdir = $cctk_home . "/configs/" . $config;
 
 # get thorns
-get_thorns(\@thorns, $configdir);
+getThorns(\@thorns, $configdir);
 
-unless ($evol_thorn) {
+# parse user input for evol/init thorns
+parseThorns(\@evol_thorns, \@init_thorns);
+
+# no evol thorns given
+unless (@evol_thorns) {
 	if (@thorns > 1) {
-		# choose evol thorn
-		$evol_thorn = util_choose("Choose evolution Thorn", \@thorns);
+		@evol_thorns = util_choose_multi("Choose evolution Thorn(s)", \@thorns);
 	} else {
-		$evol_thorn = $thorns[0];
+		@evol_thorns = ( $thorns[0] );
 	}
 }
 
-unless ($init_thorn) {
+# no init thorns given
+unless (@init_thorns) {
 	if (@thorns > 1) {
-		# choose init thorn
-		$init_thorn = util_choose("Choose intialization Thorn", \@thorns);
+		@init_thorns = util_choose_multi("Choose intialization Thorn(s)", \@thorns);
 	} else {
-		$init_thorn = $thorns[0];
+		@init_thorns = ( $thorns[0] );
 	}
 }
+
+# check thorns
+checkThorns(\@thorns, \@evol_thorns, \@init_thorns);
 
 # using current directory as default, if not set
 $outputdir = "." unless ($outputdir);
@@ -195,18 +301,13 @@ $outputdir = "." unless ($outputdir);
 # build config hash
 # this hash includes all necassary information about
 # paths and thorns
-$config{"force_mpi"}      = $force_mpi;
-$config{"cctk_home"}      = $cctk_home;
-$config{"config"}         = $config;
-$config{"config_dir"}     = $configdir;
-$config{"arr_dir"}        = $cctk_home."/arrangements";
-$config{"outputdir"}      = $outputdir;
-$config{"evol_thorn_arr"} = $evol_thorn;
-$config{"init_thorn_arr"} = $init_thorn;
-($config{"evol_arr"}, $config{"evol_thorn"})
-	= $config{"evol_thorn_arr"} =~ /(\w+)\/(\w+)/;
-($config{"init_arr"}, $config{"init_thorn"})
-	= $config{"init_thorn_arr"} =~ /(\w+)\/(\w+)/;
+$config{"force_mpi"}  = $force_mpi;
+$config{"cctk_home"}  = $cctk_home;
+$config{"config"}     = $config;
+$config{"config_dir"} = $configdir;
+$config{"arr_dir"}    = $cctk_home . "/arrangements";
+$config{"outputdir"}  = $outputdir;
+buildThornHash(\%config, \@evol_thorns, \@init_thorns);
 
 # do it
 createLibgeodecompApp(\%config);
