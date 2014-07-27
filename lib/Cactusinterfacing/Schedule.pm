@@ -433,6 +433,8 @@ sub prepareDAG
 		$nodes_ref->{$function}{"out_nodes"} = ();
 	}
 
+	return unless (keys %{$nodes_ref});
+
 	# now create DAG by evaluating after and before
 	foreach my $function (keys %{$data_ref}) {
 		my ($after, $before);
