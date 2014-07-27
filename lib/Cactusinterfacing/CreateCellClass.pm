@@ -692,8 +692,7 @@ sub createCellClass
 	my ($thorndir, $thorn, $arrangement, $impl, $class, $first);
 	my (@cellh, @cellcpp);
 	my (@param_macro, @special_macros, @special_macros_undef);
-	# FIXME: rename %evol_func
-	my (%inf_data, %param_data, %static, %values, %evol_func, %evol_thorn);
+	my (%inf_data, %param_data, %static, %values, %evol_funcs, %evol_thorn);
 
 	# check thorns
 	_warn("Using more than one evolution thorn is not supported at the Moment. ".
@@ -715,8 +714,8 @@ sub createCellClass
 	getParameters($thorndir, $thorn, \%param_data);
 	generateParameterMacro(\%param_data, $thorn, $impl, $class, "staticData.", \@param_macro);
 
-	# parse schedule.ccl to get function at CCTK_Evol-Timestep
-	getEvolFunctions($thorndir, $thorn, \%evol_func);
+	# parse schedule.ccl to get function(s) at CCTK_Evol-Timestep
+	getEvolFunctions($thorndir, $thorn, \%evol_funcs);
 
 	# parse interface.ccl to get vars
 	getInterfaceVars($config_ref->{"arr_dir"}, $evol_thorn{"thorn_arr"},
@@ -734,7 +733,7 @@ sub createCellClass
 					   \@special_macros_undef);
 
 	# build updateLineX function
-	buildUpdateFunctions(\%evol_func, \%values, \%inf_data);
+	buildUpdateFunctions(\%evol_funcs, \%values, \%inf_data);
 
 	# generate a class holding all static data
 	# this is needed for having static data in a LibGeoDecomp cell class
