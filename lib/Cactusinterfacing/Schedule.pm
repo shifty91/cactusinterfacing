@@ -381,9 +381,6 @@ sub isFunction
 		return 1 if ($function eq $symbol);
 	}
 
-	_err("The function name \"$symbol\" is also a alias.", __FILE__, __LINE__)
-		if (isAlias($symbol, $data_ref));
-
 	return 0;
 }
 
@@ -404,9 +401,6 @@ sub isAlias
 	foreach my $function (keys %{$data_ref}) {
 		return 1 if ($symbol eq $data_ref->{$function}{"as"});
 	}
-
-	_err("The alias \"$symbol\" is also a name of a function.", __FILE__, __LINE__)
-		if (isFunction($symbol, $data_ref));
 
 	return 0;
 }
@@ -443,21 +437,23 @@ sub prepareDAG
 	foreach my $function (keys %{$data_ref}) {
 		my ($after, $before);
 
+		# init
+		$after  = $data_ref->{$function}{"after"};
+		$before = $data_ref->{$function}{"before"};
+
 		# parse after
-		goto before if ($data_ref->{$function}{"after"} eq "");
-		$after = isAlias($data_ref->{$function}{"after"}, $data_ref) ?
-			alias2RealName($data_ref->{$function}{"after"}, $data_ref) :
-			$data_ref->{$function}{"after"};
+		goto before if ($after eq "");
+		goto before if (!isAlias($after, $data_ref) && !isFunction($after, $data_ref));
+		$after = isAlias($after, $data_ref) ? alias2RealName($after, $data_ref) : $after;
 
 		$nodes_ref->{$function}{"ref_cnt"} += 1;
 		push(@{$nodes_ref->{$after}{"out_nodes"}}, $function);
 
 		# parse before
 	before:
-		next if ($data_ref->{$function}{"before"} eq "");
-		$before = isAlias($data_ref->{$function}{"before"}, $data_ref) ?
-			alias2RealName($data_ref->{$function}{"before"}, $data_ref) :
-		    $data_ref->{$function}{"before"};
+		next if ($before eq "");
+		next if (!isAlias($before, $data_ref) && !isFunction($before, $data_ref));
+		$before = isAlias($before, $data_ref) ? alias2RealName($before, $data_ref) : $before;
 
 		$nodes_ref->{$before}{"ref_cnt"} += 1;
 		push(@{$nodes_ref->{$function}{"out_nodes"}}, $before);
