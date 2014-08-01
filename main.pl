@@ -47,15 +47,20 @@ sub printUsage
 {
 	select(STDERR);
 	local $| = 1;
-	print "usage: main.pl [options]\n";
-	print "Options:\n";
-	print "\t--help, -h\t\tshow this help\n";
-	print "\t--config\t\tCactus configuration to build for\n";
-	print "\t--evolthorn, -e\t\tevolution thorn\n";
-	print "\t--initthorn, -i\t\tinitialization thorn\n";
-	print "\t--cactushome\t\tdirectory to Cactus Home\n";
-	print "\t--outputdir, -o\t\toutput directory\n";
-	print "\t--force_mpi, -f\t\tbuild with MPI even if Cactus is build without\n";
+
+    print <<'EOF';
+usage: main.pl [options]
+
+options:
+    --help,       -h        show this help
+    --config,     -c        the Cactus configuration to use
+    --evolthorns, -e        selects evolution thorns, multiple should be comma seperated
+    --initthorns, -i        selects initialization thorns, multiple should be comma seperated
+    --cactushome, -d        selects the the path to Cactus directory
+    --outputdir,  -o        selects the output directory, where generated code will be stored
+    --force_mpi,  -f        selects whether the code will be generated with MPI even if the
+                            Cactus configuration is built without
+EOF
 
 	exit 0;
 }
@@ -75,13 +80,13 @@ sub getArgs
 	# called CCTK_HOME.
 	$cctk_home = $ENV{"CCTK_HOME"};
 
-	GetOptions("help"         => \$help,
-			   "force_mpi"    => \$force_mpi,
-			   "config=s"     => \$config,
-			   "evolthorn=s"  => \$input_evol_thorn,
-			   "initthorn=s"  => \$input_init_thorn,
-			   "cactushome=s" => \$cctk_home,
-			   "outputdir=s"  => \$outputdir) || print_usage();
+	GetOptions("help"           => \$help,
+			   "force_mpi"      => \$force_mpi,
+			   "c|config=s"     => \$config,
+			   "evolthorn=s"    => \$input_evol_thorn,
+			   "initthorn=s"    => \$input_init_thorn,
+			   "d|cactushome=s" => \$cctk_home,
+			   "outputdir=s"    => \$outputdir) || print_usage();
 
 	return;
 }
