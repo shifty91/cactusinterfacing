@@ -86,7 +86,7 @@ sub getArgs
 			   "evolthorn=s"    => \$input_evol_thorn,
 			   "initthorn=s"    => \$input_init_thorn,
 			   "d|cactushome=s" => \$cctk_home,
-			   "outputdir=s"    => \$outputdir) || print_usage();
+			   "outputdir=s"    => \$outputdir) || printUsage();
 
 	return;
 }
