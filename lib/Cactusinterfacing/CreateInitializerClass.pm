@@ -752,7 +752,7 @@ sub createInitializerClass
 	$thorn                     = $init_thorn{"thorn"};
 	$arrangement               = $init_thorn{"arr"};
 	$impl                      = $thorninfo_ref->{$init_ar}{"impl"};
-	$class                     = $thorn . "_Initializer";
+	$class                     = $config_ref->{"config"} . "_Initializer";
 	$values{"class_name"}      = $class;
 	$values{"cell_class_name"} = $cell_ref->{"class_name"};
 	$values{"dim"}             = $cell_ref->{"dim"};

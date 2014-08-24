@@ -707,7 +707,7 @@ sub createCellClass
 	$thorn                = $evol_thorn{"thorn"};
 	$arrangement          = $evol_thorn{"arr"};
 	$impl                 = $thorninfo_ref->{$evol_thorn{"thorn_arr"}}{"impl"};
-	$class                = $thorn . "_Cell";
+	$class                = $config_ref->{"config"} . "_Cell";
 	$values{"class_name"} = $class;
 
 	# parse param.ccl to get parameters
