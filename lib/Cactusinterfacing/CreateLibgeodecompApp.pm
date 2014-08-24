@@ -108,7 +108,7 @@ sub createMain
 sub createRunSimulation
 {
 	my ($opt_ref, $bov_ref, $visit_ref, $init_ref, $cell_ref, $out_ref) = @_;
-	my ($mpi, $dim, $init_class, $cell_class, $static_pointer, $i);
+	my ($mpi, $dim, $init_class, $cell_class, $static_pointer);
 
 	# init
 	$mpi            = $opt_ref->{"mpi"};
