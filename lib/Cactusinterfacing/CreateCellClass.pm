@@ -711,8 +711,8 @@ sub createCellClass
 	$values{"class_name"} = $class;
 
 	# parse param.ccl to get parameters
-	getParameters($thorndir, $thorn, \%param_data);
-	generateParameterMacro(\%param_data, $impl, $class, "staticData.", \@param_macro);
+	getParameters($thorndir, $thorn, $impl, \%param_data);
+	generateParameterMacro(\%param_data, $class, "staticData.", \@param_macro);
 
 	# parse schedule.ccl to get function(s) at CCTK_Evol-Timestep
 	getEvolFunctions($thorndir, $thorn, \%evol_funcs);

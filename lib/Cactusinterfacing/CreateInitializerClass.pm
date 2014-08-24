@@ -761,9 +761,9 @@ sub createInitializerClass
 	preCheck($thorninfo_ref, $init_ar, $cell_ar);
 
 	# parse param ccl to get parameters
-	getParameters($thorndir, $thorn, \%param_data);
+	getParameters($thorndir, $thorn, $impl, \%param_data);
 	buildParameterStrings(\%param_data, $class, 1, \%values);
-	generateParameterMacro(\%param_data, $impl, $class, "", \@param_macro);
+	generateParameterMacro(\%param_data, $class, "", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_INITIAL-Timestep
 	getInitFunction($thorndir, $thorn, \%init_func);

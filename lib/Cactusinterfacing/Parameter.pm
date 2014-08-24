@@ -23,12 +23,14 @@ our @EXPORT_OK = qw(getParameters generateParameterMacro buildParameterStrings);
 # param:
 #  - thorndir: directory to thorn (abs. path)
 #  - thorn   : name of thorn
+#  - impl    : name of implementation for the parameters
 #  - out_ref : ref to a hash where the results should be stored
 #
 # return:
 #  - none, results will be stored in out_ref
 #  - hash includes:
 #    - name
+#    - impl
 #    - type
 #    - default value
 #    - description
@@ -36,7 +38,7 @@ our @EXPORT_OK = qw(getParameters generateParameterMacro buildParameterStrings);
 #
 sub getParameters
 {
-	my ($thorndir, $thorn, $out_ref) = @_;
+	my ($thorndir, $thorn, $impl, $out_ref) = @_;
 	my (@indata, @data, ,%paramdata, @groups);
 	my (@global, @restricted, @private, @shares);
 
@@ -70,6 +72,7 @@ sub getParameters
 		$out_ref->{$var}{"access"} = "restricted" if (grep { $var eq $_ } @restricted);
 		$out_ref->{$var}{"access"} = "private"    if (grep { $var eq $_ } @private);
 		$out_ref->{$var}{"access"} = "shares"     if (grep { $var eq $_ } @shares);
+		$out_ref->{$var}{"impl"}   = $impl;
 
 		# prepare type, default and description for further processing
 		prepareValues($var, $out_ref);
@@ -174,7 +177,6 @@ sub buildParameterStrings
 #
 # param:
 #  - par_ref: ref to parameter data hash
-#  - impl   : implementation of thorn
 #  - class  : name of class
 #  - prefix : additional prefix for variable, may be ""
 #  - out_ref: ref to hash where to store macros
@@ -184,7 +186,7 @@ sub buildParameterStrings
 #
 sub generateParameterMacro
 {
-	my ($par_ref, $impl, $class, $prefix, $out_ref) = @_;
+	my ($par_ref, $class, $prefix, $out_ref) = @_;
 	my ($macro_name);
 
 	# build name of macro
@@ -199,7 +201,7 @@ sub generateParameterMacro
 		my ($implname, $vtype, $classname);
 
 		# init
-		$implname  = $impl."::".$par_ref->{$name}{"realname"};
+		$implname  = $par_ref->{$name}{"impl"}."::".$par_ref->{$name}{"realname"};
 		$vtype     = $par_ref->{$name}{"type"};
 		$classname = $class."::".$prefix.$par_ref->{$name}{"realname"};
 
