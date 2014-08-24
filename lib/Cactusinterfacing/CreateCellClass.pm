@@ -718,8 +718,7 @@ sub createCellClass
 	getEvolFunctions($thorndir, $thorn, \%evol_funcs);
 
 	# parse interface.ccl to get vars
-	getInterfaceVars($config_ref->{"arr_dir"}, $evol_thorn{"thorn_arr"},
-					 $thorninfo_ref, \%inf_data);
+	getInterfaceVars($thorndir, $thorn, $arrangement, \%inf_data);
 	buildInterfaceStrings(\%inf_data, \%values);
 
 	# get dimension

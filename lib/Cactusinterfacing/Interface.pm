@@ -22,10 +22,10 @@ our @EXPORT_OK = qw(getInterfaceVars getAllInterfaceVars buildInterfaceStrings);
 # using CactusSpecificationTool (InterfaceParser.pm).
 #
 # param:
-#  - arr_dir      : directory of arrangement
-#  - arr_thorn    : arrangement/thorn
-#  - thorninfo_ref: ref to thorninfo hash
-#  - out_ref      : ref to store interface data
+#  - thorndir   : directory of thorn
+#  - thorn      : name of thorn
+#  - arrangement: name of arrangement
+#  - out_ref    : ref to store interface data
 #
 # return:
 #  - none, hash of all groups will be stored in out_ref, including
@@ -40,16 +40,12 @@ our @EXPORT_OK = qw(getInterfaceVars getAllInterfaceVars buildInterfaceStrings);
 #
 sub getInterfaceVars
 {
-	my ($arr_dir, $arr_thorn, $thorninfo_ref, $out_ref) = @_;
+	my ($thorndir, $thorn, $arrangement, $out_ref) = @_;
 	my (@groups, @publicgroups, @protectedgroups, @privategroups);
 	my (%interface_data, @indata);
-	my ($thorn, $arrangement);
-
-	# init
-	($arrangement, $thorn) = $arr_thorn =~ /(\w+)\/(\w+)/;
 
 	# get the data
-	@indata = read_file("$arr_dir/$arr_thorn/interface.ccl");
+	@indata = read_file("$thorndir/interface.ccl");
 	parse_interface_ccl($arrangement, $thorn, \@indata, \%interface_data);
 
 	# get variables data from public, protected, private groups
@@ -95,7 +91,7 @@ sub getInterfaceVars
 # Same as above, except it uses inheritance and friends.
 #
 # param:
-#  - arr_dir      : directory of arrangement
+#  - arr_dir      : path to arrangement directory
 #  - arr_thorn_in : arrangement/thorn
 #  - thorninfo_ref: ref to thorninfo hash
 #  - out_ref      : ref to store interface data
@@ -124,7 +120,8 @@ sub getAllInterfaceVars
 	getFriends($arr_thorn_in, $thorninfo_ref, \@inherits);
 
 	foreach my $arr_thorn (@inherits) {
-		getInterfaceVars($arr_dir, $arr_thorn, $thorninfo_ref, $out_ref);
+		my ($arrangement, $thorn) = $arr_thorn =~ m/^\s*(\w+)\/(\w+)\s*$/;
+		getInterfaceVars($arr_dir . "/" . $arr_thorn, $thorn, $arrangement, $out_ref);
 	}
 
 	return;
