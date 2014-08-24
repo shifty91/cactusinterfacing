@@ -14,7 +14,6 @@ use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
 use Cactusinterfacing::Schedule qw(getInitFunction);
-use Cactusinterfacing::Interface qw(getInterfaceVars);
 use Cactusinterfacing::Utils qw(util_indent _err);
 use Cactusinterfacing::Libgeodecomp qw(getCoord getGFIndex);
 use Cactusinterfacing::ThornList qw(isInherit isFriend);
@@ -729,7 +728,7 @@ sub initValueHash
 sub createInitializerClass
 {
 	my ($config_ref, $thorninfo_ref, $cell_ref, $out_ref) = @_;
-	my ($init_ar, $cell_ar, $thorndir, $thorn, $arrangement, $impl, $class);
+	my ($init_ar, $cell_ar, $thorndir, $thorn, $impl, $class);
 	my ($first_init, $first_evol, %evol_thorn, %init_thorn);
 	my (@inith, @initcpp);
 	my (@param_macro, @special_macros);
@@ -750,7 +749,6 @@ sub createInitializerClass
 	$cell_ar                   = $evol_thorn{"thorn_arr"};
 	$thorndir                  = $config_ref->{"arr_dir"} . "/" . $init_ar;
 	$thorn                     = $init_thorn{"thorn"};
-	$arrangement               = $init_thorn{"arr"};
 	$impl                      = $thorninfo_ref->{$init_ar}{"impl"};
 	$class                     = $config_ref->{"config"} . "_Initializer";
 	$values{"class_name"}      = $class;
