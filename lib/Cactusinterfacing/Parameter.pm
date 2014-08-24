@@ -174,7 +174,6 @@ sub buildParameterStrings
 #
 # param:
 #  - par_ref: ref to parameter data hash
-#  - thorn  : name of thorn
 #  - impl   : implementation of thorn
 #  - class  : name of class
 #  - prefix : additional prefix for variable, may be ""
@@ -185,7 +184,7 @@ sub buildParameterStrings
 #
 sub generateParameterMacro
 {
-	my ($par_ref, $thorn, $impl, $class, $prefix, $out_ref) = @_;
+	my ($par_ref, $impl, $class, $prefix, $out_ref) = @_;
 	my ($macro_name);
 
 	# build name of macro
