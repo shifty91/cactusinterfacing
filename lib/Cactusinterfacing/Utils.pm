@@ -102,7 +102,7 @@ sub util_getFunction
 		}
 	}
 
-	if (@$out_ref[0] =~ /^\s*\{/) {
+	if (@$out_ref && @$out_ref[0] =~ /^\s*\{/) {
 		shift @$out_ref;
 	}
 
