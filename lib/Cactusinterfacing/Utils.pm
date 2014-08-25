@@ -66,8 +66,8 @@ sub util_getFunction
 	$found = 0;
 
 	# remove prototypes, functions calls etc...
-	$data = join("", @lines);
-	$data =~ s/$name\s*\([\w, :&\*]*\)\s*;//g;
+	$data  = join("", @lines);
+	$data  =~ s/$name\s*\([\w, :&\*]*\)\s*;//g;
 	@lines = split("\n", $data);
 
 	# get functions body
@@ -86,25 +86,17 @@ sub util_getFunction
 		}
 
 		# increase/decrease level
-		if ($found && $line =~ /\{/) {
-			$level++;
-		}
+		$level++ if ($found && $line =~ /\{/);
 		if ($found && $line =~ /\}/) {
 			$level--;
-			if (!$level) {
-				last;
-			}
+			last unless ($level);
 		}
 
 		# store
-		if ($found && $level) {
-			push(@$out_ref, $line);
-		}
+		push(@$out_ref, $line) if ($found && $level);
 	}
 
-	if (@$out_ref && @$out_ref[0] =~ /^\s*\{/) {
-		shift @$out_ref;
-	}
+	shift @$out_ref if (@$out_ref && @$out_ref[0] =~ /^\s*\{/);
 
 	return;
 }
