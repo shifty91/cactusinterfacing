@@ -19,7 +19,8 @@ use Cactusinterfacing::Make qw(getSources);
 use Cactusinterfacing::ScheduleParser qw(parse_schedule_ccl);
 
 # exports
-our @EXPORT_OK = qw(getEvolFunction getEvolFunctions
+our @EXPORT_OK = qw(getScheduleData
+					getEvolFunction getEvolFunctions
 					getInitFunction getInitFunctions);
 
 #
@@ -28,6 +29,7 @@ our @EXPORT_OK = qw(getEvolFunction getEvolFunctions
 #  - methods at CCTK_INITIAL and CCTK_EVOL
 #  - synonyms
 #  - after and before information
+#  - thorndir to find the function
 #
 # param:
 #  - thorndir: directory of thorn
@@ -75,6 +77,7 @@ sub getScheduleData
 		$out_ref->{$name}{"after"}    = $after;
 		$out_ref->{$name}{"before"}   = $before;
 		$out_ref->{$name}{"timestep"} = "\U$where\E";
+		$out_ref->{$name}{"thorndir"} = $thorndir;
 	}
 
 	return;
@@ -85,19 +88,18 @@ sub getScheduleData
 # Cactus timestep is CCTK_EVOL to get the evolution function.
 #
 # param:
-#  - thorndir: directory of thorn
-#  - thorn   : name of thorn
-#  - out_ref : ref to hash where to store function
+#  - sched_ref: ref to schedule data hash
+#  - out_ref  : ref to hash where to store function
 #
 # return:
 #  - none, function will be store in out_ref
 #
 sub getEvolFunction
 {
-	my ($thorndir, $thorn, $out_ref) = @_;
+	my ($sched_ref, $out_ref) = @_;
 	my (%funcs);
 
-	getFunctionsAt($thorndir, $thorn, "CCTK_EVOL", "single", \%funcs);
+	getFunctionsAt($sched_ref, "CCTK_EVOL", "single", \%funcs);
 
 	foreach my $key (keys %funcs) {
 		$out_ref->{$key} = $funcs{$key};
@@ -112,18 +114,17 @@ sub getEvolFunction
 # Cactus timestep is CCTK_EVOL to get the evolution functions.
 #
 # param:
-#  - thorndir: directory of thorn
-#  - thorn   : name of thorn
-#  - out_ref : ref to hash where to store functions
+#  - sched_ref: ref to schedule data hash
+#  - out_ref  : ref to hash where to store functions
 #
 # return:
 #  - none, functions will be store in out_ref
 #
 sub getEvolFunctions
 {
-	my ($thorndir, $thorn, $out_ref) = @_;
+	my ($sched_ref, $out_ref) = @_;
 
-	getFunctionsAt($thorndir, $thorn, "CCTK_EVOL", "multi", $out_ref);
+	getFunctionsAt($sched_ref, "CCTK_EVOL", "multi", $out_ref);
 
 	return;
 }
@@ -133,19 +134,18 @@ sub getEvolFunctions
 # Cactus timestep is CCTK_INITIAL to get the init function.
 #
 # param:
-#  - thorndir: directory of thorn
-#  - thorn   : name of thorn
-#  - out_ref : ref to hash where to store functions
+#  - sched_ref: ref to schedule data hash
+#  - out_ref  : ref to hash where to store functions
 #
 # return:
 #  - none, function will be store in out_ref
 #
 sub getInitFunction
 {
-	my ($thorndir, $thorn, $out_ref) = @_;
+	my ($sched_ref, $out_ref) = @_;
 	my (%funcs);
 
-	getFunctionsAt($thorndir, $thorn, "CCTK_INITIAL", "single", \%funcs);
+	getFunctionsAt($sched_ref, "CCTK_INITIAL", "single", \%funcs);
 
 	foreach my $key (keys %funcs) {
 		$out_ref->{$key} = $funcs{$key};
@@ -160,18 +160,17 @@ sub getInitFunction
 # Cactus timestep is CCTK_INITIAL to get the init functions.
 #
 # param:
-#  - thorndir: directory of thorn
-#  - thorn   : name of thorn
-#  - out_ref : ref to hash where to store functions
+#  - sched_ref: ref to schedule data hash
+#  - out_ref  : ref to hash where to store functions
 #
 # return:
 #  - none, functions will be store in out_ref
 #
 sub getInitFunctions
 {
-	my ($thorndir, $thorn, $out_ref) = @_;
+	my ($sched_ref, $out_ref) = @_;
 
-	getFunctionsAt($thorndir, $thorn, "CCTK_INITIAL", "multi", $out_ref);
+	getFunctionsAt($sched_ref, "CCTK_INITIAL", "multi", $out_ref);
 
 	return;
 }
@@ -179,34 +178,33 @@ sub getInitFunctions
 #
 # Gatheres functions at a specific cactus timestep.
 # This function searches through all source files of the
-# given thorn to find the searched functions.
+# given thorn(s) to find the searched functions.
 #
 # param:
-#  - thorndir: directory of thorn
-#  - thorn   : name of thorn
-#  - timestep: cactus timestep (e.g. CCTK_EVOL for evolution)
-#  - type    : maybe "single" or "multi" to indicate whether to get one
-#              or multiple functions
-#  - out_ref : ref to hash where to store function(s)
+#  - sched_ref: ref to schedule data hash
+#  - timestep : cactus timestep (e.g. CCTK_EVOL for evolution)
+#  - type     : maybe "single" or "multi" to indicate whether to get one
+#               or multiple functions
+#  - out_ref  : ref to hash where to store function(s)
 #
 # return:
 #  - none, function(s) will be stored in out_ref
 #
 sub getFunctionsAt
 {
-	my ($thorndir, $thorn, $timestep, $type, $out_ref) = @_;
-	my (%schedule_data, %nodes, @functions, @sources, $nfuncs);
+	my ($sched_ref, $timestep, $type, $out_ref) = @_;
+	my (@thorndirs, %nodes, @functions, @sources, $nfuncs);
 
 	# prepare arguments
 	tie %{$out_ref}, 'Tie::IxHash';
 	$timestep = "\U$timestep\E";
 
-	# parse schedule.ccl
-	getScheduleData($thorndir, $thorn, \%schedule_data);
-
 	# get an array of functions at the specific timestep in right order
-	prepareDAG(\%nodes, \%schedule_data, $timestep);
+	prepareDAG(\%nodes, $sched_ref, $timestep);
 	sortDAG(\%nodes, \@functions);
+
+	# get directories of all thorns
+	uniqThornDirs($sched_ref, \@thorndirs);
 
 	# number of functions found
 	$nfuncs = @functions;
@@ -223,7 +221,7 @@ sub getFunctionsAt
 
 	# search in source files to find the functions
 	# just have a look at make.code.defn
-	getSources($thorndir . "/src", \@sources);
+	getSources($_ . "/src", \@sources) for (@thorndirs);
 
 	# check if some sources where found
 	if (@sources == 0) {
@@ -263,6 +261,32 @@ sub getFunctionsAt
 	# no function found
 	$out_ref->{"dummyFunction"}{"name"} = "dummyFunction";
 	$out_ref->{"dummyFunction"}{"data"} = [ "/** No function found at \U$timestep\E timestep or no source files found **/" ];
+
+	return;
+}
+
+#
+# This function goes through the functions passed by sched_ref and
+# stores a array of all thorndirs (uniq).
+#
+# param:
+#  - sched_ref: ref to schedule data hash
+#  - out_ref  : ref to array where to store the unique thorndirs
+#
+# return:
+#  - none, result will be stored in out_ref
+#
+sub uniqThornDirs
+{
+	my ($sched_ref, $out_ref) = @_;
+	my (%seen);
+
+	foreach my $func (keys %{$sched_ref}) {
+		push(@$out_ref, $sched_ref->{$func}{"thorndir"});
+	}
+
+	# filter duplicates
+	@{$out_ref} = grep { !$seen{$_}++ } @{$out_ref};
 
 	return;
 }

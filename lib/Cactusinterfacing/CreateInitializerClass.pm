@@ -13,7 +13,7 @@ use Exporter 'import';
 use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
-use Cactusinterfacing::Schedule qw(getInitFunction);
+use Cactusinterfacing::Schedule qw(getScheduleData getInitFunction);
 use Cactusinterfacing::Utils qw(util_indent _err);
 use Cactusinterfacing::Libgeodecomp qw(getCoord getGFIndex);
 use Cactusinterfacing::ThornList qw(isInherit isFriend);
@@ -732,7 +732,7 @@ sub createInitializerClass
 	my ($first_init, $first_evol, %evol_thorn, %init_thorn);
 	my (@inith, @initcpp);
 	my (@param_macro, @special_macros);
-	my (%param_data, %values, %init_func);
+	my (%param_data, %sched_data, %values, %init_func);
 
 	# check thorns
 	_warn("Using more than one intialization thorn is not supported at the Moment. ".
@@ -764,7 +764,8 @@ sub createInitializerClass
 	generateParameterMacro(\%param_data, $class, "", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_INITIAL-Timestep
-	getInitFunction($thorndir, $thorn, \%init_func);
+	getScheduleData($thorndir, $thorn, \%sched_data);
+	getInitFunction(\%sched_data, \%init_func);
 
 	# build init specific special macros
 	buildSpecialMacros(\%values, $cell_ref->{"inf_data"}, \@special_macros);

@@ -12,7 +12,7 @@ use warnings;
 use Exporter 'import';
 use Cactusinterfacing::Config qw($tab $ghostzone_width $topology);
 use Cactusinterfacing::Utils qw(util_indent util_input _err _warn);
-use Cactusinterfacing::Schedule qw(getEvolFunctions);
+use Cactusinterfacing::Schedule qw(getScheduleData getEvolFunctions);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
 use Cactusinterfacing::Interface qw(getInterfaceVars buildInterfaceStrings);
@@ -692,7 +692,7 @@ sub createCellClass
 	my ($thorndir, $thorn, $arrangement, $impl, $class, $first);
 	my (@cellh, @cellcpp);
 	my (@param_macro, @special_macros, @special_macros_undef);
-	my (%inf_data, %param_data, %static, %values, %evol_funcs, %evol_thorn);
+	my (%inf_data, %param_data, %sched_data, %static, %values, %evol_funcs, %evol_thorn);
 
 	# check thorns
 	_warn("Using more than one evolution thorn is not supported at the Moment. ".
@@ -715,7 +715,8 @@ sub createCellClass
 	generateParameterMacro(\%param_data, $class, "staticData.", \@param_macro);
 
 	# parse schedule.ccl to get function(s) at CCTK_Evol-Timestep
-	getEvolFunctions($thorndir, $thorn, \%evol_funcs);
+	getScheduleData($thorndir, $thorn, \%sched_data);
+	getEvolFunctions(\%sched_data, \%evol_funcs);
 
 	# parse interface.ccl to get vars
 	getInterfaceVars($thorndir, $thorn, $arrangement, \%inf_data);
