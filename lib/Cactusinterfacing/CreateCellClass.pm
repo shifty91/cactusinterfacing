@@ -689,37 +689,40 @@ sub initValueHash
 sub createCellClass
 {
 	my ($config_ref, $thorninfo_ref, $option_ref, $out_ref) = @_;
-	my ($thorndir, $thorn, $arrangement, $impl, $class, $first);
+	my ($class);
 	my (@cellh, @cellcpp);
 	my (@param_macro, @special_macros, @special_macros_undef);
-	my (%inf_data, %param_data, %sched_data, %static, %values, %evol_funcs, %evol_thorn);
-
-	# check thorns
-	_warn("Using more than one evolution thorn is not supported at the Moment. ".
-		  "Using the first one.", __FILE__, __LINE__)
-		if (keys %{$config_ref->{"evol_thorns"}} > 1);
+	my (%inf_data, %param_data, %sched_data, %static, %values, %evol_funcs);
 
 	# init
 	initValueHash(\%values);
-	$first                = (keys %{$config_ref->{"evol_thorns"}})[0];
-	%evol_thorn           = %{$config_ref->{"evol_thorns"}{$first}};
-	$thorndir             = $config_ref->{"arr_dir"} . "/" . $evol_thorn{"thorn_arr"};
-	$thorn                = $evol_thorn{"thorn"};
-	$arrangement          = $evol_thorn{"arr"};
-	$impl                 = $thorninfo_ref->{$evol_thorn{"thorn_arr"}}{"impl"};
 	$class                = $config_ref->{"config"} . "_Cell";
 	$values{"class_name"} = $class;
 
+	# get data
+	foreach my $key (keys %{$config_ref->{"evol_thorns"}}) {
+		my (%evol_thorn, $thorndir, $thorn, $arrangement, $impl);
+
+		# init
+		%evol_thorn  = %{$config_ref->{"evol_thorns"}{$key}};
+		$thorndir    = $config_ref->{"arr_dir"} . "/" . $evol_thorn{"thorn_arr"};
+		$thorn       = $evol_thorn{"thorn"};
+		$arrangement = $evol_thorn{"arr"};
+		$impl        = $thorninfo_ref->{$evol_thorn{"thorn_arr"}}{"impl"};
+
+		# data
+		getParameters($thorndir, $thorn, $impl, \%param_data);
+		getInterfaceVars($thorndir, $thorn, $arrangement, \%inf_data);
+		getScheduleData($thorndir, $thorn, \%sched_data);
+	}
+
 	# parse param.ccl to get parameters
-	getParameters($thorndir, $thorn, $impl, \%param_data);
 	generateParameterMacro(\%param_data, $class, "staticData.", \@param_macro);
 
 	# parse schedule.ccl to get function(s) at CCTK_Evol-Timestep
-	getScheduleData($thorndir, $thorn, \%sched_data);
 	getEvolFunctions(\%sched_data, \%evol_funcs);
 
 	# parse interface.ccl to get vars
-	getInterfaceVars($thorndir, $thorn, $arrangement, \%inf_data);
 	buildInterfaceStrings(\%inf_data, \%values);
 
 	# get dimension

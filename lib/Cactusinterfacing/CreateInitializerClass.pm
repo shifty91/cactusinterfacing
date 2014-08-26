@@ -659,27 +659,38 @@ sub buildInitCpp
 }
 
 #
-# The subroutine checks whether the init thorn inherits from the evol thorn.
+# The subroutine checks whether the init thorn inherits from one of the
+# evolutions thorns.
 #
 # param:
 #  - thorninfo_ref: ref to thorninfo data hash
-#  - init_ar      : arrangement/InitThorn
-#  - evol_ar      : arrangement/EvolThorn
+#  - init_ref     : ref to init thorn hash
+#  - evols_ref    : ref to evol thorns hash
 #
 # return:
 #  - none, exits on error
 #
 sub preCheck
 {
-	my ($thorninfo_ref, $init_ar, $cell_ar) = @_;
+	my ($thorninfo_ref, $init_ref, $evols_ref) = @_;
+	my ($init_ar, $res);
 
-	# check if init and evol thorn share the same variables
-	# else a initializer can't init the cells variables
-	unless (isInherit($thorninfo_ref, $init_ar, $cell_ar) ||
-		isFriend($thorninfo_ref, $init_ar, $cell_ar)) {
-		_err("Init Thorn and Evol Thorn do not share same variables!",
-			 __FILE__, __LINE__);
+	$init_ar = $init_ref->{"thorn_arr"};
+	$res     = 0;
+
+	foreach my $thorn (keys %{$evols_ref}) {
+		my ($cell_ar);
+
+		$cell_ar = $evols_ref->{$thorn}{"thorn_arr"};
+
+		# check if init and evol thorn share the same variables
+		# else a initializer can't init the cells variables
+		$res = 1 if (isInherit($thorninfo_ref, $init_ar, $cell_ar) ||
+					 isFriend($thorninfo_ref, $init_ar, $cell_ar));
 	}
+
+	_err("Init Thorn and none of the evolution Thorns share same variables!",
+		 __FILE__, __LINE__) unless ($res);
 
 	return;
 }
@@ -728,8 +739,7 @@ sub initValueHash
 sub createInitializerClass
 {
 	my ($config_ref, $thorninfo_ref, $cell_ref, $out_ref) = @_;
-	my ($init_ar, $cell_ar, $thorndir, $thorn, $impl, $class);
-	my ($first_init, $first_evol, %evol_thorn, %init_thorn);
+	my ($thorndir, $thorn, $impl, $class, $first_init, %init_thorn, $init_ar);
 	my (@inith, @initcpp);
 	my (@param_macro, @special_macros);
 	my (%param_data, %sched_data, %values, %init_func);
@@ -742,11 +752,8 @@ sub createInitializerClass
 	# init
 	initValueHash(\%values);
 	$first_init                = (keys %{$config_ref->{"init_thorns"}})[0];
-	$first_evol                = (keys %{$config_ref->{"evol_thorns"}})[0];
 	%init_thorn                = %{$config_ref->{"init_thorns"}{$first_init}};
-	%evol_thorn                = %{$config_ref->{"evol_thorns"}{$first_evol}};
 	$init_ar                   = $init_thorn{"thorn_arr"};
-	$cell_ar                   = $evol_thorn{"thorn_arr"};
 	$thorndir                  = $config_ref->{"arr_dir"} . "/" . $init_ar;
 	$thorn                     = $init_thorn{"thorn"};
 	$impl                      = $thorninfo_ref->{$init_ar}{"impl"};
@@ -756,7 +763,7 @@ sub createInitializerClass
 	$values{"dim"}             = $cell_ref->{"dim"};
 
 	# pre check
-	preCheck($thorninfo_ref, $init_ar, $cell_ar);
+	preCheck($thorninfo_ref, \%init_thorn, $config_ref->{"evol_thorns"});
 
 	# parse param ccl to get parameters
 	getParameters($thorndir, $thorn, $impl, \%param_data);
