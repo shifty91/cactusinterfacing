@@ -55,7 +55,8 @@ sub getDimension
 		$dim = util_input("Could not determine the dimension of Cactus Thorn. ".
 						  "Please specify");
 		_err("This is not a valid dimension!", __FILE__, __LINE__)
-			if ($dim !~ /\d/ || $dim <= 0);
+			if ($dim !~ /^\s*\d\s*$/ || $dim <= 0);
+		$dim =~ s/\s//g;
 	}
 	if ($dim > 4) {
 		_err("The Dimension of $dim is too big for LibGeoDecomp!",
