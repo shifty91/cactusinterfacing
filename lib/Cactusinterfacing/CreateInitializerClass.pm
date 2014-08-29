@@ -14,7 +14,7 @@ use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
 use Cactusinterfacing::Schedule qw(getScheduleData getInitFunction);
-use Cactusinterfacing::Utils qw(util_indent _err);
+use Cactusinterfacing::Utils qw(util_indent _err _warn);
 use Cactusinterfacing::Libgeodecomp qw(getCoord getGFIndex);
 use Cactusinterfacing::ThornList qw(isInherit isFriend);
 
