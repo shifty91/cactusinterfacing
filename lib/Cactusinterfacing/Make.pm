@@ -77,7 +77,7 @@ sub getSources
 # Creating a Makefile for compiling the final LibGeoDecomp application.
 # This uses `pkg-config' to determine compiler flags and libs. Make sure the
 # LibGeoDecomp is installed on your system. This can be installed by
-# `make install`. Additionally -O3 is used for optimizations.
+# `sudo make install`. Additionally -O3 is used for optimizations.
 #
 # param:
 #  - config_ref: ref to config hash
@@ -90,12 +90,11 @@ sub getSources
 sub createLibgeodecompMakefile
 {
 	my ($config_ref, $opt_ref, $out_ref) = @_;
-	my ($cxx, $cxxflags, $ldflags, $name, $libsim_path);
+	my ($cxx, $cxxflags, $ldflags, $name);
 
 	# init name and compiler, use mpicxx if mpi is used, g++ is default
-	$name        = "cactus_".$config_ref->{"config"};
-	$cxx         = $opt_ref->{"mpi"} ? "mpicxx" : "g++";
-	$libsim_path = "/opt/visit/2.7.3/linux-x86_64/libsim/V2/include";
+	$name = "cactus_".$config_ref->{"config"};
+	$cxx  = $opt_ref->{"mpi"} ? "mpicxx" : "g++";
 	# ignore some unused variables/parameters warnings,
 	# they're caused by some adjustments to the code
 	$cxxflags  = "-pedantic -Wall -Wextra -Wno-unused-parameter ";
@@ -103,8 +102,6 @@ sub createLibgeodecompMakefile
 	# ignore warnings about variadic macros since they're only standard in c++11
 	$cxxflags .= "-Wno-variadic-macros -O3 -Iinclude";
 	$cxxflags .= " `pkg-config --cflags libgeodecomp`";
-	# append libSim to include path, if exists
-	$cxxflags .= " -I$libsim_path" if (-d $libsim_path);
 	# build with debug code?
 	$cxxflags .= " -DDEBUG" if ($debug);
 	# additionally we need to link against boost_regex
