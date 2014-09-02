@@ -13,7 +13,7 @@ use Exporter 'import';
 use Cactusinterfacing::Config qw($tab);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
-use Cactusinterfacing::Schedule qw(getScheduleData getInitFunction);
+use Cactusinterfacing::Schedule qw(getScheduleData getInitFunctions);
 use Cactusinterfacing::Utils qw(util_indent _err _warn);
 use Cactusinterfacing::Libgeodecomp qw(getCoord getGFIndex);
 use Cactusinterfacing::ThornList qw(isInherit isFriend);
@@ -413,7 +413,7 @@ sub buildXYZFunction
 	# init
 	$dim = $val_ref->{"dim"};
 
-	push(@outdata, $tab."void setupXYZ()\n");
+	push(@outdata, $tab."inline void setupXYZ()\n");
 	push(@outdata, $tab."{\n");
 
 	# switch dimension
@@ -530,44 +530,89 @@ sub buildCctkGHFunction
 # Builds grid function. This function sets up the initial grid.
 #
 # param:
-#  - init_ref: ref to hash where the cctk initial function is stored
+#  - init_ref: ref to hash where the cctk initial function(s) is/are stored
 #  - val_ref : ref to values hash
 #
 # return:
 #  - none, function string will be stored in val_ref with key "grid_func"
 #
-sub buildGridFunction
+sub buildGridFunctions
 {
 	my ($init_ref, $val_ref) = @_;
-	my (@outdata, $code_str, $dim, $init_class, $cell_class, $decl);
-	my ($func, $func_ref);
+	my (@grid_func, @keys, $dim, $init_class, $cell_class, $decl);
 
 	# init
 	$dim        = $val_ref->{"dim"};
 	$init_class = $val_ref->{"class_name"};
 	$cell_class = $val_ref->{"cell_class_name"};
 	$decl       = $val_ref->{"objects_decl"};
-	$func       = (keys %{$init_ref})[0];
-	$func_ref   = $init_ref->{$func}{"data"};
+	@keys       = keys %{$init_ref};
 
-	# indent function
-	util_indent($func_ref, 1);
+	if (@keys == 1) {
+		my ($func, $func_ref, $code_str);
 
-	# build code string
-	$code_str = join("\n", @$func_ref);
+		# init
+		$func       = (keys %{$init_ref})[0];
+		$func_ref   = $init_ref->{$func}{"data"};
 
-	push(@outdata, "void $init_class"."::"."grid(GridBase<$cell_class, $dim> *target)\n");
-	push(@outdata, "{\n");
-	push(@outdata, "$decl\n");
-	# call functions to set up variables
-	push(@outdata, $tab."setupCctkGH(box);\n");
-	push(@outdata, $tab."setupXYZ();\n");
-	push(@outdata, "\n");
-	push(@outdata, "$code_str\n");
-	push(@outdata, "}\n");
+		# indent function
+		util_indent($func_ref, 1);
+
+		# build code string
+		$code_str = join("\n", @$func_ref);
+
+		push(@grid_func, "void $init_class"."::"."grid(GridBase<$cell_class, $dim> *target)\n");
+		push(@grid_func, "{\n");
+		push(@grid_func, "$decl\n");
+		# call functions to set up variables
+		push(@grid_func, $tab."setupCctkGH(box);\n");
+		push(@grid_func, $tab."setupXYZ();\n");
+		push(@grid_func, "\n");
+		push(@grid_func, "$code_str\n");
+		push(@grid_func, "}\n");
+	} elsif (@keys > 1) {
+		# more than one function -> build and call them
+		foreach my $func (@keys) {
+			my (@init, $code_str, $func_ref, $def);
+
+			# build init function
+			$func_ref = $init_ref->{$func}{"data"};
+
+			util_indent($func_ref, 1);
+
+			$code_str = join("\n", @$func_ref);
+			push(@init, "void $init_class"."::"."$func(GridBase<$cell_class, $dim> *target)\n");
+			push(@init, "{\n");
+			push(@init, "$decl\n");
+			push(@init, "\n");
+			push(@init, "$code_str\n");
+			push(@init, "}\n");
+
+			push(@{$val_ref->{"init_funcs"}}, join("", @init));
+
+			# build definition for header file
+			$def = "void $func(GridBase<$cell_class, $dim> *target);";
+			push(@{$val_ref->{"init_decls"}}, $def);
+		}
+
+		# build grid func
+		push(@grid_func, "void $init_class"."::"."grid(GridBase<$cell_class, $dim> *target)\n");
+		push(@grid_func, "{\n");
+		push(@grid_func, "CoordBox<$dim> box = target->boundingBox();\n");
+		push(@grid_func, $tab."setupCctkGH(box);\n");
+		push(@grid_func, $tab."setupXYZ();\n");
+		# call them
+		push(@grid_func, "\n");
+		push(@grid_func, $tab.$_."(target);\n") for (@keys);
+		push(@grid_func, "}\n");
+	} else {
+		# this should never happen, since the schedule functions ensure that
+		# at least one function is returned, even if it's not valid
+		_err("No functions for building initializer class found.", __FILE__, __LINE__);
+	}
 
 	# save final function
-	$val_ref->{"grid_func"} = join("", @outdata);
+	$val_ref->{"grid_func"} = join("", @grid_func);
 
 	return;
 }
@@ -610,15 +655,21 @@ sub buildInitHeader
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{\"deconstructor\"}");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "$val_ref->{\"xyz_func\"}");
-	push(@$out_ref, "\n");
-	push(@$out_ref, "$val_ref->{\"cctk_func\"}");
-	push(@$out_ref, "\n");
 	push(@$out_ref, $tab."virtual void grid(GridBase<$cell_class, $dim>*);\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "$val_ref->{'param_def'}\n");
 	push(@$out_ref, $tab."// cactus grid hierarchy\n");
 	push(@$out_ref, $tab."static CactusGrid *cctkGH;\n");
+	push(@$out_ref, "\n");
+	push(@$out_ref, "private:\n");
+	push(@$out_ref, "$val_ref->{\"xyz_func\"}");
+	push(@$out_ref, "\n");
+	push(@$out_ref, "$val_ref->{\"cctk_func\"}");
+	push(@$out_ref, "\n");
+	if ($val_ref->{"init_decls"}) {
+		push(@$out_ref, $tab."$_\n") for (@{$val_ref->{"init_decls"}});
+		push(@$out_ref, "\n");
+	}
 	push(@$out_ref, $tab."// fake x, y, z\n");
 	push(@$out_ref, $tab."CCTK_REAL *x;\n");
 	push(@$out_ref, $tab."CCTK_REAL *y;\n");
@@ -653,6 +704,13 @@ sub buildInitCpp
 	push(@$out_ref, "\n");
 	push(@$out_ref, "// setting up initial grid\n");
 	push(@$out_ref, "$val_ref->{'grid_func'}\n");
+	if ($val_ref->{"init_funcs"}) {
+		push(@$out_ref, "\n");
+		foreach my $func (@{$val_ref->{"init_funcs"}}) {
+			push(@$out_ref, "$func\n");
+			push(@$out_ref, "\n");
+		}
+	}
 	push(@$out_ref, "\n");
 
 	return;
@@ -719,6 +777,8 @@ sub initValueHash
 	$val_ref->{"xyz_func"}        = "";
 	$val_ref->{"cctk_func"}       = "";
 	$val_ref->{"grid_func"}       = "";
+	$val_ref->{"init_funcs"}      = ();
+	$val_ref->{"init_decls"}      = ();
 
 	return;
 }
@@ -742,7 +802,7 @@ sub createInitializerClass
 	my ($thorndir, $thorn, $impl, $class, $first_init, %init_thorn, $init_ar);
 	my (@inith, @initcpp);
 	my (@param_macro, @special_macros);
-	my (%param_data, %sched_data, %values, %init_func);
+	my (%param_data, %sched_data, %values, %init_funcs);
 
 	# check thorns
 	_warn("Using more than one intialization thorn is not supported at the Moment. ".
@@ -772,13 +832,13 @@ sub createInitializerClass
 
 	# parse schedule.ccl to get function at CCTK_INITIAL-Timestep
 	getScheduleData($thorndir, $thorn, \%sched_data);
-	getInitFunction(\%sched_data, \%init_func);
+	getInitFunctions(\%sched_data, \%init_funcs);
 
 	# build init specific special macros
 	buildSpecialMacros(\%values, $cell_ref->{"inf_data"}, \@special_macros);
 
 	# build grid, setupXYZ and setupCctkGH function as well as (de|con)structor
-	buildGridFunction(\%init_func, \%values);
+	buildGridFunctions(\%init_funcs, \%values);
 	buildXYZFunction(\%values);
 	buildCctkGHFunction(\%values);
 	buildConstructor(\%values);
