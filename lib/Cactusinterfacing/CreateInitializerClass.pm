@@ -717,12 +717,12 @@ sub buildInitCpp
 }
 
 #
-# The subroutine checks whether the init thorn inherits from one of the
+# The subroutine checks whether the init thorns inherits from one of the
 # evolutions thorns.
 #
 # param:
 #  - thorninfo_ref: ref to thorninfo data hash
-#  - init_ref     : ref to init thorn hash
+#  - inits_ref    : ref to init thorns hash
 #  - evols_ref    : ref to evol thorns hash
 #
 # return:
@@ -730,25 +730,29 @@ sub buildInitCpp
 #
 sub preCheck
 {
-	my ($thorninfo_ref, $init_ref, $evols_ref) = @_;
-	my ($init_ar, $res);
+	my ($thorninfo_ref, $inits_ref, $evols_ref) = @_;
 
-	$init_ar = $init_ref->{"thorn_arr"};
-	$res     = 0;
+	# every init thorn should share variables with one of the evol thorns
+	foreach my $init_thorn (keys %{$inits_ref}) {
+		my ($init_ar, $res);
 
-	foreach my $thorn (keys %{$evols_ref}) {
-		my ($cell_ar);
+		$init_ar = $inits_ref->{$init_thorn}->{"thorn_arr"};
+		$res     = 0;
 
-		$cell_ar = $evols_ref->{$thorn}{"thorn_arr"};
+		foreach my $evol_thorn (keys %{$evols_ref}) {
+			my ($cell_ar);
 
-		# check if init and evol thorn share the same variables
-		# else a initializer can't init the cells variables
-		$res = 1 if (isInherit($thorninfo_ref, $init_ar, $cell_ar) ||
-					 isFriend($thorninfo_ref, $init_ar, $cell_ar));
+			$cell_ar = $evols_ref->{$evol_thorn}{"thorn_arr"};
+
+			# check if init and evol thorn share the same variables
+			# else a initializer can't init the cells variables
+			$res = 1 if (isInherit($thorninfo_ref, $init_ar, $cell_ar) ||
+						 isFriend($thorninfo_ref, $init_ar, $cell_ar));
+		}
+
+		_err("Init Thorn \"$init_ar\" and none of the evolution Thorns share same variables!",
+			 __FILE__, __LINE__) unless ($res);
 	}
-
-	_err("Init Thorn and none of the evolution Thorns share same variables!",
-		 __FILE__, __LINE__) unless ($res);
 
 	return;
 }
@@ -799,39 +803,42 @@ sub initValueHash
 sub createInitializerClass
 {
 	my ($config_ref, $thorninfo_ref, $cell_ref, $out_ref) = @_;
-	my ($thorndir, $thorn, $impl, $class, $first_init, %init_thorn, $init_ar);
+	my ($class);
 	my (@inith, @initcpp);
 	my (@param_macro, @special_macros);
 	my (%param_data, %sched_data, %values, %init_funcs);
 
-	# check thorns
-	_warn("Using more than one intialization thorn is not supported at the Moment. ".
-		  "Using the first one.", __FILE__, __LINE__)
-		if (keys %{$config_ref->{"init_thorns"}} > 1);
-
 	# init
 	initValueHash(\%values);
-	$first_init                = (keys %{$config_ref->{"init_thorns"}})[0];
-	%init_thorn                = %{$config_ref->{"init_thorns"}{$first_init}};
-	$init_ar                   = $init_thorn{"thorn_arr"};
-	$thorndir                  = $config_ref->{"arr_dir"} . "/" . $init_ar;
-	$thorn                     = $init_thorn{"thorn"};
-	$impl                      = $thorninfo_ref->{$init_ar}{"impl"};
 	$class                     = $config_ref->{"config"} . "_Initializer";
 	$values{"class_name"}      = $class;
 	$values{"cell_class_name"} = $cell_ref->{"class_name"};
 	$values{"dim"}             = $cell_ref->{"dim"};
 
 	# pre check
-	preCheck($thorninfo_ref, \%init_thorn, $config_ref->{"evol_thorns"});
+	preCheck($thorninfo_ref, $config_ref->{"init_thorns"}, $config_ref->{"evol_thorns"});
+
+	# get data
+	foreach my $key (keys %{$config_ref->{"init_thorns"}}) {
+		my (%init_thorn, $thorndir, $thorn, $impl, $init_ar);
+
+		# init
+		%init_thorn = %{$config_ref->{"init_thorns"}{$key}};
+		$init_ar    = $init_thorn{"thorn_arr"};
+		$thorndir   = $config_ref->{"arr_dir"} . "/" . $init_ar;
+		$thorn      = $init_thorn{"thorn"};
+		$impl       = $thorninfo_ref->{$init_ar}{"impl"};
+
+		# data
+		getParameters($thorndir, $thorn, $impl, \%param_data);
+		getScheduleData($thorndir, $thorn, \%sched_data);
+	}
 
 	# parse param ccl to get parameters
-	getParameters($thorndir, $thorn, $impl, \%param_data);
 	buildParameterStrings(\%param_data, $class, 1, \%values);
 	generateParameterMacro(\%param_data, $class, "", \@param_macro);
 
 	# parse schedule.ccl to get function at CCTK_INITIAL-Timestep
-	getScheduleData($thorndir, $thorn, \%sched_data);
 	getInitFunctions(\%sched_data, \%init_funcs);
 
 	# build init specific special macros
