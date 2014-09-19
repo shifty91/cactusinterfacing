@@ -37,8 +37,8 @@ use Cactusinterfacing::Config qw($debug $verbose $tab $astyle_options);
 
 # export
 our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings _err
-                    _warn dbg info vprint util_writeFile util_mkdir util_trim
-                    util_cp util_arrayToHash util_readFile util_input
+					_warn dbg info vprint util_writeFile util_mkdir util_trim
+					util_cp util_arrayToHash util_readFile util_input
 					util_indent util_getFunction util_choose util_readDir
 					util_tidySrcDir util_rmdir util_choose_multi);
 
@@ -467,10 +467,10 @@ sub util_trim
 #
 sub info
 {
-   my ($msg, $file, $line) = @_;
-   print "[INFO $file:$line]: $msg\n";
+	my ($msg, $file, $line) = @_;
+	print "[INFO $file:$line]: $msg\n";
 
-   return;
+	return;
 }
 
 #

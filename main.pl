@@ -48,7 +48,7 @@ sub printUsage
 	select(STDERR);
 	local $| = 1;
 
-    print <<'EOF';
+	print <<'EOF';
 usage: main.pl [options]
 
 options:
