@@ -13,6 +13,7 @@ use Exporter 'import';
 use Cactusinterfacing::Config qw($scalar);
 use Cactusinterfacing::Utils qw(read_file util_indent _warn _err);
 use Cactusinterfacing::InterfaceParser qw(parse_interface_ccl);
+use Cactusinterfacing::ThornList qw(getInherits getFriends);
 
 # exports
 our @EXPORT_OK = qw(getInterfaceVars getAllInterfaceVars buildInterfaceStrings);
@@ -91,10 +92,11 @@ sub getInterfaceVars
 # Same as above, except it uses inheritance and friends.
 #
 # param:
-#  - arr_dir      : path to arrangement directory
-#  - arr_thorn_in : arrangement/thorn
-#  - thorninfo_ref: ref to thorninfo hash
-#  - out_ref      : ref to store interface data
+#  - thorndir_in   : directory of thorn
+#  - thorn_in      : name of thorn
+#  - arrangement_in: name of arrangement
+#  - thorninfo_ref : ref to thorninfo hash
+#  - out_ref       : ref to store interface data
 #
 # return:
 #  - none, hash of all groups will be stored in out_ref, including
@@ -109,10 +111,14 @@ sub getInterfaceVars
 #
 sub getAllInterfaceVars
 {
-	my ($arr_dir, $arr_thorn_in, $thorninfo_ref, $out_ref) = @_;
-	my (@inherits);
+	my ($thorndir_in, $thorn_in, $arrangement_in, $thorninfo_ref, $out_ref) = @_;
+	my (@inherits, $arr_thorn_in, $arr_dir);
 
 	# init
+	$arr_thorn_in = $arrangement_in . "/" . $thorn_in;
+	$arr_dir = $thorndir_in;
+	$arr_dir =~ s/\/\w+\s*$//;
+	$arr_dir =~ s/\/\w+\s*$//;
 	push(@inherits, $arr_thorn_in);
 
 	# get inherits/friends

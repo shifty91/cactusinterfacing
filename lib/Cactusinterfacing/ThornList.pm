@@ -2,8 +2,7 @@
 ##
 ## ThornList.pm
 ##
-## Modul for parsing a cactus ThornList
-## to get information about the thorns.
+## Modul for parsing a Cactus ThornList to get information about the thorns.
 ##
 
 package Cactusinterfacing::ThornList;
