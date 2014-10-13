@@ -191,6 +191,7 @@ sub util_choose
 
 	print "Choice: ";
 	$answer = <STDIN>;
+	_err("No answer given!", __FILE__, __LINE__) unless (defined $answer);
 	$answer =~ s/^\s*//g;
 	$answer =~ s/\s*$//g;
 
@@ -226,6 +227,7 @@ sub util_choose_multi
 
 	print "Choice: ";
 	$answer = <STDIN>;
+	_err("No answer given!", __FILE__, __LINE__) unless (defined $answer);
 	$answer =~ s/^\s*//g;
 	$answer =~ s/\s*$//g;
 
@@ -259,6 +261,7 @@ sub util_input
 
 	print "$question: ";
 	$answer = <STDIN>;
+	_err("No answer given!", __FILE__, __LINE__) unless (defined $answer);
 	chomp $answer;
 
 	return $answer;
