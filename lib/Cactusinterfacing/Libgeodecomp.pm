@@ -11,13 +11,16 @@ package Cactusinterfacing::Libgeodecomp;
 use strict;
 use warnings;
 use Exporter 'import';
-use Cactusinterfacing::Config qw($debug $tab);
+use Cactusinterfacing::Config qw(%cinf_config);
 use Cactusinterfacing::Utils qw(_warn);
 
 # exports
 our @EXPORT_OK = qw(generateSoAMacro getCoord getGFIndex getCoordZero
 					getFixedCoordZero getGFIndexLast getGFIndexFirst
 					buildCctkSteerer getBOVWriter getVisItWriter);
+
+# tab
+my $tab = $cinf_config{tab};
 
 #
 # Generates SoA macro for LibGeoDecomp.

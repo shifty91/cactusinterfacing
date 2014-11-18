@@ -10,12 +10,15 @@ package Cactusinterfacing::Parameter;
 use strict;
 use warnings;
 use Exporter 'import';
-use Cactusinterfacing::Config qw($tab);
+use Cactusinterfacing::Config qw(%cinf_config);
 use Cactusinterfacing::Utils qw(read_file util_arrayToHash util_indent);
 use Cactusinterfacing::ParameterParser qw(parse_param_ccl);
 
 # exports
 our @EXPORT_OK = qw(getParameters generateParameterMacro buildParameterStrings);
+
+# tab
+my $tab = $cinf_config{tab};
 
 #
 # Parses param.ccl to get Parameters.

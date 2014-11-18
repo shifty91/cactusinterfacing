@@ -13,7 +13,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use FindBin qw($RealBin);
-use Cactusinterfacing::Config qw($tab $ghostzone_width checkConfiguration);
+use Cactusinterfacing::Config qw(%cinf_config);
 use Cactusinterfacing::Utils qw(util_readFile util_writeFile util_cp util_mkdir
 								util_tidySrcDir _err util_rmdir);
 use Cactusinterfacing::Make qw(createLibgeodecompMakefile);
@@ -25,6 +25,9 @@ use Cactusinterfacing::ThornList qw(parseThornList);
 
 # exports
 our @EXPORT_OK = qw(createLibgeodecompApp);
+
+# tab
+my $tab = $cinf_config{tab};
 
 #
 # Builds the complete main.cpp.
@@ -214,7 +217,7 @@ sub createParameterHeader
 	push(@$out_ref, "\n");
 	# actually it's good to know the dimension and width of ghostzones
 	push(@$out_ref, "#define CCTKGHDIM $dim\n");
-	push(@$out_ref, "#define GHOSTZONEWIDTH $ghostzone_width\n");
+	push(@$out_ref, "#define GHOSTZONEWIDTH $cinf_config{ghostzone_width}\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "#define $setup_thorn \\\n");
 	push(@$out_ref, $tab."do { \\\n");
@@ -378,10 +381,6 @@ sub createLibgeodecompApp
 	my ($outputdir, $mpi, $writer_type);
 	my (%option, %thorninfo);
 	my (%cell, %init, @main, @make, @cctksteerer, @bovwriter, @visitwriter);
-
-	# first of check configuration
-	_err("Configuration is not valid. Check Config.pm", __FILE__, __LINE__)
-		unless (checkConfiguration());
 
 	# init
 	parseThornList($config_ref, \%thorninfo, \%option);

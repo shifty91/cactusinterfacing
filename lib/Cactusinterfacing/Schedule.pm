@@ -12,7 +12,6 @@ use warnings;
 use Exporter 'import';
 use Storable 'dclone';
 use Tie::IxHash;
-use Cactusinterfacing::Config qw($debug);
 use Cactusinterfacing::Utils qw(read_file util_arrayToHash util_getFunction
 								util_indent _warn util_choose util_choose_multi);
 use Cactusinterfacing::Make qw(getSources);

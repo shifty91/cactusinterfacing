@@ -33,7 +33,7 @@ use Exporter 'import';
 use File::Copy;
 use File::Which;
 use File::Path qw(mkpath remove_tree);
-use Cactusinterfacing::Config qw($debug $verbose $tab $astyle_options);
+use Cactusinterfacing::Config qw(%cinf_config);
 
 # export
 our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings _err
@@ -128,7 +128,7 @@ sub util_indent
 		$level--   if ($line =~ /\}$/);
 
 		# print, but only if $line not empty
-		$line = $tab x $level . $line if ($line ne "");
+		$line = $cinf_config{tab} x $level . $line if ($line ne "");
 
 		$level++ if ($found);
 	}
@@ -138,8 +138,8 @@ sub util_indent
 
 #
 # Tidies all source files in given directory. This function uses the external
-# tool `astyle' for that. If `astyle' is not found on the system, this function
-# does simply nothing.
+# tool `astyle' for that. If `astyle' is not found on the system or using
+# `astyle' is disabled, this function does simply nothing.
 #
 # param:
 #  - directory: directory where to cleanup sources files
@@ -152,10 +152,12 @@ sub util_tidySrcDir
 	my ($directory) = @_;
 	my ($options, $astyle);
 
+	return unless ($cinf_config{use_astyle});
+
 	$astyle = which("astyle");
 	return unless ($astyle);
 
-	$options  = "$astyle_options --recursive $directory/'*.cpp' $directory/'*.h' ";
+	$options  = "$cinf_config{astyle_options} --recursive $directory/'*.cpp' $directory/'*.h' ";
 	$options .= "$directory/include/'*.h'";
 
 	`$astyle $options`;
@@ -485,7 +487,7 @@ sub info
 sub vprint
 {
 	my ($msg) = @_;
-	print "$msg\n" if ($verbose);
+	print "$msg\n" if ($cinf_config{verbose});
 
 	return;
 }
@@ -504,7 +506,7 @@ sub vprint
 sub dbg
 {
 	my ($msg, $file, $line) = @_;
-	print "[DEBUG $file:$line]: $msg\n" if ($debug);
+	print "[DEBUG $file:$line]: $msg\n" if ($cinf_config{debug});
 
 	return;
 }

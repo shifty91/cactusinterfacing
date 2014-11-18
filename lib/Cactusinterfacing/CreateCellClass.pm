@@ -10,7 +10,7 @@ package Cactusinterfacing::CreateCellClass;
 use strict;
 use warnings;
 use Exporter 'import';
-use Cactusinterfacing::Config qw($tab $ghostzone_width $topology);
+use Cactusinterfacing::Config qw(%cinf_config);
 use Cactusinterfacing::Utils qw(util_indent util_input _err _warn);
 use Cactusinterfacing::Schedule qw(getScheduleData getEvolFunctions);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
@@ -22,6 +22,9 @@ use Cactusinterfacing::CreateStaticDataClass qw(createStaticDataClass);
 
 # exports
 our @EXPORT_OK = qw(createCellClass);
+
+# tab
+my $tab = $cinf_config{tab};
 
 #
 # Searches through GFs dimensions to get highest.
@@ -567,8 +570,8 @@ sub buildCellHeader
 	push(@$out_ref, $tab.$tab."public APITraits::HasUpdateLineX,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasOpaqueMPIDataType<$class>,\n")
 		if ($mpi);
-	push(@$out_ref, $tab.$tab."public APITraits::HasStencil<Stencils::Moore<$dim, $ghostzone_width> >,\n");
-	push(@$out_ref, $tab.$tab."public APITraits::Has"."$topology"."Topology<$dim>,\n");
+	push(@$out_ref, $tab.$tab."public APITraits::HasStencil<Stencils::Moore<$dim, $cinf_config{ghostzone_width}> >,\n");
+	push(@$out_ref, $tab.$tab."public APITraits::Has"."$cinf_config{topology}"."Topology<$dim>,\n");
 	push(@$out_ref, $tab.$tab."public APITraits::HasStaticData<$static_class>\n");
 	push(@$out_ref, $tab."{};\n");
 	push(@$out_ref, "\n");

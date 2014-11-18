@@ -11,7 +11,7 @@ package Cactusinterfacing::Make;
 use strict;
 use warnings;
 use Exporter 'import';
-use Cactusinterfacing::Config qw($debug);
+use Cactusinterfacing::Config qw(%cinf_config);
 use Cactusinterfacing::Utils qw(util_readFile _warn);
 
 # exports
@@ -105,7 +105,7 @@ sub createLibgeodecompMakefile
 	$cxxflags .= "-Wno-variadic-macros -O3 -Iinclude";
 	$cxxflags .= " `pkg-config --cflags libgeodecomp`";
 	# build with debug code?
-	$cxxflags .= " -DDEBUG" if ($debug);
+	$cxxflags .= " -DDEBUG" if ($cinf_config{debug});
 	# additionally we need to link against boost_regex
 	# the rest will be determined by pkg-config, make sure PKG_CONFIG_PATH is set
 	$ldflags = "`pkg-config --libs libgeodecomp` -lboost_regex";

@@ -12,12 +12,15 @@ package Cactusinterfacing::CreateStaticDataClass;
 use strict;
 use warnings;
 use Exporter 'import';
-use Cactusinterfacing::Config qw($tab);
+use Cactusinterfacing::Config qw(%cinf_config);
 use Cactusinterfacing::Utils qw(util_indent);
 use Cactusinterfacing::Parameter qw(buildParameterStrings);
 
 # export
 our @EXPORT_OK = qw(createStaticDataClass);
+
+# tab
+my $tab = $cinf_config{tab};
 
 #
 # Builds interface strings for grid ARRAYs and SCALARs.

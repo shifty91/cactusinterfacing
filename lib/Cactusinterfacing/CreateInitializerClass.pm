@@ -10,7 +10,7 @@ package Cactusinterfacing::CreateInitializerClass;
 use strict;
 use warnings;
 use Exporter 'import';
-use Cactusinterfacing::Config qw($tab);
+use Cactusinterfacing::Config qw(%cinf_config);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
 use Cactusinterfacing::Schedule qw(getScheduleData getInitFunctions);
@@ -20,6 +20,9 @@ use Cactusinterfacing::ThornList qw(isInherit isFriend);
 
 # exports
 our @EXPORT_OK = qw(createInitializerClass);
+
+# tab
+my $tab = $cinf_config{tab};
 
 #
 # Builds the ADD_WRITE_MEMBER macro calls to create the
