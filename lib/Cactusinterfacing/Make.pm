@@ -45,10 +45,11 @@ sub getSources
 		# strip '\' and comments
 		$sources =~ s/\\//g;
 		$sources =~ s/#.*//g;
-		@token = split(' ', $sources);
+		$sources =~ s/\s+$//g;
+		@token = split /\s+/, $sources;
 
 		# append path to source files
-		@token = map { $dir."/".$_ } @token;
+		@token = map { $dir . "/" . $_ } @token;
 
 		# save
 		push(@$sources_ref, @token);
@@ -61,12 +62,13 @@ sub getSources
 	if ($str =~ /SUBDIRS\s*=\s*([\-\w\s.\\]+)/) {
 		$subdirs = $1;
 
-		# strip '\' and comments
+		# strip '\', comments and newlines
 		$subdirs =~ s/\\//g;
 		$subdirs =~ s/#.*//g;
+		$subdirs =~ s/\s+$//g;
 
 		# go in all sub directories
-		getSources($dir."/".$_, $sources_ref) for (split(' ', $subdirs));
+		getSources($dir . "/" . $_, $sources_ref) for (split /\s+/, $subdirs);
 	}
 
 	return;
