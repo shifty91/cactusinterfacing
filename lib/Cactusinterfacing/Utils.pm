@@ -51,13 +51,12 @@ our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings _err
 #  - out_ref: ref to an array where to store function body
 #
 # return:
-#  - none, function will be stored int out_ref
+#  - true if function were found, false if not
 #
 sub util_getFunction
 {
 	my ($file, $name, $out_ref) = @_;
-	my (@lines, $data);
-	my ($level, $found);
+	my (@lines, $data, $level, $found);
 
 	util_readFile("$file", \@lines);
 
@@ -98,7 +97,7 @@ sub util_getFunction
 
 	shift @$out_ref if (@$out_ref && @$out_ref[0] =~ /^\s*\{/);
 
-	return;
+	return $found;
 }
 
 

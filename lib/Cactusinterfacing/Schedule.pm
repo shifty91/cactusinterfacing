@@ -235,10 +235,7 @@ sub getFunctionsAt
 
 		$found = 0;
 		foreach my $source (@sources) {
-			util_getFunction($source, $func, \@code_func);
-
-			# lets see, if function was found
-			if (@code_func > 0) {
+			if (util_getFunction($source, $func, \@code_func)) {
 				$out_ref->{$func}{"name"} = $func;
 				$out_ref->{$func}{"data"} = \@code_func;
 				$found = 1;
