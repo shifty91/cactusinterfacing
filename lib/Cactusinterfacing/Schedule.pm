@@ -247,6 +247,7 @@ sub getFunctionsAt
 			# the scheduled function could not be found in any source file
 			_warn("The scheduled function could not be found. Check your make.code.defn.",
 				  __FILE__, __LINE__);
+			$out_ref->{$func}{"name"} = $func;
 			$out_ref->{$func}{"data"} = [ "/** No function found at \U$timestep\E timestep **/" ];
 		}
 	}
