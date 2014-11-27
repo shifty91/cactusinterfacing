@@ -58,7 +58,7 @@ sub util_getFunction
 	my ($file, $name, $out_ref) = @_;
 	my (@lines, $data, $level, $found);
 
-	util_readFile("$file", \@lines);
+	util_readFile($file, \@lines);
 
 	# init
 	$level = 0;
@@ -69,7 +69,7 @@ sub util_getFunction
 	$data  =~ s/$name\s*\([\w, :&\*]*\)\s*;//g;
 	@lines = split("\n", $data);
 
-	# get functions body
+	# get function's body
 	foreach my $line (@lines) {
 		chomp $line;
 
@@ -116,15 +116,15 @@ sub util_indent
 	my ($arr_ref, $offset) = @_;
 	my ($level, $found);
 
-	# remove existing indention and trailing whitespaces
-	$_ = util_trim($_) for (@$arr_ref);
+	# remove existing indention
+	s/^\s+//g for (@$arr_ref);
 
 	$level = $offset;
 	foreach my $line (@$arr_ref) {
 		# check for braces
 		$found = 0;
-		$found = 1 if ($line =~ /\{$/);
-		$level--   if ($line =~ /\}$/);
+		$found = 1 if ($line =~ /\{\s*$/);
+		$level--   if ($line =~ /\}\s*$/);
 
 		# print, but only if $line not empty
 		$line = $cinf_config{tab} x $level . $line if ($line ne "");

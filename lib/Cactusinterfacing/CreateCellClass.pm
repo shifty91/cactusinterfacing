@@ -404,11 +404,11 @@ sub addRotateTimelevels
 	$index  = "_i";
 
 	# start with a comment
-	push(@outdata, "\n");
-	push(@outdata, "// rotate timelevels\n");
+	push(@outdata, "");
+	push(@outdata, "// rotate timelevels");
 
 	# start for loop
-	push(@outdata, "for (int $index = 0; $index < (indexEnd - hoodOld.index()); ++$index) {\n");
+	push(@outdata, "for (int $index = 0; $index < (indexEnd - hoodOld.index()); ++$index) {");
 
 	foreach my $group (keys %{$inf_ref}) {
 		my ($gtype, $timelevels);
@@ -433,15 +433,15 @@ sub addRotateTimelevels
 				$right    = "$name" . ("_p" x ($i - 1)) . "[$var_idx]";
 
 				# save
-				push(@outdata, "int $var_idx = $gfindex;\n");
-				push(@outdata, "$left = $right;\n");
+				push(@outdata, "int $var_idx = $gfindex;");
+				push(@outdata, "$left = $right;");
 				$pushed = 1;
 			}
 		}
 	}
 
 	# end foor loop
-	push(@outdata, "}\n");
+	push(@outdata, "}");
 
 	# indent
 	util_indent(\@outdata, 2);

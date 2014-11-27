@@ -13,7 +13,7 @@ use Exporter 'import';
 use Storable 'dclone';
 use Tie::IxHash;
 use Cactusinterfacing::Utils qw(read_file util_arrayToHash util_getFunction
-								util_indent _warn util_choose util_choose_multi);
+								_warn util_choose util_choose_multi);
 use Cactusinterfacing::Make qw(getSources);
 use Cactusinterfacing::ScheduleParser qw(parse_schedule_ccl);
 
@@ -264,7 +264,7 @@ sub getFunctionsAt
 
 #
 # This function goes through the functions passed by sched_ref and
-# stores a array of all thorndirs (uniq).
+# stores a array of all thorndirs (unique).
 #
 # param:
 #  - sched_ref: ref to schedule data hash
