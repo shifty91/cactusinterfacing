@@ -290,10 +290,13 @@ sub buildInfVarMacros
 sub buildUpdateFunctions
 {
 	my ($evol_ref, $val_ref, $inf_ref) = @_;
-	my (@keys);
+	my (@keys, @rotate);
 
 	# init
 	@keys = keys %{$evol_ref};
+
+	# get rotating of timelevels
+	getRotateTimelevels($inf_ref, $val_ref, \@rotate);
 
 	# one function -> just build updateLineX
 	if (@keys == 1) {
@@ -306,7 +309,10 @@ sub buildUpdateFunctions
 		# adjust evol function for updateLine
 		adjustEvolutionFunction($inf_ref, $val_ref, $func_ref);
 		# add rotating timelevels
-		addRotateTimelevels($inf_ref, $val_ref, $func_ref);
+		if (@rotate > 0) {
+			push(@rotate, "");
+			push(@$func_ref, @rotate);
+		}
 		# indent function
 		util_indent($func_ref, 2);
 
@@ -323,7 +329,7 @@ sub buildUpdateFunctions
 		$val_ref->{"update_linex"} = join("", @linex);
 	} elsif (@keys > 1) {
 		# more functions -> build and call them
-		my (@linex, @rotate);
+		my (@linex, @rotate_prototype);
 
 		# build each function
 		foreach my $func (@keys) {
@@ -351,11 +357,13 @@ sub buildUpdateFunctions
 			push(@{$val_ref->{"evol_funcs"}}, join("", @evol));
 		}
 
-		# build rotateTimelevels
-		push(@rotate, $tab."template<typename ACCESSOR1, typename ACCESSOR2>");
-		push(@rotate, $tab."static void rotateTimelevels(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew)");
-		push(@rotate, $tab."{");
-		addRotateTimelevels($inf_ref, $val_ref, \@rotate);
+		# add function prototype around rotate body
+		@rotate_prototype = (
+			$tab."template<typename ACCESSOR1, typename ACCESSOR2>",
+			$tab."static void rotateTimelevels(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew)",
+			$tab."{"
+		   );
+		unshift(@rotate, @rotate_prototype);
 		push(@rotate, $tab."}");
 		push(@{$val_ref->{"evol_funcs"}}, join("\n", @rotate));
 
@@ -375,27 +383,27 @@ sub buildUpdateFunctions
 	} else {
 		# this should never happen, since the schedule functions ensure that
 		# at least one function is returned, even if it's not valid
-		_err("No functions for building cell class found.", __FILE__, __LINE__);
+		_err("No functions for building Cell class found.", __FILE__, __LINE__);
 	}
 
 	return;
 }
 
 #
-# Add the rotating of the timelevels
-# to the end of the updateLineX function.
+# Adds the rotating of the timelevels to the array given by
+# out_ref (see params). Default indent is 2.
 #
 # param:
-#  - inf_ref : ref to interface data hash
-#  - val_ref : ref to values hash
-#  - evol_ref: ref to array of evol function
+#  - inf_ref: ref to interface data hash
+#  - val_ref: ref to values hash
+#  - out_ref: ref to array where to store rotating of timelevels
 #
 # return:
-#  - none, modifies evol array
+#  - none, modifies array behind out_ref
 #
-sub addRotateTimelevels
+sub getRotateTimelevels
 {
-	my ($inf_ref, $val_ref, $evol_ref) = @_;
+	my ($inf_ref, $val_ref, $out_ref) = @_;
 	my (@outdata, $i, $dim, $index, $pushed);
 
 	# init
@@ -404,7 +412,6 @@ sub addRotateTimelevels
 	$index  = "_i";
 
 	# start with a comment
-	push(@outdata, "");
 	push(@outdata, "// rotate timelevels");
 
 	# start for loop
@@ -447,7 +454,7 @@ sub addRotateTimelevels
 	util_indent(\@outdata, 2);
 
 	# only add if there variables, else there would be a useless comment
-	push(@$evol_ref, @outdata) if ($pushed);
+	push(@$out_ref, @outdata) if ($pushed);
 
 	return;
 }
