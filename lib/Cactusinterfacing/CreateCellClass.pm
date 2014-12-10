@@ -460,11 +460,15 @@ sub getRotateTimelevels
 }
 
 #
-# This function adjusts the loop indices
-# in the for loops. For updateLineX only one
-# line has to be updated, but the Cactus code updates
-# a n-dimensional cube. This is why the loop indices have
-# to be adjusted.
+# This function adjusts the loop indices in the for loops. For updateLineX only
+# one line has to be updated, but the Cactus code updates a n-dimensional cube.
+# This is why the loop indices have to be adjusted. The adjustment is done in
+# the following way:
+#
+#  - for (int i = x; i < gridSize(); i++) => for (int i = 0; i < 1; ++i)
+#  - the last will be: for (int x = 0; x < (indexEnd - hoodOld.index()); ++x)
+#  - when vectorization is used, it will be:
+#  - for (int x = indexStart; x < (indexEnd - DOUBLE::ARITY + 1; x += DOUBLE::ARITY)
 #
 # params:
 #  - inf_ref : ref to interface data hash
@@ -478,18 +482,16 @@ sub adjustEvolutionFunction
 {
 	my ($inf_ref, $val_ref, $evol_ref) = @_;
 	my ($codestr, $dim);
-	my (@blocks, $lbcopy, $i);
+	my (@blocks, $lbcopy, $i, $use_vec);
 
 	# init
 	$codestr = join("\n", @$evol_ref);
 	$dim     = $val_ref->{"dim"};
+	$use_vec = $cinf_config{"use_vectorization"};
 
 	# check for empty evol func
 	goto out if (scalar @$evol_ref <= 1);
 
-	# find for loops and adjust indices in the following way:
-	#  - for (int i = x; i < gridSize(); i++) => for (int i = 0; i < 1; ++i)
-	#  - the last will be: for (int x = 0; x < indexEnd - *indexOld; ++x)
 	@blocks = $codestr =~ /((?:for\s*\([\w\s()+\-*\/=<>;,\[\]]*\)\s*\{\s*){$dim})/g;
 	unless (@blocks) {
 		_warn("Could not adjust loop indices.\n  -> You propably want to adjust the".
@@ -502,16 +504,29 @@ sub adjustEvolutionFunction
 		$lbcopy = $loopblock;
 
 		while ($loopblock =~ /(for\s*\(\s*(\w*)\s*(\w+)[\w\s=+\-*\/()<>,;\[\]]*\))/g) {
-			my ($for, $type, $index, $replace);
+			my ($for, $type, $index, $replace, $range, $incr, $start_idx);
 			$for   = $1;
 			$type  = $2;
 			$index = $3;
-			if ($i++ < ($dim -1)) {
-				$replace = !$type ? "for ($index = 0; $index < 1; ++$index)" :
-					"for ($type $index = 0; $index < 1; ++$index)";
+
+			# check for vectorization
+			if ($use_vec) {
+				$range	   = "(indexEnd - DOUBLE::ARITY + 1)";
+				$incr	   = "$index += DOUBLE::ARITY";
+				$start_idx = "indexStart";
 			} else {
-				$replace = !$type ? "for ($index = 0; $index < (indexEnd - hoodOld.index()); ++$index)" :
-					"for ($type $index = 0; $index < (indexEnd - hoodOld.index()); ++$index)";
+				$range	   = "(indexEnd - hoodOld.index())";
+				$incr	   = "++$index";
+				$start_idx = "0";
+			}
+
+			# replace
+			if ($i++ < ($dim -1)) {
+				$replace = !$type ? "for ($index = $start_idx; $index < 1; ++$index)" :
+					"for ($type $index = $start_idx; $index < 1; ++$index)";
+			} else {
+				$replace = !$type ? "for ($index = $start_idx; $index < $range; $incr)" :
+					"for ($type $index = $start_idx; $index < $range; $incr)";
 			}
 			$lbcopy =~ s/\Q$for\E/$replace/;
 		}
