@@ -65,6 +65,9 @@ BEGIN
 	# ghostzone width
 	my $ghostzone_width = 1;
 
+	# vectorization
+	my $use_vectorization = 0;
+
 	################################################################################
 	# Configuration section ends here                                              #
 	################################################################################
@@ -72,7 +75,7 @@ BEGIN
 	# specify which options can be overwritten by config file
 	my @allowed_options = ('debug', 'verbose', 'tab', 'use_astyle',
 						   'astyle_options', 'topology', 'scalar',
-						   'ghostzone_width');
+						   'ghostzone_width', 'use_vectorization');
 
 	#
 	# Checks the values specified by the user above.
@@ -85,14 +88,16 @@ BEGIN
 	#
 	sub checkConfiguration
 	{
-		my ($ret, $debug, $tab, $topology, $ghostzone_width, $use_astyle);
+		my ($ret, $debug, $tab, $topology, $ghostzone_width, $use_astyle,
+			$use_vectorization);
 
-		$debug           = $cinf_config{debug};
-		$tab             = $cinf_config{tab};
-		$topology        = $cinf_config{topology};
-		$ghostzone_width = $cinf_config{ghostzone_width};
-		$use_astyle      = $cinf_config{use_astyle};
-		$ret             = 1;
+		$debug             = $cinf_config{debug};
+		$tab               = $cinf_config{tab};
+		$topology          = $cinf_config{topology};
+		$ghostzone_width   = $cinf_config{ghostzone_width};
+		$use_astyle        = $cinf_config{use_astyle};
+		$use_vectorization = $cinf_config{use_vectorization};
+		$ret               = 1;
 
 		# check general options
 		$ret = 0 if ($debug !~ /^\d+$/ || $verbose !~ /^\d+$/);
@@ -100,6 +105,7 @@ BEGIN
 		$ret = 0 if ($topology !~ /^Cube|Torus$/);
 		$ret = 0 if ($ghostzone_width !~ /^\d+$/);
 		$ret = 0 if ($use_astyle !~ /^\d+$/);
+		$ret = 0 if ($use_vectorization !~ /^\d+$/);
 
 		return $ret;
 	}
@@ -117,14 +123,15 @@ BEGIN
 	sub setupDefaultValues
 	{
 		%cinf_config = (
-			debug           => $debug,
-			verbose         => $verbose,
-			tab             => $tab,
-			use_astyle      => $use_astyle,
-			astyle_options  => $astyle_options,
-			topology        => $topology,
-			scalar          => $scalar,
-			ghostzone_width => $ghostzone_width,
+			debug             => $debug,
+			verbose           => $verbose,
+			tab               => $tab,
+			use_astyle        => $use_astyle,
+			astyle_options    => $astyle_options,
+			topology          => $topology,
+			scalar            => $scalar,
+			ghostzone_width   => $ghostzone_width,
+			use_vectorization => $use_vectorization,
 		   );
 
 		return;
