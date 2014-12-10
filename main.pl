@@ -26,7 +26,7 @@ use lib "$FindBin::RealBin/lib";
 use Getopt::Long;
 use Cactusinterfacing::CreateLibgeodecompApp qw(createLibgeodecompApp);
 use Cactusinterfacing::Utils qw(util_readDir util_readFile util_choose
-								util_input _err vprint util_choose_multi);
+								util_input _err vprint util_chooseMulti);
 
 # vars
 my (@configs, $configdir, @thorns, %config);
@@ -282,7 +282,7 @@ parseThorns(\@evol_thorns, \@init_thorns);
 # no evol thorns given
 unless (@evol_thorns) {
 	if (@thorns > 1) {
-		@evol_thorns = util_choose_multi("Choose evolution Thorn(s)", \@thorns);
+		@evol_thorns = util_chooseMulti("Choose evolution Thorn(s)", \@thorns);
 	} else {
 		@evol_thorns = ( $thorns[0] );
 	}
@@ -291,7 +291,7 @@ unless (@evol_thorns) {
 # no init thorns given
 unless (@init_thorns) {
 	if (@thorns > 1) {
-		@init_thorns = util_choose_multi("Choose intialization Thorn(s)", \@thorns);
+		@init_thorns = util_chooseMulti("Choose intialization Thorn(s)", \@thorns);
 	} else {
 		@init_thorns = ( $thorns[0] );
 	}

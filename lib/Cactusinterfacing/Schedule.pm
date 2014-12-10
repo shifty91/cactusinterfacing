@@ -13,7 +13,7 @@ use Exporter 'import';
 use Storable 'dclone';
 use Tie::IxHash;
 use Cactusinterfacing::Utils qw(read_file util_arrayToHash util_getFunction
-								_warn util_choose util_choose_multi);
+								_warn util_choose util_chooseMulti);
 use Cactusinterfacing::Make qw(getSources);
 use Cactusinterfacing::ScheduleParser qw(parse_schedule_ccl);
 
@@ -314,7 +314,7 @@ sub chooseFunctions
 								" Choose one", $func_ref);
 		@$func_ref = ( $function );
 	} else {
-		@$func_ref = util_choose_multi("$nfuncs functions found at \U$timestep\E Timestep.".
+		@$func_ref = util_chooseMulti("$nfuncs functions found at \U$timestep\E Timestep.".
 									   " Choose some", $func_ref);
 	}
 

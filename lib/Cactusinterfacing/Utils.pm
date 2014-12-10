@@ -40,7 +40,7 @@ our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings _err
 					_warn dbg info vprint util_writeFile util_mkdir util_trim
 					util_cp util_arrayToHash util_readFile util_input
 					util_indent util_getFunction util_choose util_readDir
-					util_tidySrcDir util_rmdir util_choose_multi);
+					util_tidySrcDir util_rmdir util_chooseMulti);
 
 #
 # Extract a function body from a given source file.
@@ -213,7 +213,7 @@ sub util_choose
 # return:
 #  - answers given by user in form of an array
 #
-sub util_choose_multi
+sub util_chooseMulti
 {
 	my ($message, $arr_ref) = @_;
 	my ($i, $answer, @token, @ret);
