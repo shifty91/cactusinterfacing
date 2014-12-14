@@ -404,18 +404,22 @@ sub buildUpdateFunctions
 sub getRotateTimelevels
 {
 	my ($inf_ref, $val_ref, $out_ref) = @_;
-	my (@outdata, $i, $dim, $index, $pushed);
+	my (@outdata, $i, $dim, $index, $pushed, $use_vec, $range, $incr, $start_idx);
 
 	# init
-	$pushed = 0;
-	$dim    = $val_ref->{"dim"};
-	$index  = "_i";
+	$pushed	   = 0;
+	$dim	   = $val_ref->{"dim"};
+	$index	   = "_i";
+	$use_vec   = $cinf_config{"use_vectorization"};
+	$range	   = $use_vec ? "indexEnd - DOUBLE::ARITY + 1" : "(indexEnd - hoodOld.index())";
+	$incr	   = $use_vec ? "$index += DOUBLE::ARITY" : "++$index";
+	$start_idx = $use_vec ? "indexStart" : "0";
 
 	# start with a comment
 	push(@outdata, "// rotate timelevels");
 
 	# start for loop
-	push(@outdata, "for (int $index = 0; $index < (indexEnd - hoodOld.index()); ++$index) {");
+	push(@outdata, "for (int $index = $start_idx; $index < $range; $incr) {");
 
 	foreach my $group (keys %{$inf_ref}) {
 		my ($gtype, $timelevels);
@@ -430,18 +434,26 @@ sub getRotateTimelevels
 
 		foreach my $name (@{$inf_ref->{$group}{"names"}}) {
 			for ($i = $timelevels - 1; $i > 1; --$i) {
-				my ($left, $right, $hood_new, $gfindex, $var_idx);
+				my ($left, $right, $hood_new, $gfindex, $var_idx, $buf, $store);
 
 				$var_idx  = "vindex";
 				$gfindex  = getGFIndexFirst($dim, $index);
 				$hood_new = "(&hoodNew.var_" . $name . ("_p" x ($i - 1) . "())");
-				$left     = "$hood_new" . "[$var_idx]";
-				# using macro here, it's just shorter
-				$right    = "$name" . ("_p" x ($i - 1)) . "[$var_idx]";
 
-				# save
+				# get index
 				push(@outdata, "int $var_idx = $gfindex;");
-				push(@outdata, "$left = $right;");
+
+				if ($use_vec) {
+					$buf   = "DOUBLE buf = $name" . ("_p" x ($i - 1)) . " + $var_idx;";
+					$store = "($hood_new + vindex) << buf;";
+					push(@outdata, "$buf");
+					push(@outdata, "$store");
+				} else {
+					$left  = "$hood_new" . "[$var_idx]";
+					$right = "$name" . ("_p" x ($i - 1)) . "[$var_idx]";
+					push(@outdata, "$left = $right;");
+				}
+
 				$pushed = 1;
 			}
 		}
