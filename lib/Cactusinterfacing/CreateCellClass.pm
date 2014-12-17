@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Cactusinterfacing::Config qw(%cinf_config);
-use Cactusinterfacing::Utils qw(util_indent util_input _err _warn);
+use Cactusinterfacing::Utils qw(util_indent util_input _err _warn util_buildFunction);
 use Cactusinterfacing::Schedule qw(getScheduleData getEvolFunctions);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
@@ -67,6 +67,62 @@ sub getDimension
 	}
 
 	return $dim;
+}
+
+#
+# Builds a function with rotating timelevels at the end.
+#
+# param:
+#  - val_ref : ref to values hash
+#  - inf_ref : ref to interface data hash
+#  - body_ref: function body, may be array ref or scalar ref
+#  - proto   : prototype
+#  - out_ref : ref where to store array
+#  - temp    : template [optional]
+#  - indent  : indent   [optional]
+#
+# return:
+#  - none, function will be stored in out_ref
+#
+sub buildFunctionWithTL
+{
+	my ($val_ref, $inf_ref, $body_ref, $proto, $out_ref, $temp, $indent) = @_;
+	my (@header, @rotate);
+
+	# adjust params
+	$indent	= 1 unless (defined $indent);
+
+	# get rotate timelevels
+	getRotateTimelevels($inf_ref, $val_ref, \@rotate);
+	$_ = $_ . "\n" for (@rotate);
+
+	# build func
+	push(   @header  , "$temp\n") if (defined $temp);
+	push(   @header  , "$proto\n");
+	push(   @header  , "{\n");
+	unshift(@$out_ref, @header);
+	push(   @$out_ref, @$body_ref);
+
+	# array
+	if (ref $body_ref eq "ARRAY") {
+		$_ = chomp($_) . "\n" for (@$body_ref);
+		push(@$out_ref, @$body_ref);
+	}
+	# scalar
+	if (ref $body_ref eq "SCALAR") {
+		my @lines = split /\n{1}/, $$body_ref;
+		$_ = $_ . "\n" for (@lines);
+		push(@$out_ref, @lines);
+	}
+
+	push(@$out_ref, "\n");
+	push(@$out_ref, @rotate);
+	push(@$out_ref, "}\n");
+
+	# indent
+	util_indent($out_ref, $indent);
+
+	return;
 }
 
 #
