@@ -17,7 +17,7 @@ use Cactusinterfacing::Utils qw(_warn);
 # exports
 our @EXPORT_OK = qw(generateSoAMacro getCoord getGFIndex getCoordZero
 					getFixedCoordZero getGFIndexLast getGFIndexFirst
-					buildCctkSteerer getBOVWriter getVisItWriter);
+					buildCctkSteerer getBOVWriter getVisItWriter getLoopPeeler);
 
 # tab
 my $tab = $cinf_config{tab};
@@ -395,6 +395,44 @@ sub getVisItWriter
 	}
 
 	@$out_ref = () unless ($pushed);
+
+	return;
+}
+
+#
+# This functions creates the code for loop peeling if vectorization is used.
+#
+# param:
+#  - cargo  : cargo type (like double)
+#  - arity  : vector with (like 8)
+#  - func   : function which should be called
+#  - out_ref: ref to array where to store code for loop peeling
+#
+# return:
+#  - none, code will be stored in out_ref
+#
+sub getLoopPeeler
+{
+	my ($cargo, $arity, $func, $out_ref) = @_;
+
+	# prepare
+	push(@$out_ref, "typedef LibFlatArray::short_vec<$cargo, $arity> ShortVecType;");
+	push(@$out_ref, "typedef LibFlatArray::short_vec<$cargo, 1> ScalarType;");
+	push(@$out_ref, "long index     = hoodOld.index();");
+	push(@$out_ref, "long remainder = index % ShortVecType::ARITY;");
+	push(@$out_ref, "long nextStop  = remainder ? index + ShortVecType::ARITY - remainder : index;");
+
+	# adjust indices
+	push(@$out_ref, "nextStop -= index;");
+	push(@$out_ref, "indexEnd -= index;");
+
+	# call it
+	push(@$out_ref, "$func<ScalarType>(0, nextStop, hoodOld, hoodNew, nanoStep);");
+	push(@$out_ref, "$func<ShortVecType>(nextStop, indexEnd, hoodOld, hoodNew, nanoStep);");
+	push(@$out_ref, "$func<ScalarType>(indexEnd - remainder, indexEnd, hoodOld, hoodNew, nanoStep);");
+
+	# indent
+	util_indent($out_ref, 2);
 
 	return;
 }
