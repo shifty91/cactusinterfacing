@@ -15,7 +15,7 @@
 ##
 ## taken from Cactus (lib/sbin/CSTUtils.pl), see comments
 ##
-## Copyright (C) 2013 Kurt Kanzenbach <kurt@kmk-computers.de>
+## Copyright (C) 2013, 2014 Kurt Kanzenbach <kurt@kmk-computers.de>
 ##  - renamed to Utils.pm
 ##  - made a perl module
 ##  - added use strict, warnings
@@ -40,7 +40,7 @@ our @EXPORT_OK = qw(read_file RemoveComments CST_error SplitWithStrings _err
 					_warn dbg info vprint util_writeFile util_mkdir util_trim
 					util_cp util_arrayToHash util_readFile util_input
 					util_indent util_getFunction util_choose util_readDir
-					util_tidySrcDir util_rmdir util_chooseMulti);
+					util_tidySrcDir util_rmdir util_chooseMulti util_buildFunction);
 
 #
 # Extract a function body from a given source file.
@@ -100,6 +100,51 @@ sub util_getFunction
 	return $found;
 }
 
+#
+# Builds a function.
+#
+# param:
+#  - body_ref: function body, may be array ref or scalar ref
+#  - proto   : prototype
+#  - out_ref : ref where to store array
+#  - temp    : template [optional]
+#  - indent  : indent   [optional]
+#
+# return:
+#  - none, function will be stored in out_ref
+#
+sub util_buildFunction
+{
+	my ($body_ref, $proto, $out_ref, $temp, $indent) = @_;
+	my (@header);
+
+	# adjust params
+	$indent	= 1 unless (defined $indent);
+
+	# build func
+	push(   @header  , "$temp\n") if (defined $temp);
+	push(   @header  , "$proto\n");
+	push(   @header  , "{\n");
+	unshift(@$out_ref, @header);
+
+	# array
+	if (ref $body_ref eq "ARRAY") {
+		map { chomp($_) ; $_ .= "\n" } @$body_ref;
+		push(@$out_ref, @$body_ref);
+	}
+	# scalar
+	if (ref $body_ref eq "SCALAR") {
+		my @lines = split /\n{1}/, $$body_ref;
+		$_ = $_ . "\n" for (@lines);
+		push(@$out_ref, @lines);
+	}
+	push(@$out_ref, "}\n");
+
+	# indent
+	util_indent($out_ref, $indent);
+
+	return;
+}
 
 #
 # Indent existing c/c++ code by using '{' and '}'.
