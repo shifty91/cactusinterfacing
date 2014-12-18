@@ -162,7 +162,7 @@ sub util_indent
 	my ($level, $found);
 
 	# remove existing indention
-	s/^\s+//g for (@$arr_ref);
+	s/^[ \t]+//g for (@$arr_ref);
 
 	$level = $offset;
 	foreach my $line (@$arr_ref) {
