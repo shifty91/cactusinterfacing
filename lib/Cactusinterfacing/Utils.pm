@@ -129,7 +129,10 @@ sub util_buildFunction
 
 	# array
 	if (ref $body_ref eq "ARRAY") {
-		map { chomp($_) ; $_ .= "\n" } @$body_ref;
+		for (@$body_ref) {
+			chomp($_);
+			$_ .= "\n";
+		}
 		push(@$out_ref, @$body_ref);
 	}
 	# scalar
