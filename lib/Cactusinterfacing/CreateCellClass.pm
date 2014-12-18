@@ -331,6 +331,63 @@ sub buildInfVarMacros
 }
 
 #
+# Builds cell's static updateLineX function using vectorization.
+# The actual evolution function will be created seperately and gets
+# a third template parameter describing the current vector type.
+# updateLineX will do leep peeling and call the evolution function.
+#
+# param:
+#  - evol_ref: ref to hash where evolution function(s) is/are stored
+#  - val_ref : ref to value data hash
+#  - inf_ref : ref to interface data hash
+#
+# return:
+#  - none, stores string of updatelinex function into value hash, key "update_linex",
+#    and if there are more evolution functions then they will be stored as array of
+#    strings in value hash, key "evol_funcs"
+#
+sub buildUpdateFunctionsWithVec
+{
+	my ($evol_ref, $val_ref, $inf_ref) = @_;
+	my (@keys, @linex, @linex_body, @func_body, @evol,
+		$func_proto, $func_temp, $linex_proto, $linex_temp, $func);
+
+	@keys = keys %{$evol_ref};
+
+	_err("No function found.") unless (@keys);
+
+	if (@keys > 1) {
+		_warn("There is currently no support for multiple functions using vectorization.",
+			  __FILE__, __LINE__);
+		return;
+	}
+
+	$func = $keys[0];
+
+	# build function
+	@func_body = @{$evol_ref->{$func}{"data"}};
+
+	adjustEvolutionFunction($inf_ref, $val_ref, \@func_body);
+
+	$func_proto = "static void $func(long indexStart, long indexEnd, ACCESSOR1& hoodOld, ACCESSOR2& hoodNew, nanoStep)";
+	$func_temp  = "template<typename DOUBLE, typename ACCESSOR1, typename ACCESSOR2>";
+	buildFunctionWithTL($val_ref, $inf_ref, \@func_body, $func_proto, \@evol, $func_temp, 1);
+
+	push(@{$val_ref->{"evol_funcs"}}, join("", @evol));
+
+	# build updateLineX by using loop peeling code
+	$linex_proto = "static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)";
+	$linex_temp  = "template<typename ACCESSOR1, typename ACCESSOR2>";
+	getLoopPeeler("double", 8, $evol_ref->{$func}{"name"}, \@linex_body); # FIXME: cargo type
+
+	util_buildFunction(\@linex_body, $linex_proto, \@linex, $linex_temp, 1);
+
+	$val_ref->{"update_linex"} = join("", @linex);
+
+	return;
+}
+
+#
 # Builds cell's static updateLineX function. If more than one function for
 # evolution is given, then every function will be build separately and just
 # called in updateLineX in given order.
