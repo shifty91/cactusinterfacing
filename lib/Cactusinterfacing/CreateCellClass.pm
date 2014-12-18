@@ -101,11 +101,10 @@ sub buildFunctionWithTL
 	push(   @header  , "$proto\n");
 	push(   @header  , "{\n");
 	unshift(@$out_ref, @header);
-	push(   @$out_ref, @$body_ref);
 
 	# array
 	if (ref $body_ref eq "ARRAY") {
-		$_ = chomp($_) . "\n" for (@$body_ref);
+		map { chomp($_) ; $_ .= "\n" } @$body_ref;
 		push(@$out_ref, @$body_ref);
 	}
 	# scalar
@@ -346,95 +345,74 @@ sub buildInfVarMacros
 sub buildUpdateFunctions
 {
 	my ($evol_ref, $val_ref, $inf_ref) = @_;
-	my (@keys, @rotate);
+	my (@keys);
 
 	# init
 	@keys = keys %{$evol_ref};
 
-	# get rotating of timelevels
-	getRotateTimelevels($inf_ref, $val_ref, \@rotate);
-
 	# one function -> just build updateLineX
 	if (@keys == 1) {
-		my (@linex, $code_str, $func, $func_ref);
+		my (@body, @evol, $temp, $proto, $func);
 
 		# get function
-		$func     = $keys[0];
-		$func_ref = $evol_ref->{$func}{"data"};
+		$func = $keys[0];
+		@body = @{$evol_ref->{$func}{"data"}};
 
 		# adjust evol function for updateLine
-		adjustEvolutionFunction($inf_ref, $val_ref, $func_ref);
-		# add rotating timelevels
-		if (@rotate > 0) {
-			push(@rotate, "");
-			push(@$func_ref, @rotate);
-		}
-		# indent function
-		util_indent($func_ref, 2);
+		adjustEvolutionFunction($inf_ref, $val_ref, \@body);
 
-		# build code string
-		$code_str = join("\n", @$func_ref);
+		# build function
+		$proto = "static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)";
+		$temp  = "template<typename ACCESSOR1, typename ACCESSOR2>";
 
-		push(@linex, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
-		push(@linex, $tab."static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)\n");
-		push(@linex, $tab."{\n");
-		push(@linex, "$code_str\n");
-		push(@linex, $tab."}\n");
+		buildFunctionWithTL($val_ref, $inf_ref, \@body, $proto, \@evol, $temp, 1);
 
 		# build final string
-		$val_ref->{"update_linex"} = join("", @linex);
+		$val_ref->{"update_linex"} = join("", @evol);
 	} elsif (@keys > 1) {
 		# more functions -> build and call them
-		my (@linex, @rotate_prototype);
+		my (@linex, @linex_body, @rotate, @rotate_body,
+			$rot_proto, $rot_temp, $linex_proto, $linex_temp);
 
 		# build each function
 		foreach my $func (@keys) {
-			my (@evol, $code_str, $func_ref);
+			my (@body, @evol, $proto, $temp);
 
 			# get function
-			$func_ref = $evol_ref->{$func}{"data"};
+			@body = @{$evol_ref->{$func}{"data"}};
 
 			# adjust evol function for updateLine
-			adjustEvolutionFunction($inf_ref, $val_ref, $func_ref);
-			# indent function
-			util_indent($func_ref, 2);
-
-			# build code string
-			$code_str = join("\n", @$func_ref);
+			adjustEvolutionFunction($inf_ref, $val_ref, \@body);
 
 			# build function
-			push(@evol, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
-			push(@evol, $tab."static void $func(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew)\n");
-			push(@evol, $tab."{\n");
-			push(@evol, "$code_str\n");
-			push(@evol, $tab."}\n");
+			$proto = "static void $func(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew)";
+			$temp  = "template<typename ACCESSOR1, typename ACCESSOR2>";
+
+			util_buildFunction(\@body, $proto, \@evol, $temp, 1);
 
 			# save evol function
 			push(@{$val_ref->{"evol_funcs"}}, join("", @evol));
 		}
 
-		# add function prototype around rotate body
-		@rotate_prototype = (
-			$tab."template<typename ACCESSOR1, typename ACCESSOR2>",
-			$tab."static void rotateTimelevels(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew)",
-			$tab."{"
-		   );
-		unshift(@rotate, @rotate_prototype);
-		push(@rotate, $tab."}");
-		push(@{$val_ref->{"evol_funcs"}}, join("\n", @rotate));
+		# build rotate timelevels
+		getRotateTimelevels($inf_ref, $val_ref, \@rotate_body);
+		$_ = $_ . "\n" for (@rotate_body);
+		$rot_proto = "static void rotateTimelevels(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew)";
+		$rot_temp  = "template<typename ACCESSOR1, typename ACCESSOR2>";
+
+		util_buildFunction(\@rotate_body, $rot_proto, \@rotate, $rot_temp, 1);
+		push(@{$val_ref->{"evol_funcs"}}, join("", @rotate));
 
 		# build updateLineX
-		push(@linex, $tab."template<typename ACCESSOR1, typename ACCESSOR2>\n");
-		push(@linex, $tab."static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)\n");
-		push(@linex, $tab."{\n");
-		# call them
+		$linex_proto = "static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)";
+		$linex_temp  = "template<typename ACCESSOR1, typename ACCESSOR2>";
 		for my $func (@keys) {
-			push(@linex, $tab.$tab.$func."(hoodOld, indexEnd, hoodNew);\n");
+			push(@linex_body, $func."(hoodOld, indexEnd, hoodNew);\n");
 		}
-		push(@linex, $tab.$tab."rotateTimelevels(hoodOld, indexEnd, hoodNew);\n");
-		push(@linex, $tab."}\n");
+		push(@linex_body, "rotateTimelevels(hoodOld, indexEnd, hoodNew);\n");
 
-		# save it
+		util_buildFunction(\@linex_body, $linex_proto, \@linex, $linex_temp, 1);
+
 		$val_ref->{"update_linex"} = join("", @linex);
 	} else {
 		# this should never happen, since the schedule functions ensure that
