@@ -127,12 +127,12 @@ sub getThorns
 			next if ($line =~ /^LSUThorns/);
 			push(@$thorns_ref, $1);
 		} else {
-			_err("Syntax error in $configdir/ThornList", __FILE__, __LINE__);
+			_err("Syntax error in $configdir/ThornList");
 		}
 	}
 
 	# consistency check
-	_err("No Thorns found. Check your ThornList.", __FILE__, __LINE__)
+	_err("No Thorns found. Check your ThornList.")
 		if (@$thorns_ref == 0);
 
 	return;
@@ -192,10 +192,10 @@ sub checkThorns
 	push(@merged, @{$init_ref});
 
 	foreach my $input (@merged) {
-		_err("Given thorn \"\Q$input\E\" is not in ThornList.", __FILE__, __LINE__)
+		_err("Given thorn \"\Q$input\E\" is not in ThornList.")
 			unless (grep { $input eq $_ } @{$thorn_ref});
-		_err("Given thorn \"\Q$input\E\" contains not valid characters.", __FILE__,
-			 __LINE__) if ($input =~ /[ \\*+--=\*\.&\^%\$@!#]+/);
+		_err("Given thorn \"\Q$input\E\" contains not valid characters.")
+			if ($input =~ /[ \\*+--=\*\.&\^%\$@!#]+/);
 	}
 
 	return;
@@ -252,7 +252,7 @@ $cctk_home = util_input("Specify the Cactus Home directory (CCTK_HOME)")
 	unless ($cctk_home);
 
 # test it
-_err("Your specified Cactus Home directory does not exist!", __FILE__, __LINE__)
+_err("Your specified Cactus Home directory does not exist!")
 	unless (-d $cctk_home);
 
 # get configs
@@ -265,8 +265,7 @@ unless ($config) {
 		$config = util_choose("Choose a Cactus configuration to build LibGeoDecomp application for", \@configs);
 	} elsif (@configs == 0) {
 		_err("You have to build a configuration first.\n" .
-			 "Therefore run `gmake <configname>-config` in your Cactus Home directory!",
-			 __FILE__, __LINE__);
+			 "Therefore run `gmake <configname>-config` in your Cactus Home directory!");
 	} else {
 		$config = $configs[0];
 	}

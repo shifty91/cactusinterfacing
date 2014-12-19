@@ -208,7 +208,7 @@ sub util_tidySrcDir
 	$options .= "$directory/include/'*.h'";
 
 	`$astyle $options`;
-	_warn("Executing `astyle' failed with exitcode $?!", __FILE__, __LINE__)
+	_warn("Executing `astyle' failed with exitcode $?!")
 		if ($?);
 
 	return;
@@ -238,11 +238,11 @@ sub util_choose
 
 	print "Choice: ";
 	$answer = <STDIN>;
-	_err("No answer given!", __FILE__, __LINE__) unless (defined $answer);
+	_err("No answer given!") unless (defined $answer);
 	$answer =~ s/^\s*//g;
 	$answer =~ s/\s*$//g;
 
-	_err("\"$answer\" is not a valid choice!", __FILE__, __LINE__)
+	_err("\"$answer\" is not a valid choice!")
 		if ($answer !~ /^\d+$/ || $answer >= $i);
 
 	return $arr_ref->[$answer];
@@ -274,16 +274,16 @@ sub util_chooseMulti
 
 	print "Choice: ";
 	$answer = <STDIN>;
-	_err("No answer given!", __FILE__, __LINE__) unless (defined $answer);
+	_err("No answer given!") unless (defined $answer);
 	$answer =~ s/^\s*//g;
 	$answer =~ s/\s*$//g;
 
 	# parse user input
-	_err("\"$answer\" is not a valid choice!", __FILE__, __LINE__)
+	_err("\"$answer\" is not a valid choice!")
 		unless ($answer =~ /^(?:\d+,?)+$/);
 	@token = split ',', $answer;
 	foreach my $choice (@token) {
-		_err("\"$choice\" is not a valid choice!", __FILE__, __LINE__)
+		_err("\"$choice\" is not a valid choice!")
 			if ($choice !~ /\d+/ || $choice >= $i);
 		push(@ret, $arr_ref->[$choice]);
 	}
@@ -308,7 +308,7 @@ sub util_input
 
 	print "$question: ";
 	$answer = <STDIN>;
-	_err("No answer given!", __FILE__, __LINE__) unless (defined $answer);
+	_err("No answer given!") unless (defined $answer);
 	chomp $answer;
 
 	return $answer;
@@ -329,7 +329,7 @@ sub util_mkdir
 	my ($dir) = @_;
 
 	eval { mkpath($dir) };
-	_err("Cannot create directory $dir: $@", __FILE__, __LINE__) if ($@);
+	_err("Cannot create directory $dir: $@") if ($@);
 
 	return;
 }
@@ -376,7 +376,7 @@ sub util_cp
 
 	foreach my $src (@sources) {
 		copy($src, $dest) ||
-			_err("Cannot copy $src to $dest: $!.", __FILE__, __LINE__);
+			_err("Cannot copy $src to $dest: $!.");
 	}
 
 	return;
@@ -421,7 +421,7 @@ sub util_readFile
 	my ($fh, $line);
 
 	open($fh, "<" ,"$file") ||
-		_err("Cannot open file $file: $!", __FILE__, __LINE__);
+		_err("Cannot open file $file: $!");
 
 	push(@$out_ref, <$fh>);
 
@@ -446,7 +446,7 @@ sub util_writeFile
 	my ($fh);
 
 	open($fh, ">", "$file") ||
-		_err("Cannot open $file for writing: $!", __FILE__, __LINE__);
+		_err("Cannot open $file for writing: $!");
 
 	print $fh $_ for (@$arr_ref);
 
@@ -546,36 +546,36 @@ sub vprint
 # Debug print, only if debug is set.
 #
 # param:
-#  - msg : message to print
-#  - file: file
-#  - line: line
+#  - msg: message to print
 #
 # return:
 #  - none
 #
 sub dbg
 {
-	my ($msg, $file, $line) = @_;
-	print "[DEBUG $file:$line]: $msg\n" if ($cinf_config{debug});
+	my ($msg) = @_;
+	my (undef, $file, $line, $sub) = caller(1);
+
+	print STDERR "[ERROR in $sub $file:$line]: $msg\n";
 
 	return;
 }
 
 #
-# Error print and exit.
+# Prints error message and exit.
 #
 # param:
-#  - msg : message to print
-#  - file: file
-#  - line: line
+#  - msg: message to print
 #
 # return:
 #  - none
 #
 sub _err
 {
-	my ($msg, $file, $line) = @_;
-	print STDERR "[ERROR $file:$line]: $msg\n";
+	my ($msg) = @_;
+	my (undef, $file, $line, $sub) = caller(1);
+
+	print STDERR "[ERROR in $sub $file:$line]: $msg\n";
 
 	exit -1;
 }
@@ -584,17 +584,17 @@ sub _err
 # Warning print.
 #
 # param:
-#  - msg : message to print
-#  - file: file
-#  - line: line
+#  - msg: message to print
 #
 # return:
 #  - none
 #
 sub _warn
 {
-	my ($msg, $file, $line) = @_;
-	print STDERR "[WARNING $file:$line]: $msg\n";
+	my ($msg) = @_;
+	my (undef, $file, $line, $sub) = caller(1);
+
+	print STDERR "[WARNING in $sub $file:$line]: $msg\n";
 
 	return;
 }
@@ -640,7 +640,7 @@ sub read_file {
 	my (@indata);
 	my ($fh, $line);
 
-	open($fh, "<", "$file") || _err("Cannot open $file.", __FILE__, __LINE__);
+	open($fh, "<", "$file") || _err("Cannot open $file.");
 
 	$line = "";
 
@@ -832,8 +832,7 @@ sub SplitWithStrings {
 	}
 
 	if ($insstring || $indstring) {
-		print
-"Error: Unterminated string while parsing interface for thorn : $thorn\n";
+		print "Error: Unterminated string while parsing interface for thorn : $thorn\n";
 	}
 
 	if ($escaping) {

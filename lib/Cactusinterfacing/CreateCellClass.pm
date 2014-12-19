@@ -57,13 +57,12 @@ sub getDimension
 	if ($dim == -1) {
 		$dim = util_input("Could not determine the dimension of Cactus Thorn. ".
 						  "Please specify");
-		_err("This is not a valid dimension!", __FILE__, __LINE__)
+		_err("This is not a valid dimension!")
 			if ($dim !~ /^\s*\d\s*$/ || $dim <= 0);
 		$dim =~ s/\s//g;
 	}
 	if ($dim > 4) {
-		_err("The Dimension of $dim is too big for LibGeoDecomp!",
-			 __FILE__, __LINE__);
+		_err("The Dimension of $dim is too big for LibGeoDecomp!");
 	}
 
 	return $dim;
@@ -188,7 +187,7 @@ sub buildSpecialMacros
 		push(@$undef_ref, "#undef CCTK_VECTGFINDEX4D\n");
 	} else {
 		# This should never happen, since dim is checked by getDimension().
-		_err("Dimension does not fit!", __FILE__, __LINE__);
+		_err("Dimension does not fit!");
 	}
 
 	push(@$def_ref, "\n");
@@ -357,8 +356,7 @@ sub buildUpdateFunctionsWithVec
 	_err("No function found.") unless (@keys);
 
 	if (@keys > 1) {
-		_warn("There is currently no support for multiple functions using vectorization.",
-			  __FILE__, __LINE__);
+		_warn("There is currently no support for multiple functions using vectorization.");
 		return;
 	}
 
@@ -477,7 +475,7 @@ sub buildUpdateFunctions
 	} else {
 		# this should never happen, since the schedule functions ensure that
 		# at least one function is returned, even if it's not valid
-		_err("No functions for building Cell class found.", __FILE__, __LINE__);
+		_err("No functions for building Cell class found.");
 	}
 
 	return;
@@ -601,7 +599,7 @@ sub adjustEvolutionFunction
 	@blocks = $codestr =~ /((?:for\s*\([\w\s()+\-*\/=<>;,\[\]]*\)\s*\{\s*){$dim})/g;
 	unless (@blocks) {
 		_warn("Could not adjust loop indices.\n  -> You propably want to adjust the".
-			  " code on your own.", __FILE__, __LINE__);
+			  " code on your own.");
 		goto out;
 	}
 

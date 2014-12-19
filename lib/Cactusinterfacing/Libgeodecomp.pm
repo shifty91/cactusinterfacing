@@ -136,15 +136,13 @@ sub getCoord
 
 	# test dimension
 	if ($dim <= 0) {
-		_warn("Dimension ($dim) in getCoord() is not valid",
-			  __FILE__, __LINE__);
+		_warn("Dimension ($dim) in getCoord() is not valid");
 		goto out;
 	}
 
 	# test length of arr
 	if (@$arr_ref != $dim) {
-		_warn("Dimension does not fit to number of arguments in getCoord()",
-			  __FILE__, __LINE__);
+		_warn("Dimension does not fit to number of arguments in getCoord()");
 		goto out;
 	}
 
@@ -158,8 +156,7 @@ sub getCoord
 		$ret .= join(",", @$arr_ref);
 		$ret .= ">()";
 	} else {
-		_warn("No valid coordinate type given in getCoord()",
-			  __FILE__, __LINE__);
+		_warn("No valid coordinate type given in getCoord()");
 		goto out;
 	}
 
@@ -233,15 +230,13 @@ sub getGFIndex
 
 	# test dimension
 	if ($dim <= 0) {
-		_warn("Dimension ($dim) in getCoord() is not valid",
-			  __FILE__, __LINE__);
+		_warn("Dimension ($dim) in getCoord() is not valid");
 		goto out;
 	}
 
 	# test length of arr
 	if (@$arr_ref != $dim) {
-		_warn("Dimension does not fit to number of arguments in getCoord()",
-			  __FILE__, __LINE__);
+		_warn("Dimension does not fit to number of arguments in getCoord()");
 		goto out;
 	}
 
@@ -444,7 +439,7 @@ sub getLoopPeeler
 			push(@$out_ref, $func . $call2);
 		}
 	} else {
-		_err("Wrong reference type for func_ref provided.", __FILE__, __LINE__);
+		_err("Wrong reference type for func_ref provided.");
 	}
 
 	# indent

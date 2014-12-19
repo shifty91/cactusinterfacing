@@ -475,7 +475,7 @@ sub buildXYZFunction
 		push(@outdata, $tab.$tab.$tab."Y = cctkGH->cctk_origin_space()[1]+cctkGH->cctk_delta_space()[1]*cctkGH->cctk_lbnd()[1];\n");
 		push(@outdata, $tab.$tab."}\n");
 	} else {
-		_err("Dimension $dim is too high!", __FILE__, __LINE__);
+		_err("Dimension $dim is too high!");
 	}
 
 	push(@outdata, $tab."}\n");
@@ -611,7 +611,7 @@ sub buildGridFunctions
 	} else {
 		# this should never happen, since the schedule functions ensure that
 		# at least one function is returned, even if it's not valid
-		_err("No functions for building initializer class found.", __FILE__, __LINE__);
+		_err("No functions for building initializer class found.");
 	}
 
 	# save final function
@@ -753,8 +753,8 @@ sub preCheck
 						 isFriend($thorninfo_ref, $init_ar, $cell_ar));
 		}
 
-		_err("Init Thorn \"$init_ar\" and none of the evolution Thorns share same variables!",
-			 __FILE__, __LINE__) unless ($res);
+		_err("Init Thorn \"$init_ar\" and none of the evolution Thorns share same variables!")
+			unless ($res);
 	}
 
 	return;

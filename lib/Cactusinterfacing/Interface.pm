@@ -177,18 +177,18 @@ sub prepareValues
 		$nsize = 1;
 
 		# size given?
-		_err("Size of ARRAYs must be defined.", __FILE__, __LINE__)
+		_err("Size of ARRAYs must be defined.")
 			unless ($size);
 
 		# size is comma seperated list of grid points in each direction
 		@token = split(',', $size);
 		# check for right format
-		_err("Invalid value in ARRAY size: \"$size\".", __FILE__, __LINE__)
+		_err("Invalid value in ARRAY size: \"$size\".")
 			unless (@token == $dim);
 		# just calculate the size
 		foreach my $number (@token) {
 			# check for numbers
-			_err("ARRAY Size has to be numeric value.", __FILE__, __LINE__)
+			_err("ARRAY Size has to be numeric value.")
 				unless ($number =~ /\d+/);
 			$nsize *= $number;
 		}
@@ -259,7 +259,7 @@ sub buildInterfaceStrings
 	}
 
 	# perform checks whether there are member variables
-	_warn("No member variables found!", __FILE__, __LINE__) unless ($gfs_cnt);
+	_warn("No member variables found!") unless ($gfs_cnt);
 
 	# indent
 	util_indent(\@inf_vars,  1);

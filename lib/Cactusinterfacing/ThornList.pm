@@ -194,8 +194,7 @@ sub getThorns
 			$info_ref->{$1}{"friends"}  = $options[2];
 			$info_ref->{$1}{"shares"}   = $options[3];
 		} else {
-			_err("Unexpected format found in $configdir/ThornList. Aborting now.",
-				 __FILE__, __LINE__);
+			_err("Unexpected format found in $configdir/ThornList. Aborting now.");
 		}
 	}
 
@@ -240,8 +239,7 @@ sub getOptions
 
 	# perform some checks
 	if ($option_ref->{"io_iso"}) {
-		#_warn("IsoSurfacer IO Method is not supported: using BOVWriter instead!",
-		#		__FILE__, __LINE__);
+		#_warn("IsoSurfacer IO Method is not supported: using BOVWriter instead!");
 		$option_ref->{"io_hdf5"} = 1;
 	}
 

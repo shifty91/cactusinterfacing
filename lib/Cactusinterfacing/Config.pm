@@ -162,7 +162,7 @@ BEGIN
 
 		return 0 unless (-r $file);
 
-		_err("Cannot open file $file: $!", __FILE__, __LINE__)
+		_err("Cannot open file $file: $!")
 			unless (open($fh, "<", $file));
 
 		# read config file into config hash

@@ -54,8 +54,7 @@ sub getSources
 		# save
 		push(@$sources_ref, @token);
 	} else {
-		_warn("No source files found in $dir/make.code.defn", __FILE__,
-			  __LINE__);
+		_warn("No source files found in $dir/make.code.defn");
 	}
 
 	# get all subdirectories and append sources

@@ -210,8 +210,7 @@ sub getFunctionsAt
 
 	# check if we found an appropriate function
 	if ($nfuncs <= 0) {
-		_warn("No function found at \U$timestep\E Timestep.", __FILE__,
-			  __LINE__);
+		_warn("No function found at \U$timestep\E Timestep.");
 		goto fail;
 	} elsif ($nfuncs > 1) {
 		# user has to choose functions
@@ -224,8 +223,7 @@ sub getFunctionsAt
 
 	# check if some sources where found
 	if (@sources == 0) {
-		_warn("Could not find any source files. Check your make.code.defn.",
-			  __FILE__, __LINE__);
+		_warn("Could not find any source files. Check your make.code.defn.");
 		goto fail;
 	}
 
@@ -245,8 +243,7 @@ sub getFunctionsAt
 
 		if (!$found) {
 			# the scheduled function could not be found in any source file
-			_warn("The scheduled function could not be found. Check your make.code.defn.",
-				  __FILE__, __LINE__);
+			_warn("The scheduled function could not be found. Check your make.code.defn.");
 			$out_ref->{$func}{"name"} = $func;
 			$out_ref->{$func}{"data"} = [ "/** No function found at \U$timestep\E timestep **/" ];
 		}
@@ -342,14 +339,14 @@ sub alias2RealName
 	$real_name = "";
 	foreach my $function (keys %{$data_ref}) {
 		if ($data_ref->{$function}{"as"} eq $alias) {
-			_warn("Multiple functions found alias \"$alias\". Using the first one found.",
-				  __FILE__, __LINE__) unless ($real_name eq "");
+			_warn("Multiple functions found alias \"$alias\". Using the first one found.")
+				unless ($real_name eq "");
 			$real_name = $function;
 		}
 	}
 
-	_err("Cannot find a real name for aliased function \"$alias\".",
-		 __FILE__, __LINE__) if ($real_name eq "");
+	_err("Cannot find a real name for aliased function \"$alias\".")
+		if ($real_name eq "");
 
 	return $real_name;
 }
@@ -373,12 +370,12 @@ sub realName2Alias
 	foreach my $function (keys %{$data_ref}) {
 		if ($function eq $real_name) {
 			_err("Found two or more aliases for the same function \"$real_name\". ".
-				 "Something went wrong.", __FILE__, __LINE__) unless ($alias eq "");
+				 "Something went wrong.") unless ($alias eq "");
 			$alias = $data_ref->{$function}{"as"};
 		}
 	}
 
-	_err("Cannot find a alias for function \"$real_name\".", __FILE__, __LINE__)
+	_err("Cannot find a alias for function \"$real_name\".")
 		if ($alias eq "");
 
 	return $alias;
@@ -521,8 +518,8 @@ sub sortDAG
 		}
 
 		# prevent endless loop
-		_err("The Graph for the schedule data is cyclic!. Aborting now.",
-			 __FILE__, __LINE__) unless ($deleted);
+		_err("The Graph for the schedule data is cyclic!. Aborting now.")
+			unless ($deleted);
 
 		# rotate
 		$nodes_ref = \%nodes_cp;
