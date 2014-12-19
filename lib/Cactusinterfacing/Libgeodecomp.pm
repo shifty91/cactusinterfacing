@@ -43,7 +43,7 @@ sub generateSoAMacro
 	$vars   = "";
 
 	# get vars and type
-	foreach my $group (keys %$inf_ref) {
+	foreach my $group (keys %{$inf_ref}) {
 		my ($gtype, $vtype, $timelevels, $i);
 
 		# init
