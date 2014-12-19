@@ -403,17 +403,23 @@ sub getVisItWriter
 # This functions creates the code for loop peeling if vectorization is used.
 #
 # param:
-#  - cargo  : cargo type (like double)
-#  - arity  : vector with (like 8)
-#  - func   : function which should be called
-#  - out_ref: ref to array where to store code for loop peeling
+#  - cargo   : cargo type (like double)
+#  - arity   : vector with (like 8)
+#  - func_ref: ref to function which should be called, may be array or scalar
+#  - out_ref : ref to array where to store code for loop peeling
 #
 # return:
 #  - none, code will be stored in out_ref
 #
 sub getLoopPeeler
 {
-	my ($cargo, $arity, $func, $out_ref) = @_;
+	my ($cargo, $arity, $func_ref, $out_ref) = @_;
+	my ($call0, $call1, $call2);
+
+	# init
+	$call0 = "<ScalarType>(0, nextStop, hoodOld, hoodNew, nanoStep);";
+	$call1 = "<ShortVecType>(nextStop, indexEnd, hoodOld, hoodNew, nanoStep);";
+	$call2 = "<ScalarType>(indexEnd - remainder, indexEnd, hoodOld, hoodNew, nanoStep);";
 
 	# prepare
 	push(@$out_ref, "typedef LibFlatArray::short_vec<$cargo, $arity> ShortVecType;");
@@ -426,10 +432,20 @@ sub getLoopPeeler
 	push(@$out_ref, "nextStop -= index;");
 	push(@$out_ref, "indexEnd -= index;");
 
-	# call it
-	push(@$out_ref, "$func<ScalarType>(0, nextStop, hoodOld, hoodNew, nanoStep);");
-	push(@$out_ref, "$func<ShortVecType>(nextStop, indexEnd, hoodOld, hoodNew, nanoStep);");
-	push(@$out_ref, "$func<ScalarType>(indexEnd - remainder, indexEnd, hoodOld, hoodNew, nanoStep);");
+	# call it/them
+	if (ref $func_ref eq 'SCALAR') {
+		push(@$out_ref, $$func_ref . $call0);
+		push(@$out_ref, $$func_ref . $call1);
+		push(@$out_ref, $$func_ref . $call2);
+	} elsif (ref $func_ref eq 'ARRAY') {
+		foreach my $func (@$func_ref) {
+			push(@$out_ref, $func . $call0);
+			push(@$out_ref, $func . $call1);
+			push(@$out_ref, $func . $call2);
+		}
+	} else {
+		_err("Wrong reference type for func_ref provided.", __FILE__, __LINE__);
+	}
 
 	# indent
 	util_indent($out_ref, 2);
