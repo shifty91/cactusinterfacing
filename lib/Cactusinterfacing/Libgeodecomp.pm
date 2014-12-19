@@ -12,7 +12,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Cactusinterfacing::Config qw(%cinf_config);
-use Cactusinterfacing::Utils qw(_warn);
+use Cactusinterfacing::Utils qw(_warn util_indent);
 
 # exports
 our @EXPORT_OK = qw(generateSoAMacro getCoord getGFIndex getCoordZero

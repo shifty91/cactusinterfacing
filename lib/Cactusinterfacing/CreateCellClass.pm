@@ -17,7 +17,8 @@ use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
 use Cactusinterfacing::Interface qw(getInterfaceVars buildInterfaceStrings);
 use Cactusinterfacing::Libgeodecomp qw(getCoordZero generateSoAMacro
-									   getGFIndexFirst getFixedCoordZero);
+									   getGFIndexFirst getFixedCoordZero
+									   getLoopPeeler);
 use Cactusinterfacing::CreateStaticDataClass qw(createStaticDataClass);
 
 # exports
@@ -376,7 +377,7 @@ sub buildUpdateFunctionsWithVec
 	# build updateLineX by using loop peeling code
 	$linex_proto = "static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)";
 	$linex_temp  = "template<typename ACCESSOR1, typename ACCESSOR2>";
-	getLoopPeeler("double", 8, $evol_ref->{$func}{"name"}, \@linex_body); # FIXME: cargo type
+	getLoopPeeler("double", 8, \$evol_ref->{$func}{"name"}, \@linex_body); # FIXME: cargo type
 
 	util_buildFunction(\@linex_body, $linex_proto, \@linex, $linex_temp, 1);
 
@@ -866,7 +867,10 @@ sub createCellClass
 					   \@special_macros_undef);
 
 	# build updateLineX function
-	buildUpdateFunctions(\%evol_funcs, \%values, \%inf_data);
+	buildUpdateFunctionsWithVec(\%evol_funcs, \%values, \%inf_data)
+		if ($cinf_config{"use_vectorization"});
+	buildUpdateFunctions(\%evol_funcs, \%values, \%inf_data)
+		unless ($cinf_config{"use_vectorization"});
 
 	# generate a class holding all static data
 	# this is needed for having static data in a LibGeoDecomp cell class
