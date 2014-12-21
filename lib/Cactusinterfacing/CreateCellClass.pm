@@ -674,8 +674,10 @@ sub buildCellHeader
 	push(@$out_ref, "#ifndef _CELL_H_\n");
 	push(@$out_ref, "#define _CELL_H_\n");
 	push(@$out_ref, "\n");
-	push(@$out_ref, "#include <libgeodecomp.h>\n");
 	push(@$out_ref, "#include <cmath>\n");
+	push(@$out_ref, "#include <libgeodecomp.h>\n");
+	push(@$out_ref, "#include <libflatarray/short_vec.hpp>\n")
+		if ($cinf_config{"use_vectorization"});
 	push(@$out_ref, "#include \"cctk.h\"\n");
 	push(@$out_ref, "#include \"staticdata.h\"\n");
 	push(@$out_ref, "#include \"cctk_$class.h\"\n");
