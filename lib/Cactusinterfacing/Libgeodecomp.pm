@@ -412,9 +412,9 @@ sub getLoopPeeler
 	my ($call0, $call1, $call2);
 
 	# init
-	$call0 = "<ScalarType>(0, nextStop, hoodOld, hoodNew, nanoStep);";
-	$call1 = "<ShortVecType>(nextStop, indexEnd, hoodOld, hoodNew, nanoStep);";
-	$call2 = "<ScalarType>(indexEnd - remainder, indexEnd, hoodOld, hoodNew, nanoStep);";
+	$call0 = "<ScalarType>(0, nextStop, hoodOld, hoodNew);";
+	$call1 = "<ShortVecType>(nextStop, indexEnd, hoodOld, hoodNew);";
+	$call2 = "<ScalarType>(indexEnd - remainder, indexEnd, hoodOld, hoodNew);";
 
 	# prepare
 	push(@$out_ref, "typedef LibFlatArray::short_vec<$cargo, $arity> ShortVecType;");

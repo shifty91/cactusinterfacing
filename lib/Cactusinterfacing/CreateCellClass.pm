@@ -368,7 +368,7 @@ sub buildUpdateFunctionsWithVec
 
 	adjustEvolutionFunction($inf_ref, $val_ref, \@func_body);
 
-	$func_proto = "static void $func(long indexStart, long indexEnd, ACCESSOR1& hoodOld, ACCESSOR2& hoodNew, nanoStep)";
+	$func_proto = "static void $func(long indexStart, long indexEnd, ACCESSOR1& hoodOld, ACCESSOR2& hoodNew)";
 	$func_temp  = "template<typename DOUBLE, typename ACCESSOR1, typename ACCESSOR2>";
 	buildFunctionWithTL($val_ref, $inf_ref, \@func_body, $func_proto, \@evol, $func_temp, 1);
 
