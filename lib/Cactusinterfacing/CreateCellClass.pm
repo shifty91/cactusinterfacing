@@ -626,7 +626,7 @@ sub adjustEvolutionFunction
 			}
 
 			# replace
-			if ($i++ < ($dim -1)) {
+			if ($i++ < ($dim - 1)) {
 				$replace = !$type ? "for ($index = 0; $index < 1; ++$index)" :
 					"for ($type $index = 0; $index < 1; ++$index)";
 			} else {
