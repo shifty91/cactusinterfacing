@@ -93,13 +93,13 @@ BEGIN
 		my ($ret, $debug, $tab, $topology, $ghostzone_width, $use_astyle,
 			$use_vectorization, $vector_width);
 
-		$debug             = $cinf_config{debug};
-		$tab               = $cinf_config{tab};
-		$topology          = $cinf_config{topology};
-		$ghostzone_width   = $cinf_config{ghostzone_width};
-		$use_astyle        = $cinf_config{use_astyle};
-		$use_vectorization = $cinf_config{use_vectorization};
-		$vector_width      = $cinf_config{vector_width};
+		$debug             = $cinf_config{"debug"};
+		$tab               = $cinf_config{"tab"};
+		$topology          = $cinf_config{"topology"};
+		$ghostzone_width   = $cinf_config{"ghostzone_width"};
+		$use_astyle        = $cinf_config{"use_astyle"};
+		$use_vectorization = $cinf_config{"use_vectorization"};
+		$vector_width      = $cinf_config{"vector_width"};
 		$ret               = 1;
 
 		# check general options
