@@ -67,6 +67,7 @@ BEGIN
 
 	# vectorization
 	my $use_vectorization = 0;
+	my $vector_width = 8;
 
 	################################################################################
 	# Configuration section ends here                                              #
@@ -75,7 +76,8 @@ BEGIN
 	# specify which options can be overwritten by config file
 	my @allowed_options = ('debug', 'verbose', 'tab', 'use_astyle',
 						   'astyle_options', 'topology', 'scalar',
-						   'ghostzone_width', 'use_vectorization');
+						   'ghostzone_width', 'use_vectorization',
+						   'vector_width');
 
 	#
 	# Checks the values specified by the user above.
@@ -89,7 +91,7 @@ BEGIN
 	sub checkConfiguration
 	{
 		my ($ret, $debug, $tab, $topology, $ghostzone_width, $use_astyle,
-			$use_vectorization);
+			$use_vectorization, $vector_width);
 
 		$debug             = $cinf_config{debug};
 		$tab               = $cinf_config{tab};
@@ -97,6 +99,7 @@ BEGIN
 		$ghostzone_width   = $cinf_config{ghostzone_width};
 		$use_astyle        = $cinf_config{use_astyle};
 		$use_vectorization = $cinf_config{use_vectorization};
+		$vector_width      = $cinf_config{vector_width};
 		$ret               = 1;
 
 		# check general options
@@ -106,6 +109,7 @@ BEGIN
 		$ret = 0 if ($ghostzone_width !~ /^\d+$/);
 		$ret = 0 if ($use_astyle !~ /^\d+$/);
 		$ret = 0 if ($use_vectorization !~ /^\d+$/);
+		$ret = 0 if ($vector_width !~ /^\d+$/);
 
 		return $ret;
 	}
@@ -132,6 +136,7 @@ BEGIN
 			scalar            => $scalar,
 			ghostzone_width   => $ghostzone_width,
 			use_vectorization => $use_vectorization,
+			vector_width      => $vector_width,
 		   );
 
 		return;
