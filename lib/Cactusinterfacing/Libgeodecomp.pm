@@ -20,7 +20,7 @@ our @EXPORT_OK = qw(generateSoAMacro getCoord getGFIndex getCoordZero
 					buildCctkSteerer getBOVWriter getVisItWriter getLoopPeeler);
 
 # tab
-my $tab = $cinf_config{tab};
+my $tab = $cinf_config{"tab"};
 
 #
 # Generates SoA macro for LibGeoDecomp.
@@ -399,7 +399,6 @@ sub getVisItWriter
 #
 # param:
 #  - cargo   : cargo type (like double)
-#  - arity   : vector with (like 8)
 #  - func_ref: ref to function which should be called, may be array or scalar
 #  - out_ref : ref to array where to store code for loop peeling
 #
@@ -408,16 +407,17 @@ sub getVisItWriter
 #
 sub getLoopPeeler
 {
-	my ($cargo, $arity, $func_ref, $out_ref) = @_;
-	my ($call0, $call1, $call2);
+	my ($cargo, $func_ref, $out_ref) = @_;
+	my ($call0, $call1, $call2, $vec_width);
 
 	# init
-	$call0 = "<ScalarType>(0, nextStop, hoodOld, hoodNew);";
-	$call1 = "<ShortVecType>(nextStop, indexEnd, hoodOld, hoodNew);";
-	$call2 = "<ScalarType>(indexEnd - remainder, indexEnd, hoodOld, hoodNew);";
+	$call0	   = "<ScalarType>(0, nextStop, hoodOld, hoodNew);";
+	$call1	   = "<ShortVecType>(nextStop, indexEnd, hoodOld, hoodNew);";
+	$call2	   = "<ScalarType>(indexEnd - remainder, indexEnd, hoodOld, hoodNew);";
+	$vec_width = $cinf_config{"vector_width"};
 
 	# prepare
-	push(@$out_ref, "typedef LibFlatArray::short_vec<$cargo, $arity> ShortVecType;");
+	push(@$out_ref, "typedef LibFlatArray::short_vec<$cargo, $vec_width> ShortVecType;");
 	push(@$out_ref, "typedef LibFlatArray::short_vec<$cargo, 1> ScalarType;");
 	push(@$out_ref, "long index     = hoodOld.index();");
 	push(@$out_ref, "long remainder = index % ShortVecType::ARITY;");

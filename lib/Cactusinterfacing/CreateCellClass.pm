@@ -377,7 +377,7 @@ sub buildUpdateFunctionsWithVec
 	# build updateLineX by using loop peeling code
 	$linex_proto = "static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)";
 	$linex_temp  = "template<typename ACCESSOR1, typename ACCESSOR2>";
-	getLoopPeeler("double", 8, \$evol_ref->{$func}{"name"}, \@linex_body); # FIXME: cargo type
+	getLoopPeeler("double", \$evol_ref->{$func}{"name"}, \@linex_body); # FIXME: cargo type
 
 	util_buildFunction(\@linex_body, $linex_proto, \@linex, $linex_temp, 1);
 
