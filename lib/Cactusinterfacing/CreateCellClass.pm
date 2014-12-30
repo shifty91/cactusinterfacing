@@ -14,7 +14,8 @@ use Cactusinterfacing::Utils qw(util_indent util_input _err _warn util_buildFunc
 use Cactusinterfacing::Schedule qw(getScheduleData getEvolFunctions);
 use Cactusinterfacing::Parameter qw(getParameters generateParameterMacro
 									buildParameterStrings);
-use Cactusinterfacing::Interface qw(getInterfaceVars buildInterfaceStrings);
+use Cactusinterfacing::Interface qw(getInterfaceVars buildInterfaceStrings
+									containsMixedTypes);
 use Cactusinterfacing::Libgeodecomp qw(getCoordZero generateSoAMacro
 									   getGFIndexFirst getFixedCoordZero
 									   getLoopPeeler);
@@ -349,17 +350,23 @@ sub buildUpdateFunctionsWithVec
 {
 	my ($evol_ref, $val_ref, $inf_ref) = @_;
 	my (@keys, @linex, @linex_body, @func_body, @evol,
-		$func_proto, $func_temp, $linex_proto, $linex_temp, $func);
+		$func_proto, $func_temp, $linex_proto, $linex_temp, $func,
+		$type);
 
+	# check if we can build with vectorization
+	_err("Cannot build with vectorization, since the interface data contains " .
+		 "variables with different types. Rerun this tool without vectorization.")
+		if (containsMixedTypes($inf_ref));
+	$type = $inf_ref->{(keys %{$inf_ref})[0]}{"vtype"};
+	$type = "CCTK_REAL" unless (defined $type);
+
+	# check functions
 	@keys = keys %{$evol_ref};
-
 	_err("No function found.") unless (@keys);
+	_err("There is currently no support for multiple functions using vectorization.")
+		if (@keys > 1);
 
-	if (@keys > 1) {
-		_warn("There is currently no support for multiple functions using vectorization.");
-		return;
-	}
-
+	# go
 	$func = $keys[0];
 
 	# build function
@@ -376,7 +383,7 @@ sub buildUpdateFunctionsWithVec
 	# build updateLineX by using loop peeling code
 	$linex_proto = "static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)";
 	$linex_temp  = "template<typename ACCESSOR1, typename ACCESSOR2>";
-	getLoopPeeler("double", \$evol_ref->{$func}{"name"}, \@linex_body); # FIXME: cargo type
+	getLoopPeeler($type, \$evol_ref->{$func}{"name"}, \@linex_body);
 
 	util_buildFunction(\@linex_body, $linex_proto, \@linex, $linex_temp, 1);
 
