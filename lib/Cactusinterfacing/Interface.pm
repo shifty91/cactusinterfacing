@@ -15,7 +15,8 @@ use Cactusinterfacing::InterfaceParser qw(parse_interface_ccl);
 use Cactusinterfacing::ThornList qw(getInherits getFriends);
 
 # exports
-our @EXPORT_OK = qw(getInterfaceVars getAllInterfaceVars buildInterfaceStrings);
+our @EXPORT_OK = qw(getInterfaceVars getAllInterfaceVars buildInterfaceStrings
+					containsMixedTypes);
 
 #
 # Wrapper function for parsing a interface.ccl file
@@ -269,6 +270,32 @@ sub buildInterfaceStrings
 	$val_ref->{"cell_init_params"} = join(", ", @c_init_vars);
 
 	return;
+}
+
+#
+# This routine checks whether the interface variables
+# have mixed types like CCTK_REAL and CCTK_INT.
+#
+# param:
+#  - inf_ref: ref to interface data hash
+#
+# return:
+#  - true if interface data contains mixed variable type, else false
+#
+sub containsMixedTypes
+{
+	my ($inf_ref) = @_;
+	my ($type);
+
+	$type = $inf_ref->{(keys %{$inf_ref})[0]}{"vtype"};
+
+	return 0 unless (defined $type);
+
+	foreach my $key (keys %{$inf_ref}) {
+		return 1 unless ($inf_ref->{$key}{"vtype"} eq $type);
+	}
+
+	return 0;
 }
 
 1;
