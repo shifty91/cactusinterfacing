@@ -1,4 +1,3 @@
-
 ##
 ## CreateInititializerClass.pm
 ##
@@ -22,7 +21,7 @@ use Cactusinterfacing::ThornList qw(isInherit isFriend);
 our @EXPORT_OK = qw(createInitializerClass);
 
 # tab
-my $tab = $cinf_config{tab};
+my $tab = $cinf_config{"tab"};
 
 #
 # Builds the ADD_WRITE_MEMBER macro calls to create the

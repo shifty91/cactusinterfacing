@@ -1,4 +1,3 @@
-
 ##
 ## Make.pm
 ##
@@ -104,7 +103,7 @@ sub createLibgeodecompMakefile
 	$cxxflags .= "-Wno-variadic-macros -O3 -Iinclude";
 	$cxxflags .= " `pkg-config --cflags libgeodecomp`";
 	# build with debug code?
-	$cxxflags .= " -DDEBUG" if ($cinf_config{debug});
+	$cxxflags .= " -DDEBUG" if ($cinf_config{"debug"});
 	# additionally we need to link against boost_regex
 	# the rest will be determined by pkg-config, make sure PKG_CONFIG_PATH is set
 	$ldflags = "`pkg-config --libs libgeodecomp` -lboost_regex";

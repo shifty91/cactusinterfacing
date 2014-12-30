@@ -1,4 +1,3 @@
-
 ##
 ## CreateStaticDataClass.pm
 ##
@@ -20,7 +19,7 @@ use Cactusinterfacing::Parameter qw(buildParameterStrings);
 our @EXPORT_OK = qw(createStaticDataClass);
 
 # tab
-my $tab = $cinf_config{tab};
+my $tab = $cinf_config{"tab"};
 
 #
 # Builds interface strings for grid ARRAYs and SCALARs.

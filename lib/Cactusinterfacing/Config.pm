@@ -1,4 +1,3 @@
-
 ##
 ## Config.pm
 ##
@@ -158,7 +157,7 @@ BEGIN
 	{
 		my ($file, $fh, $ret, $line, $i);
 
-		return unless (defined $ENV{HOME});
+		return unless (defined $ENV{"HOME"});
 
 		# init
 		$file = "$ENV{HOME}/.cactus_inf.rc";

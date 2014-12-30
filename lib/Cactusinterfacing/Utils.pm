@@ -175,7 +175,7 @@ sub util_indent
 		$level--   if ($line =~ /\}\s*$/);
 
 		# print, but only if $line not empty
-		$line = $cinf_config{tab} x $level . $line if ($line ne "");
+		$line = $cinf_config{"tab"} x $level . $line if ($line ne "");
 
 		$level++ if ($found);
 	}
@@ -199,16 +199,16 @@ sub util_tidySrcDir
 	my ($directory) = @_;
 	my ($options, $astyle);
 
-	return unless ($cinf_config{use_astyle});
+	return unless ($cinf_config{"use_astyle"});
 
 	$astyle = which("astyle");
 	return unless ($astyle);
 
-	$options  = "$cinf_config{astyle_options} --recursive $directory/'*.cpp' $directory/'*.h' ";
+	$options  = "$cinf_config{\"astyle_options\"} --recursive $directory/'*.cpp' $directory/'*.h' ";
 	$options .= "$directory/include/'*.h'";
 
 	`$astyle $options`;
-	_warn("Executing `astyle' failed with exitcode $?!")
+	_warn("Executing `astyle' failed with exitcode $? !")
 		if ($?);
 
 	return;
@@ -471,7 +471,7 @@ sub util_readDir
 	my ($dir, $out_ref) = @_;
 	my ($dh, $file);
 
-	if (!opendir($dh, $dir)) {
+	unless (opendir($dh, $dir)) {
 		@$out_ref = ();
 		return;
 	}
@@ -537,7 +537,7 @@ sub info
 sub vprint
 {
 	my ($msg) = @_;
-	print "$msg\n" if ($cinf_config{verbose});
+	print "$msg\n" if ($cinf_config{"verbose"});
 
 	return;
 }

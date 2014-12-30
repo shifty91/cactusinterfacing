@@ -1,4 +1,3 @@
-
 ##
 ## CreateSelector.pm
 ##
@@ -14,10 +13,13 @@ package Cactusinterfacing::CreateSelector;
 use strict;
 use warnings;
 use Exporter 'import';
-use Cactusinterfacing::Config qw($tab);
+use Cactusinterfacing::Config qw(%cinf_config);
 
 # export
 our @EXPORT_OK = qw(createSelectors);
+
+# tab
+my $tab = $cinf_config{"tab"};
 
 #
 # Builds a ASCII Selector class for one variable of grid functions.

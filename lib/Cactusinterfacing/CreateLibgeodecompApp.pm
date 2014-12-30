@@ -1,4 +1,3 @@
-
 ##
 ## CreateLibgeodecompApp.pm
 ##
@@ -27,7 +26,7 @@ use Cactusinterfacing::ThornList qw(parseThornList);
 our @EXPORT_OK = qw(createLibgeodecompApp);
 
 # tab
-my $tab = $cinf_config{tab};
+my $tab = $cinf_config{"tab"};
 
 #
 # Builds the complete main.cpp.
@@ -217,7 +216,7 @@ sub createParameterHeader
 	push(@$out_ref, "\n");
 	# actually it's good to know the dimension and width of ghostzones
 	push(@$out_ref, "#define CCTKGHDIM $dim\n");
-	push(@$out_ref, "#define GHOSTZONEWIDTH $cinf_config{ghostzone_width}\n");
+	push(@$out_ref, "#define GHOSTZONEWIDTH $cinf_config{\"ghostzone_width\"}\n");
 	push(@$out_ref, "\n");
 	push(@$out_ref, "#define $setup_thorn \\\n");
 	push(@$out_ref, $tab."do { \\\n");

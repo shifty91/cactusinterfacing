@@ -1,4 +1,3 @@
-
 ##
 ## Parameter.pm
 ##
@@ -18,7 +17,7 @@ use Cactusinterfacing::ParameterParser qw(parse_param_ccl);
 our @EXPORT_OK = qw(getParameters generateParameterMacro buildParameterStrings);
 
 # tab
-my $tab = $cinf_config{tab};
+my $tab = $cinf_config{"tab"};
 
 #
 # Parses param.ccl to get Parameters.

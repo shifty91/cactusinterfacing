@@ -1,4 +1,3 @@
-
 ##
 ## Interface.pm
 ##
@@ -251,7 +250,7 @@ sub buildInterfaceStrings
 
 				push(@inf_vars,    "$vtype $past_name;");
 				# for cell member and constructor declaration
-				push(@c_vars,      "const $vtype& _$past_name = $cinf_config{scalar}");
+				push(@c_vars,      "const $vtype& _$past_name = $cinf_config{\"scalar\"}");
 				push(@c_init_vars, "$past_name(_$past_name)");
 				++$gfs_cnt;
 			}
