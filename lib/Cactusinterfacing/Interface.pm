@@ -287,9 +287,8 @@ sub containsMixedTypes
 	my ($inf_ref) = @_;
 	my ($type);
 
+	return 0 unless (scalar (keys %{$inf_ref}));
 	$type = $inf_ref->{(keys %{$inf_ref})[0]}{"vtype"};
-
-	return 0 unless (defined $type);
 
 	foreach my $key (keys %{$inf_ref}) {
 		return 1 unless ($inf_ref->{$key}{"vtype"} eq $type);

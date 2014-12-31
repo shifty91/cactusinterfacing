@@ -357,8 +357,8 @@ sub buildUpdateFunctionsWithVec
 	_err("Cannot build with vectorization, since the interface data contains " .
 		 "variables with different types. Rerun this tool without vectorization.")
 		if (containsMixedTypes($inf_ref));
-	$type = $inf_ref->{(keys %{$inf_ref})[0]}{"vtype"};
-	$type = "CCTK_REAL" unless (defined $type);
+	$type = scalar (keys %{$inf_ref}) ?
+		$inf_ref->{(keys %{$inf_ref})[0]}{"vtype"} : "CCTK_REAL";
 
 	# check functions
 	@keys = keys %{$evol_ref};
