@@ -750,6 +750,8 @@ sub buildCellHeader
 	push(@$out_ref, "#include \"cctk.h\"\n");
 	push(@$out_ref, "#include \"staticdata.h\"\n");
 	push(@$out_ref, "#include \"cctk_$class.h\"\n");
+	push(@$out_ref, "#include \"vector.h\"\n")
+		if ($cinf_config{"use_vectorization"});
 	push(@$out_ref, "\n");
 	push(@$out_ref, "using namespace LibGeoDecomp;\n");
 	push(@$out_ref, "\n");

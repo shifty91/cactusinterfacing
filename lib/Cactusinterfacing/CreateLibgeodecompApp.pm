@@ -418,12 +418,14 @@ sub createLibgeodecompApp
 	# setup include dir
 	setupIncludeDir(\%init, \%cell, $config_ref, $outputdir);
 
-	# copy cctk_*, parser files
+	# copy cctk_*, parser files and types
 	util_cp("$RealBin/src/include/*.h", $outputdir."/include");
 	util_cp("$RealBin/src/parparser/parparser.h",   $outputdir);
 	util_cp("$RealBin/src/parparser/parparser.cpp", $outputdir);
 	util_cp("$RealBin/src/types/cactusgrid.h",      $outputdir);
 	util_cp("$RealBin/src/types/cactusgrid.cpp",    $outputdir);
+	util_cp("$RealBin/src/vector/vector.h",         $outputdir)
+		if ($cinf_config{"use_vectorization"});
 
 	# tidy source code
 	util_tidySrcDir($outputdir);
