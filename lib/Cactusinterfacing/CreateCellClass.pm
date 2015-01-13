@@ -407,7 +407,7 @@ sub buildVectorObjects
 sub buildUpdateFunctionsWithVec
 {
 	my ($evol_ref, $val_ref, $inf_ref) = @_;
-	my (@keys, @linex, @linex_body, @func_body, @evol,
+	my (@keys, @linex, @linex_body, @func_body, @evol, @objects,
 		$func_proto, $func_temp, $linex_proto, $linex_temp, $func,
 		$type);
 
@@ -426,11 +426,14 @@ sub buildUpdateFunctionsWithVec
 
 	# go
 	$func = $keys[0];
+	buildVectorObjects($val_ref, $inf_ref, \@objects);
 
 	# build function
 	@func_body = @{$evol_ref->{$func}{"data"}};
 
 	adjustEvolutionFunction($inf_ref, $val_ref, \@func_body);
+	push(@objects, "\n");
+	unshift(@func_body, @objects);
 
 	$func_proto = "static void $func(long indexStart, long indexEnd, ACCESSOR1& hoodOld, ACCESSOR2& hoodNew)";
 	$func_temp  = "template<typename DOUBLE, typename ACCESSOR1, typename ACCESSOR2>";
