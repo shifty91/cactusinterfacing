@@ -175,7 +175,7 @@ sub util_indent
 		$level--   if ($line =~ /\}\s*$/);
 
 		# print, but only if $line not empty
-		$line = $cinf_config{"tab"} x $level . $line if ($line ne "");
+		$line = $cinf_config{"tab"} x $level . $line if ($line ne "" && $line ne "\n");
 
 		$level++ if ($found);
 	}
