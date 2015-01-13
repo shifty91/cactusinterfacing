@@ -331,6 +331,64 @@ sub buildInfVarMacros
 }
 
 #
+# Generates object constructions for vector objects representing the
+# grid variables.
+#
+# param:
+#  - val_ref: ref to hash where macros will be stored
+#  - inf_ref: ref to interface data hash
+#  - obj_ref: ref to array where object constructions will be stored
+#
+# return:
+#  - none, results will be stored in obj_ref
+#
+sub buildVectorObjects
+{
+	my ($val_ref, $inf_ref, $obj_ref) = @_;
+	my ($dim, $arity);
+
+	# init
+	$dim   = $val_ref->{"dim"};
+	$arity = "DOUBLE::ARITY";
+
+	# go
+	foreach my $group (keys %{$inf_ref}) {
+		my ($gtype, $vtype, $timelevels);
+
+		# init
+		$gtype      = $inf_ref->{$group}{"gtype"};
+		$vtype      = $inf_ref->{$group}{"vtype"};
+		$timelevels = $inf_ref->{$group}{"timelevels"};
+
+		# this is not necessary for arrays/scalars
+		next if ($gtype =~ /^SCALAR$/i);
+		next if ($gtype =~ /^ARRAY$/i);
+
+		foreach my $name (@{$inf_ref->{$group}{"names"}}) {
+			my ($i);
+
+			# for the first timelevel hoodNew is used
+			push(@$obj_ref, $tab.$tab."VecWrite<$vtype, $arity> $name(&hoodNew.var_$name());\n");
+
+			# for all other timelevels hoodOld
+			for ($i = 1; $i < $timelevels; ++$i) {
+				my ($past_name, $var_name, $fixed_coord);
+
+				$past_name   = "$name" . ("_p" x $i);
+				$var_name    = "var_" . $name . ("_p" x ($i - 1));
+				$fixed_coord = getFixedCoordZero($dim);
+
+				push(@$obj_ref, $tab.$tab."VecRead<$vtype, $arity> $past_name(&hoodOld[" .
+						 $fixed_coord . "]." .
+						 $var_name . "());\n");
+			}
+		}
+	}
+
+	return;
+}
+
+#
 # Builds cell's static updateLineX function using vectorization.
 # The actual evolution function will be created seperately and gets
 # a third template parameter describing the current vector type.
