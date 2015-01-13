@@ -537,7 +537,7 @@ sub getRotateTimelevels
 
 				$var_idx  = "vindex";
 				$gfindex  = getGFIndexFirst($dim, $index);
-				$hood_new = "(&hoodNew.var_" . $name . ("_p" x ($i - 1) . "())");
+				$hood_new = "&hoodNew.var_" . $name . ("_p" x ($i - 1) . "()");
 
 				# get index
 				push(@outdata, "int $var_idx = $gfindex;");
@@ -548,7 +548,7 @@ sub getRotateTimelevels
 					push(@outdata, "$buf");
 					push(@outdata, "$store");
 				} else {
-					$left  = "$hood_new" . "[$var_idx]";
+					$left  = "($hood_new)" . "[$var_idx]";
 					$right = "$name" . ("_p" x ($i - 1)) . "[$var_idx]";
 					push(@outdata, "$left = $right;");
 				}
