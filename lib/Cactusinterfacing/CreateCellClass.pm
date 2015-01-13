@@ -601,8 +601,13 @@ sub getRotateTimelevels
 				push(@outdata, "int $var_idx = $gfindex;");
 
 				if ($use_vec) {
-					$buf   = "DOUBLE buf = $name" . ("_p" x ($i - 1)) . " + $var_idx;";
-					$store = "($hood_new + vindex) << buf;";
+					my ($past_name, $var_name, $fixed_coord);
+
+					$var_name    = "var_" . $name . ("_p" x ($i - 2));
+					$fixed_coord = getFixedCoordZero($dim);
+					$buf         = "DOUBLE buf = &hoodOld[$fixed_coord].$var_name() + $var_idx;";
+					$store       = "($hood_new + vindex) << buf;";
+
 					push(@outdata, "$buf");
 					push(@outdata, "$store");
 				} else {
