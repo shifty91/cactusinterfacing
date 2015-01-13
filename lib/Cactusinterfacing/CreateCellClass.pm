@@ -226,14 +226,14 @@ sub buildSpecialMacros
 	push(@$def_ref, "#define cctk_iteration staticData.cctkGH->cctk_iteration()\n");
 	push(@$undef_ref, "#undef cctk_iteration\n");
 
-	push(@$def_ref, "\n");
-
-	# build macros for struct of array access
-	buildInfVarMacros($val_ref, $inf_ref, $def_ref, $undef_ref);
-
-	push(@$def_ref, "\n");
+	unless ($cinf_config{"use_vectorization"}) {
+		# build macros for struct of array access
+		push(@$def_ref, "\n");
+		buildInfVarMacros($val_ref, $inf_ref, $def_ref, $undef_ref);
+	}
 
 	# build parameter macros
+	push(@$def_ref, "\n");
 	buildParameterMacros($par_ref, $def_ref, $undef_ref);
 
 	return;
