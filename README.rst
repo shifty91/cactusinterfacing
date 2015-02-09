@@ -97,3 +97,10 @@ Finally a new directory with the name of the configuration will be created and
 everything needed will be stored there. This directory also contains a Makefile
 which can be used to compile the final LibGeoDecomp application.
 At least you should be able to run the application like the Cactus executable.
+
+4. Configuration
+================
+The behavior of this tool may be changed by configuration options e.g. if
+vectorized code should generated or not. All configuration options may be set by
+a configuration file ~/.cactus_inf.rc which is loaded at start up. For a list of
+all options see lib/Cactusinterfacing/Config.pm.
