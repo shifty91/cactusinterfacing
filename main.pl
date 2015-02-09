@@ -125,6 +125,7 @@ sub getThorns
 			next if ($line =~ /^CactusDoc/);
 			next if ($line =~ /^Carpet/);
 			next if ($line =~ /^LSUThorns/);
+			next if ($line =~ /^CactusUtils/);
 			push(@$thorns_ref, $1);
 		} else {
 			_err("Syntax error in $configdir/ThornList");
