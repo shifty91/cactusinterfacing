@@ -412,7 +412,7 @@ sub getLoopPeeler
 	# init
 	$call0	   = "<ScalarType>(0, nextStop, hoodOld, hoodNew);";
 	$call1	   = "<ShortVecType>(nextStop, indexEnd, hoodOld, hoodNew);";
-	$call2	   = "<ScalarType>(indexEnd - remainder, indexEnd, hoodOld, hoodNew);";
+	$call2	   = "<ScalarType>(last, indexEnd, hoodOld, hoodNew);";
 	$vec_width = $cinf_config{"vector_width"};
 
 	# prepare
@@ -425,6 +425,9 @@ sub getLoopPeeler
 	# adjust indices
 	push(@$out_ref, "nextStop -= index;");
 	push(@$out_ref, "indexEnd -= index;");
+
+	# calculate last start index
+	push(@$out_ref, "long last = (((indexEnd - nextStop) / ShortVecType::ARITY) * ShortVecType::ARITY) + nextStop;");
 
 	# call it/them
 	if (ref $func_ref eq 'SCALAR') {
