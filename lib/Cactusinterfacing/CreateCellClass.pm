@@ -571,7 +571,7 @@ sub getRotateTimelevels
 	$dim	   = $val_ref->{"dim"};
 	$index	   = "_i";
 	$use_vec   = $cinf_config{"use_vectorization"};
-	$range	   = $use_vec ? "indexEnd - DOUBLE::ARITY + 1" : "(indexEnd - hoodOld.index())";
+	$range	   = $use_vec ? "(indexEnd - DOUBLE::ARITY + 1)" : "(indexEnd - hoodOld.index())";
 	$incr	   = $use_vec ? "$index += DOUBLE::ARITY" : "++$index";
 	$start_idx = $use_vec ? "indexStart" : "0";
 
