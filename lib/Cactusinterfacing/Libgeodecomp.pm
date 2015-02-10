@@ -434,6 +434,10 @@ sub getLoopPeeler
 		push(@$out_ref, $$func_ref . $call0);
 		push(@$out_ref, $$func_ref . $call1);
 		push(@$out_ref, $$func_ref . $call2);
+	} elsif (!(ref $func_ref)) {
+		push(@$out_ref, $func_ref . $call0);
+		push(@$out_ref, $func_ref . $call1);
+		push(@$out_ref, $func_ref . $call2);
 	} elsif (ref $func_ref eq 'ARRAY') {
 		foreach my $func (@$func_ref) {
 			push(@$out_ref, $func . $call0);
