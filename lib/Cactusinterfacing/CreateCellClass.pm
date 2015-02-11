@@ -407,9 +407,8 @@ sub buildVectorObjects
 sub buildUpdateFunctionsWithVec
 {
 	my ($evol_ref, $val_ref, $inf_ref) = @_;
-	my (@keys, @linex, @linex_body, @func_body, @evol, @objects,
-		$func_proto, $func_temp, $linex_proto, $linex_temp, $func,
-		$type);
+	my (@keys, @linex, @linex_body, @objects, @func_names,
+		$linex_proto, $linex_temp, $type);
 
 	# check if we can build with vectorization
 	_err("Cannot build with vectorization, since the interface data contains " .
@@ -421,31 +420,54 @@ sub buildUpdateFunctionsWithVec
 	# check functions
 	@keys = keys %{$evol_ref};
 	_err("No function found.") unless (@keys);
-	_err("There is currently no support for multiple functions using vectorization.")
-		if (@keys > 1);
 
 	# go
-	$func = $keys[0];
 	buildVectorObjects($val_ref, $inf_ref, \@objects);
 
-	# build function
-	@func_body = @{$evol_ref->{$func}{"data"}};
+	# build all evol functions
+	foreach my $func (@keys) {
+		my (@func_body, @evol, $func_proto, $func_temp);
+		# build function
+		@func_body = @{$evol_ref->{$func}{"data"}};
 
-	adjustEvolutionFunction($inf_ref, $val_ref, \@func_body);
-	push(@objects, "\n");
-	unshift(@func_body, @objects);
+		adjustEvolutionFunction($inf_ref, $val_ref, \@func_body);
+		push(@objects, "\n");
+		unshift(@func_body, @objects);
 
-	$func_proto = "static void $func(long indexStart, long indexEnd, ACCESSOR1& hoodOld, ACCESSOR2& hoodNew)";
-	$func_temp  = "template<typename DOUBLE, typename ACCESSOR1, typename ACCESSOR2>";
-	buildFunctionWithTL($val_ref, $inf_ref, \@func_body, $func_proto, \@evol, $func_temp, 1);
+		$func_proto = "static void $func(long indexStart, long indexEnd, ACCESSOR1& hoodOld, ACCESSOR2& hoodNew)";
+		$func_temp  = "template<typename DOUBLE, typename ACCESSOR1, typename ACCESSOR2>";
+		buildFunctionWithTL($val_ref, $inf_ref, \@func_body, $func_proto, \@evol, $func_temp, 1)
+			if (@keys == 1);
+		util_buildFunction(\@func_body, $func_proto, \@evol, $func_temp, 1)
+			if (@keys > 1);
 
-	push(@{$val_ref->{"evol_funcs"}}, join("", @evol));
+		push(@{$val_ref->{"evol_funcs"}}, join("", @evol));
+		push(@func_names, $evol_ref->{$func}{"name"});
+	}
+
+	# build rotate timelevels as separate function
+	if (@keys > 1) {
+		my (@rotate, @rotate_body, $rot_proto, $rot_temp);
+
+		getRotateTimelevels($inf_ref, $val_ref, \@rotate_body);
+		$_ = $_ . "\n" for (@rotate_body);
+		$rot_proto = "static void rotateTimelevels(long indexStart, long indexEnd, ACCESSOR1& hoodOld, ACCESSOR2& hoodNew)";
+		$rot_temp  = "template<typename DOUBLE, typename ACCESSOR1, typename ACCESSOR2>";
+		util_buildFunction(\@rotate_body, $rot_proto, \@rotate, $rot_temp, 1);
+
+		push(@{$val_ref->{"evol_funcs"}}, join("", @rotate));
+	}
 
 	# build updateLineX by using loop peeling code
 	$linex_proto = "static void updateLineX(ACCESSOR1& hoodOld, int indexEnd, ACCESSOR2& hoodNew, int /* nanoStep */)";
 	$linex_temp  = "template<typename ACCESSOR1, typename ACCESSOR2>";
-	getLoopPeeler($type, $evol_ref->{$func}{"name"}, \@linex_body);
-
+	getLoopPeeler($type, \@func_names, \@linex_body);
+	# also call separate time levels function
+	if (@keys > 1) {
+		push(@linex_body, $tab.$tab."rotateTimelevels<ScalarType>(0, nextStop, hoodOld, hoodNew);");
+		push(@linex_body, $tab.$tab."rotateTimelevels<ShortVecType>(nextStop, indexEnd, hoodOld, hoodNew);");
+		push(@linex_body, $tab.$tab."rotateTimelevels<ScalarType>(last, indexEnd, hoodOld, hoodNew);");
+	}
 	util_buildFunction(\@linex_body, $linex_proto, \@linex, $linex_temp, 1);
 
 	$val_ref->{"update_linex"} = join("", @linex);
