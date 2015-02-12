@@ -97,7 +97,6 @@ sub getInherits
 			if ($val =~ /^$info_ref->{$key}{"impl"}$/i) {
 				push(@$inherits_ref, $key);
 				getInherits($key, $info_ref, $inherits_ref);
-				last;
 			}
 		}
 	}
@@ -138,7 +137,6 @@ sub getFriends
 			if ($val =~ /^$info_ref->{$key}{"impl"}$/i) {
 				push(@$friends_ref, $key);
 				getInherits($key, $info_ref, $friends_ref);
-				last;
 			}
 		}
 	}
