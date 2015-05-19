@@ -76,7 +76,6 @@ sub createMain
 	push(@$out_ref, "{\n");
 	if ($mpi) {
 		push(@$out_ref, $tab."MPI_Init(&argc, &argv);\n");
-		push(@$out_ref, $tab."LibGeoDecomp::Typemaps::initializeMaps();\n");
 		push(@$out_ref, "\n");
 	}
 	push(@$out_ref, $tab."runSimulation(argv[1]);\n");
