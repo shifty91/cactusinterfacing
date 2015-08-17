@@ -554,7 +554,8 @@ sub vprint
 sub dbg
 {
 	my ($msg) = @_;
-	my (undef, $file, $line, $sub) = caller(1);
+	my (undef, undef, undef, $sub)  = caller(1);
+	my (undef, $file, $line, undef) = caller(0);
 
 	print STDERR "[ERROR in $sub $file:$line]: $msg\n";
 
@@ -573,7 +574,8 @@ sub dbg
 sub _err
 {
 	my ($msg) = @_;
-	my (undef, $file, $line, $sub) = caller(1);
+	my (undef, undef, undef, $sub)  = caller(1);
+	my (undef, $file, $line, undef) = caller(0);
 
 	print STDERR "[ERROR in $sub $file:$line]: $msg\n";
 
@@ -592,7 +594,8 @@ sub _err
 sub _warn
 {
 	my ($msg) = @_;
-	my (undef, $file, $line, $sub) = caller(1);
+	my (undef, undef, undef, $sub)  = caller(1);
+	my (undef, $file, $line, undef) = caller(0);
 
 	print STDERR "[WARNING in $sub $file:$line]: $msg\n";
 
